@@ -422,6 +422,26 @@ hr {
   grid-column: 1 / -1;
   margin: 0;
 }
+#temp2Hint {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.temperature-values {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.field-error {
+  color: #8d352c;
+  font-size: 12px;
+}
+[aria-invalid="true"] {
+  border-color: #8d352c !important;
+}
+#recipeFeedback.error {
+  border-color: #8d352c;
+  color: #7b3028;
+}
 #pourEditor {
   margin-top: 18px;
   border-top: 1px solid var(--line);

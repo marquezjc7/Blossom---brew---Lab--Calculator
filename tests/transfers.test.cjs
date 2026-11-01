@@ -43,15 +43,17 @@ test("rechaza JSON ilegible, formatos ajenos y colecciones ausentes", () => {
 test("el CSV conserva las columnas anteriores y agrega el número de vertidos al final", () => {
   const csv = sessionsToCsv([]);
   assert.ok(csv.startsWith('\uFEFF"fecha","cafe"'));
-  assert.equal(csv.slice(1).split(",").length, 19);
+  assert.equal(csv.slice(1).split(",").length, 20);
   assert.ok(
-    csv.endsWith('"notas","molino","grosor_molienda","vertidos_despues_bloom"'),
+    csv.endsWith(
+      '"notas","molino","grosor_molienda","vertidos_despues_bloom","temperatura_2_C"',
+    ),
   );
   const cells = sessionsToCsv([{ grind: "116" }])
     .split("\r\n")[1]
     .split(",");
   assert.equal(cells[7], '"116"');
-  assert.deepEqual(cells.slice(16), ['""', '""', '""']);
+  assert.deepEqual(cells.slice(16), ['""', '""', '""', '""']);
 });
 
 test("JSON conserva molino, grosor y ajuste en recetas y sesiones", () => {
@@ -67,7 +69,7 @@ test("JSON conserva molino, grosor y ajuste en recetas y sesiones", () => {
   assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
   assert.ok(
     sessionsToCsv([grinding]).endsWith(
-      ',"Mazzer Philos I200D","Media fina",""',
+      ',"Mazzer Philos I200D","Media fina","",""',
     ),
   );
 });
@@ -155,6 +157,38 @@ test("CSV distingue un número desconocido, cero y un plan antiguo conocido", ()
     .split("\r\n")
     .slice(1);
   assert.ok(rows[0].endsWith(',""'));
+  assert.ok(rows[1].endsWith(',"0",""'));
+  assert.ok(rows[2].endsWith(',"2",""'));
+});
+
+test("los respaldos conservan dos temperaturas y los archivos anteriores siguen sin T2", () => {
+  const recipe = { name: "Dos etapas", temp: 92, temp2: 85 };
+  const backup = createBackup(
+    [recipe],
+    [{ coffee: "Mi café", temp: 92, temp2: 85 }],
+  );
+  assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
+  const old = createBackup([{ temp: 91 }], [{ temp: 91 }]);
+  assert.deepEqual(parseBackup(JSON.stringify(old)), old);
+  for (const invalid of [-1, 101, "85"]) {
+    assert.throws(() =>
+      parseBackup(
+        JSON.stringify(createBackup([{ temp: 92, temp2: invalid }], [])),
+      ),
+    );
+  }
+});
+
+test("el CSV conserva temperatura 1 en su columna y distingue T2 vacía de cero", () => {
+  const rows = sessionsToCsv([
+    { temp: 92 },
+    { temp: 92, temp2: 0 },
+    { temp: 92, temp2: 85 },
+  ])
+    .split("\r\n")
+    .slice(1);
+  assert.equal(rows[0].split(",")[6], '"92"');
+  assert.ok(rows[0].endsWith(',""'));
   assert.ok(rows[1].endsWith(',"0"'));
-  assert.ok(rows[2].endsWith(',"2"'));
+  assert.ok(rows[2].endsWith(',"85"'));
 });

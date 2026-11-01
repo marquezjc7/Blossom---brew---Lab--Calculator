@@ -62,3 +62,11 @@ test("una cuota agotada devuelve un fallo de escritura y conserva los datos", ()
   assert.equal(store.write(SESSION_KEY, [{ coffee: "nuevo" }]), false);
   assert.deepEqual(store.read(SESSION_KEY), [{ coffee: "anterior" }]);
 });
+
+test("no confirma el guardado si el navegador ignora la escritura sin lanzar un error", () => {
+  const storage = memoryStorage();
+  storage.setItem = () => {};
+  const store = createStore(() => storage);
+  assert.equal(store.write(RECIPE_KEY, [{ name: "Sin persistir" }]), false);
+  assert.deepEqual(store.read(RECIPE_KEY), []);
+});

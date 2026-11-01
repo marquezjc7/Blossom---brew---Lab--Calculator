@@ -27,6 +27,15 @@
     }
     // V1 files without optional timing fields remain valid and unchanged.
     for (const item of [...data.recipes, ...data.sessions]) {
+      if (
+        item &&
+        item.temp2 != null &&
+        (!Number.isFinite(item.temp2) || item.temp2 < 0 || item.temp2 > 100)
+      ) {
+        throw new Error(
+          "La temperatura 2 debe estar entre 0 y 100 °C o quedar sin especificar.",
+        );
+      }
       if (item && Object.hasOwn(item, "pourCount")) {
         const error = validatePourCount(item);
         if (error) throw new Error(error);
@@ -71,6 +80,7 @@
       "molino",
       "grosor_molienda",
       "vertidos_despues_bloom",
+      "temperatura_2_C",
     ];
     const rows = sessions.map((session) => [
       session.date,
@@ -92,6 +102,7 @@
       session.grinder ?? "",
       session.grindSize ?? "",
       getPourCount(session) ?? "",
+      session.temp2 ?? "",
     ]);
     return (
       "\uFEFF" +

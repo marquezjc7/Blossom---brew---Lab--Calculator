@@ -18,6 +18,7 @@
   const {
     RECIPE_KEY: STORAGE_R,
     SESSION_KEY: STORAGE_S,
+    SELECTED_RECIPE_KEY,
     createStore,
   } = BlossomLab.storage;
   const store = createStore();
@@ -48,7 +49,8 @@
     sessions = [],
     selected = defaults[0],
     planReference = defaults[0],
-    recipeDirty = false;
+    recipeDirty = false,
+    pendingRecipeBackup = null;
   const editor = BlossomLab.createPourEditor({
     getRecipe: current,
     onDraftChange: updateRecipeStatus,
@@ -80,8 +82,56 @@
           : "Receta de referencia. Guarda una copia para conservar tus ajustes; la referencia original se mantiene.";
   }
   function markRecipeDirty() {
+    clearRecipeFeedback();
     recipeDirty = true;
     updateRecipeStatus();
+  }
+  function clearRecipeFeedback() {
+    $("recipeFeedback").hidden = true;
+    $("downloadPendingRecipe").hidden = true;
+    pendingRecipeBackup = null;
+    document
+      .querySelectorAll("#recipe .field-error")
+      .forEach((error) => error.remove());
+    document
+      .querySelectorAll('#recipe [aria-invalid="true"]')
+      .forEach((field) => {
+        field.removeAttribute("aria-invalid");
+        field.removeAttribute("aria-errormessage");
+      });
+  }
+  function recipeFeedback(message, error = false) {
+    const feedback = $("recipeFeedback");
+    feedback.textContent = message;
+    feedback.hidden = false;
+    feedback.classList.toggle("error", error);
+    feedback.setAttribute("role", error ? "alert" : "status");
+  }
+  function recipeError(message, fieldId) {
+    recipeFeedback(message, true);
+    flash(message);
+    setTab("recipe");
+    const field = fieldId ? $(fieldId) : null;
+    if (field?.closest(".field")) {
+      const error = document.createElement("span");
+      error.id = field.id + "Error";
+      error.className = "field-error";
+      error.textContent = message;
+      field.closest(".field").append(error);
+      field.setAttribute("aria-invalid", "true");
+      field.setAttribute("aria-errormessage", error.id);
+      field.focus();
+    } else {
+      $("recipeFeedback").focus();
+    }
+    return null;
+  }
+  function recipeStorageError(recipes) {
+    recipeError(
+      "No se pudo guardar en este navegador. Tus cambios siguen en pantalla; puedes descargar un respaldo JSON para conservarlos.",
+    );
+    pendingRecipeBackup = createBackup(recipes, sessions);
+    $("downloadPendingRecipe").hidden = false;
   }
   function currentPlan() {
     return snapshotPlan(planReference, current().water);
@@ -112,6 +162,10 @@
       water: Number($("water").value),
       ratio: Number($("targetRatio").value),
       temp: $("temp").valueAsNumber,
+      temp2:
+        $("temp2").value === "" && !$("temp2").validity.badInput
+          ? null
+          : $("temp2").valueAsNumber,
       bloom: $("bloom").valueAsNumber,
       pourCount:
         $("pourCount").value === "" && !$("pourCount").validity.badInput
@@ -160,6 +214,7 @@
     $("preset").value = keep;
   }
   function loadRecipe(r) {
+    clearRecipeFeedback();
     selected = r;
     planReference = r;
     recipeDirty = false;
@@ -170,6 +225,7 @@
       "dose",
       "water",
       "temp",
+      "temp2",
       "bloom",
       "time",
       "grind",
@@ -187,11 +243,12 @@
     $("pourCount").value = getPourCount(r) ?? "";
     updateGrindingFields();
     $("targetRatio").value = r.ratio ?? r.water / r.dose;
-    $("recipeNameField").hidden = !isCustomRecipe();
-    $("recipeName").value = r.name;
+    $("recipeName").value = isCustomRecipe() ? r.name : "";
     fillPresets();
     render();
     updateRecipeStatus();
+    // Remember the choice separately; existing V1 recipe/session keys stay intact.
+    store.write(SELECTED_RECIPE_KEY, r.id);
   }
   function render() {
     const r = current(),
@@ -201,6 +258,10 @@
     $("waterOut").textContent = nf(target);
     $("doseOut").textContent = nf(r.dose);
     $("tempOut").textContent = Number.isFinite(r.temp) ? nf(r.temp) + "°" : "—";
+    $("temp2Metric").hidden = r.temp2 === null;
+    $("temp2Out").textContent = Number.isFinite(r.temp2)
+      ? nf(r.temp2) + "°"
+      : "—";
     const delta = ratio - r.ratio;
     $("ratioStatus").textContent =
       !valid(ratio) || !valid(r.ratio)
@@ -289,36 +350,54 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
   function recipeForSaving() {
+    clearRecipeFeedback();
     if (editor.isOpen) {
-      flash("Aplica o cancela la edición del plan antes de guardar.");
-      return null;
+      return recipeError(
+        "Aplica o cancela la edición del plan antes de guardar.",
+      );
     }
     const r = current();
     if ($("grinder").value === "other" && !r.grinder) {
-      flash("Escribe la marca y el modelo del otro molino.");
-      $("otherGrinder").focus();
-      return null;
-    }
-    if (
-      !valid(r.dose) ||
-      r.dose > 1000 ||
-      !valid(r.water) ||
-      r.water > 20000 ||
-      !Number.isFinite(r.ratio) ||
-      r.ratio < 1 ||
-      r.ratio > 100 ||
-      !r.coffee ||
-      !Number.isFinite(r.temp) ||
-      r.temp < 0 ||
-      r.temp > 100 ||
-      !Number.isInteger(r.bloom) ||
-      r.bloom < 0 ||
-      r.bloom > 900
-    ) {
-      flash(
-        "Completa el café y usa valores válidos de dosis, agua, ratio, temperatura y bloom.",
+      return recipeError(
+        "Escribe la marca y el modelo del otro molino.",
+        "otherGrinder",
       );
-      return null;
+    }
+    for (const [invalid, message, field] of [
+      [!r.coffee, "Escribe el nombre del café o lote.", "coffee"],
+      [
+        !valid(r.dose) || r.dose > 1000,
+        "La dosis de café debe ser mayor que 0 y no superar 1000 g.",
+        "dose",
+      ],
+      [
+        !valid(r.water) || r.water > 20000,
+        "El agua total debe ser mayor que 0 y no superar 20000 g.",
+        "water",
+      ],
+      [
+        !Number.isFinite(r.ratio) || r.ratio < 1 || r.ratio > 100,
+        "El ratio objetivo debe estar entre 1 y 100.",
+        "targetRatio",
+      ],
+      [
+        !Number.isFinite(r.temp) || r.temp < 0 || r.temp > 100,
+        "La temperatura 1 debe estar entre 0 y 100 °C.",
+        "temp",
+      ],
+      [
+        r.temp2 !== null &&
+          (!Number.isFinite(r.temp2) || r.temp2 < 0 || r.temp2 > 100),
+        "La temperatura 2 debe estar entre 0 y 100 °C, o quedar vacía.",
+        "temp2",
+      ],
+      [
+        !Number.isInteger(r.bloom) || r.bloom < 0 || r.bloom > 900,
+        "El bloom debe ser un número entero entre 0 y 900 segundos.",
+        "bloom",
+      ],
+    ]) {
+      if (invalid) return recipeError(message, field);
     }
     const plan = currentPlan();
     const candidate = {
@@ -326,27 +405,25 @@
       ...plan,
       pourCount: r.pourCount ?? getPourCount(plan),
     };
-    const error =
-      validatePlan(plan.pours, plan.pourTimes, r.water, r.time) ||
-      validatePourCount(candidate);
-    if (error) {
-      flash(error);
-      return null;
-    }
+    const planError = validatePlan(plan.pours, plan.pourTimes, r.water, r.time);
+    if (planError)
+      return recipeError(
+        planError,
+        planError.includes("tiempo final") ? "time" : null,
+      );
+    const countError = validatePourCount(candidate);
+    if (countError) return recipeError(countError, "pourCount");
     return candidate;
   }
   function saveNewRecipe() {
     const r = recipeForSaving();
     if (!r) return;
-    let name = prompt(
-      "Nombre de la nueva receta:",
-      r.coffee + " · " + r.method + " · " + nf(r.dose) + " g",
-    );
-    if (name === null) return;
-    name = name.trim().slice(0, 100);
+    const name = $("recipeName").value.trim().slice(0, 100);
     if (!name) {
-      flash("La receta necesita un nombre.");
-      return;
+      return recipeError(
+        "Escribe un nombre para guardar la receta.",
+        "recipeName",
+      );
     }
     const copy = {
       ...r,
@@ -355,10 +432,13 @@
       notes: "Receta personalizada creada en Blossom Brew Lab.",
     };
     const next = [...customRecipes, copy];
-    if (!persist(STORAGE_R, next)) return;
+    if (!store.write(STORAGE_R, next)) return recipeStorageError(next);
     customRecipes = next;
     loadRecipe(copy);
     flash("Nueva receta guardada.");
+    recipeFeedback(
+      `Receta «${name}» guardada en este navegador. Ya aparece seleccionada en la lista de recetas.`,
+    );
   }
   function updateRecipe() {
     if (!isCustomRecipe()) return;
@@ -366,9 +446,7 @@
     if (!r) return;
     const name = $("recipeName").value.trim();
     if (!name) {
-      flash("La receta necesita un nombre.");
-      $("recipeName").focus();
-      return;
+      return recipeError("La receta necesita un nombre.", "recipeName");
     }
     // Replace only the selected custom recipe. Old sessions hold their own plan.
     const updated = { ...selected, ...r, name };
@@ -378,10 +456,11 @@
     const next = customRecipes.map((recipe) =>
       recipe === selected ? updated : recipe,
     );
-    if (!persist(STORAGE_R, next)) return;
+    if (!store.write(STORAGE_R, next)) return recipeStorageError(next);
     customRecipes = next;
     loadRecipe(updated);
     flash("Receta actualizada.");
+    recipeFeedback(`Receta «${name}» actualizada en este navegador.`);
   }
   function saveSession() {
     const r = recipeForSaving();
@@ -433,7 +512,7 @@
             : "";
         const grinding = `<div class="logmeta grinding-summary">Molino: ${escapeHtml(s.grinder || "sin especificar")} · Molienda: ${escapeHtml(s.grindSize || "sin especificar")}${s.grind ? ` · Ajuste: ${escapeHtml(s.grind)}` : ""}</div>`;
         const count = `<div class="logmeta pour-count-summary">Vertidos después del bloom: ${getPourCount(s) ?? "sin especificar"}</div>`;
-        return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · ${nf(Number(s.temp))} °C · ${escapeHtml(s.time)}</div>${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
+        return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · T1 ${nf(Number(s.temp))} °C${s.temp2 == null ? "" : ` · T2 ${nf(Number(s.temp2))} °C`} · ${escapeHtml(s.time)}</div>${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
       })
       .join("");
   }
@@ -535,6 +614,7 @@
       "water",
       "targetRatio",
       "temp",
+      "temp2",
       "bloom",
       "pourCount",
       "time",
@@ -576,6 +656,14 @@
       flash("Agua recalculada al ratio objetivo.");
     });
     $("saveRecipe").addEventListener("click", saveNewRecipe);
+    $("downloadPendingRecipe").addEventListener("click", () => {
+      if (!pendingRecipeBackup) return;
+      exportFile(
+        JSON.stringify(pendingRecipeBackup, null, 2),
+        "blossom_respaldo_pendiente.json",
+        "application/json",
+      );
+    });
     $("updateRecipe").addEventListener("click", updateRecipe);
     for (const id of ["eyDose", "cup", "tds"])
       $(id).addEventListener("input", calcEy);
@@ -615,7 +703,10 @@
         flash("Historial vaciado.");
       }
     });
-    loadRecipe(defaults[0]);
+    const lastRecipe = recipeItems().find(
+      (recipe) => recipe.id === getStored(SELECTED_RECIPE_KEY),
+    );
+    loadRecipe(lastRecipe ?? defaults[0]);
     renderSessions();
   }
   init();

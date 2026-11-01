@@ -1,10 +1,10 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.1)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.2)
 
 **Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
-La V1.1 incorpora edición de recetas personalizadas, pesos acumulados y tiempos opcionales de inicio de vertidos. Conserva las recetas de referencia, los datos guardados y los respaldos V1. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
+La V1.2 permite registrar dos temperaturas y guardar recetas con un nombre dentro del formulario. Conserva la edición de vertidos y tiempos, los datos anteriores y los respaldos V1. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
 
@@ -18,18 +18,18 @@ El servidor solo entrega archivos locales; no es un backend y no sincroniza dato
 
 ## Organización del proyecto
 
-| Archivo                 | Responsabilidad                                           |
-| ----------------------- | --------------------------------------------------------- |
-| `index.html`            | Estructura y contenido de la interfaz                     |
-| `assets/css/styles.css` | Diseño y adaptación a pantallas pequeñas                  |
-| `src/calculations.js`   | Ratio, agua objetivo, extracción y escalado de vertidos   |
-| `src/plans.js`          | Validación, tiempos y copia del plan según el agua total  |
-| `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio       |
-| `src/recipes.js`        | Tres recetas iniciales y sus datos de referencia          |
-| `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1 |
-| `src/transfers.js`      | Formato de respaldo JSON y generación de CSV              |
-| `src/app.js`            | Interacciones, estado de la pantalla y renderizado        |
-| `tests/`                | Pruebas de lógica y recorridos completos en Chromium      |
+| Archivo                 | Responsabilidad                                               |
+| ----------------------- | ------------------------------------------------------------- |
+| `index.html`            | Estructura y contenido de la interfaz                         |
+| `assets/css/styles.css` | Diseño y adaptación a pantallas pequeñas                      |
+| `src/calculations.js`   | Ratio, agua objetivo, extracción y escalado de vertidos       |
+| `src/plans.js`          | Validación, tiempos y copia del plan según el agua total      |
+| `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio           |
+| `src/recipes.js`        | Tres recetas iniciales y sus datos de referencia              |
+| `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1     |
+| `src/transfers.js`      | Formato de respaldo JSON y generación de CSV                  |
+| `src/app.js`            | Interacciones, estado de la pantalla y renderizado            |
+| `tests/`                | Pruebas de lógica y recorridos completos en Chromium y WebKit |
 
 Los scripts son locales y se cargan en orden con `defer`. Se usa el espacio de nombres `BlossomLab` para compartir sus funciones. No se requieren módulos ESM, descargas de CDN, paquetes para ejecutar la aplicación ni un paso de compilación; esto conserva la apertura directa mediante `file://`.
 
@@ -46,15 +46,17 @@ Las pruebas de navegador usan Python 3.12 y Playwright. La instalación siguient
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
-.venv/bin/python -m playwright install chromium
+.venv/bin/python -m playwright install chromium webkit
 .venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v
 ```
 
 En Linux puede ser necesario instalar las bibliotecas del navegador con `python -m playwright install --with-deps chromium` desde ese entorno virtual. Si ya tienes un Chromium compatible, puedes indicarlo sin descargar otro:
 
 ```bash
-BLOSSOM_BROWSER_EXECUTABLE=/usr/bin/chromium python3 -m unittest discover -s tests -p 'test_browser.py' -v
+BLOSSOM_BROWSER_EXECUTABLE=/usr/bin/chromium .venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v
 ```
+
+Para ejecutar la misma suite en WebKit: `BLOSSOM_BROWSER=webkit .venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v`. No establezcas `BLOSSOM_BROWSER_EXECUTABLE` al usar el WebKit descargado por Playwright. GitHub Actions ejecuta ambos motores en Ubuntu 24.04 y la publicación requiere que pasen los dos. WebKit comprueba el motor usado por Safari; las pruebas en un Safari y un teléfono reales siguen siendo una comprobación adicional.
 
 La suite inicia y cierra su propio servidor en un puerto libre y usa un perfil nuevo por prueba. No necesita el servidor del puerto 8000 ni modifica los datos de tu navegador personal. Comprueba recetas, edición de vertidos y tiempos, actualización sin duplicados, errores de almacenamiento, extracción, guardado, compatibilidad con datos V1, importación y exportaciones, pantallas pequeñas y operación sin conexión después de cargar la página.
 
@@ -79,7 +81,7 @@ La activación inicial y la comprobación de la dirección HTTPS están explicad
 
 ## Editar recetas y vertidos
 
-1. Selecciona una receta y modifica los parámetros. Con una referencia inicial, usa **Guardar como nueva receta** para crear tu copia. Las tres referencias originales se mantienen.
+1. Selecciona una receta, escribe **Nombre para guardar la receta** y modifica los parámetros. Con una referencia inicial, usa **Guardar como nueva receta** para crear tu copia. Las tres referencias originales se mantienen. El nombre se escribe en la página, sin una ventana emergente.
 2. Al seleccionar una receta personalizada, puedes editar su nombre y parámetros. **Actualizar receta guardada** reemplaza esa receta sin crear un duplicado. **Guardar como nueva receta** crea una copia independiente.
 3. Abre **Editar vertidos** para agregar, quitar o cambiar cantidades acumuladas. Deben aumentar y el último peso debe coincidir con el agua total. Puedes quitar todas las filas para dejar la receta sin plan documentado.
 4. Cada inicio es opcional y se registra en `mm:ss` desde que comienza la preparación: por ejemplo, `0:00`, `0:45`, `1:30`. Deja vacíos los tiempos desconocidos. Los conocidos deben aumentar y quedar antes del tiempo final, si este está registrado.
@@ -87,7 +89,15 @@ La activación inicial y la comprobación de la dirección HTTPS están explicad
 
 Al cambiar el agua se escalan las cantidades del plan; los tiempos se conservan. Para Pacas Natural solo se conoce el bloom: el editor no inventa los vertidos restantes. Una sesión captura su propio plan, de modo que editar la receta después no cambia el historial anterior. Los avisos de cambios sin guardar permiten cancelar al cambiar de receta o salir de la página.
 
-Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de almacenamiento ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 16 columnas y agrega `molino`, `grosor_molienda` y `vertidos_despues_bloom` al final; usa JSON para transferir planes y tiempos completos.
+El guardado verifica que el navegador haya almacenado la receta y muestra una confirmación persistente. La receta queda seleccionada y se recupera esa selección al recargar. Los errores señalan el campo que necesita corregirse. Si el navegador impide escribir en el almacenamiento, conserva los cambios en pantalla y ofrece **Descargar respaldo JSON** con la receta pendiente, sin afirmar que quedó guardada. Las recetas anteriores permanecen intactas.
+
+Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 16 columnas y agrega `molino`, `grosor_molienda`, `vertidos_despues_bloom` y `temperatura_2_C` al final; usa JSON para transferir planes y tiempos completos.
+
+## Dos temperaturas
+
+**Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
+
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.2.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

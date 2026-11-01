@@ -4,6 +4,7 @@
   // Preserve the V1 keys so existing recipes and sessions remain available.
   const RECIPE_KEY = "blossom-brew-recipes-v1";
   const SESSION_KEY = "blossom-brew-sessions-v1";
+  const SELECTED_RECIPE_KEY = "blossom-brew-selected-recipe-v1";
 
   function createStore(getStorage = () => root.localStorage) {
     return {
@@ -17,8 +18,10 @@
       },
       write(key, value) {
         try {
-          getStorage().setItem(key, JSON.stringify(value));
-          return true;
+          const storage = getStorage();
+          const serialized = JSON.stringify(value);
+          storage.setItem(key, serialized);
+          return storage.getItem(key) === serialized;
         } catch {
           return false;
         }
@@ -26,7 +29,12 @@
     };
   }
 
-  const storage = Object.freeze({ RECIPE_KEY, SESSION_KEY, createStore });
+  const storage = Object.freeze({
+    RECIPE_KEY,
+    SESSION_KEY,
+    SELECTED_RECIPE_KEY,
+    createStore,
+  });
   if (typeof module !== "undefined" && module.exports) {
     module.exports = storage;
   } else {

@@ -36,6 +36,16 @@ La interfaz se identifica como V1.1. El formato de respaldo sigue siendo V1 con 
 - [x] Registrar el número de vertidos después de Bloom, sin incluir el bloom en el conteo.
 - [x] Sincronizar el número con el plan y conservarlo en recetas, sesiones y respaldos, permitiendo cantidades desconocidas.
 
+## V1.2 — temperaturas y guardado
+
+- [x] Registrar Temperatura 1 y una Temperatura 2 opcional en recetas, bitácora y respaldos.
+- [x] Escribir el nombre de la receta en el formulario, eliminando la dependencia de `prompt()`.
+- [x] Mostrar errores y confirmaciones persistentes, verificar la escritura y ofrecer un respaldo del intento si falla el almacenamiento.
+- [x] Recuperar la última receta seleccionada al recargar y conservar las claves de datos anteriores.
+- [x] Añadir comprobaciones de guardado y recuperación en Chromium y WebKit a la publicación automática.
+
+La causa exacta del fallo reportado en los dispositivos del propietario no se había reproducido en Chromium. El nuevo flujo permite ver el error concreto y guardar sin ventanas emergentes; la confirmación final en sus dispositivos queda pendiente de una nueva prueba tras publicar V1.2.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

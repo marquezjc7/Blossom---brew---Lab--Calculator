@@ -50,7 +50,10 @@ class BrowserTests(unittest.TestCase):
         if executable:
             options["executable_path"] = executable
         try:
-            cls.browser = cls.playwright.chromium.launch(**options)
+            engine = os.environ.get("BLOSSOM_BROWSER", "chromium")
+            if engine not in ["chromium", "webkit"]:
+                raise ValueError("BLOSSOM_BROWSER debe ser chromium o webkit")
+            cls.browser = getattr(cls.playwright, engine).launch(**options)
         except Exception:
             cls.playwright.stop()
             cls.server.shutdown()
@@ -103,7 +106,7 @@ class BrowserTests(unittest.TestCase):
         self.page.reload()
 
     def create_custom_recipe(self, name="Mi receta de prueba"):
-        self.page.once("dialog", lambda dialog: dialog.accept(name))
+        self.page.fill("#recipeName", name)
         self.page.click("#saveRecipe")
         expect(self.page.locator("#recipeName")).to_have_value(name)
         return self.stored(RECIPE_KEY)[-1]["id"]
@@ -197,7 +200,7 @@ class BrowserTests(unittest.TestCase):
     def test_custom_recipe_keeps_scaled_pours_after_reload(self):
         self.page.fill("#dose", "18")
         self.page.click("#matchRatio")
-        self.page.once("dialog", lambda dialog: dialog.accept("Mi Bourbon 18 g"))
+        self.page.fill("#recipeName", "Mi Bourbon 18 g")
         self.page.click("#saveRecipe")
         recipe = self.stored(RECIPE_KEY)[0]
         self.assertEqual(recipe["pours"], [54, 174, 288])
@@ -245,8 +248,8 @@ class BrowserTests(unittest.TestCase):
         self.page.click("#saveSession")
         rows = list(csv.reader(io.StringIO(self.download_text("#downloadCsv"))))
         self.assertEqual(len(rows), 2)
-        self.assertEqual(len(rows[1]), 19)
-        self.assertEqual(rows[0][15:], ["notas", "molino", "grosor_molienda", "vertidos_despues_bloom"])
+        self.assertEqual(len(rows[1]), 20)
+        self.assertEqual(rows[0][15:], ["notas", "molino", "grosor_molienda", "vertidos_despues_bloom", "temperatura_2_C"])
         self.assertEqual(rows[1][15], notes)
         self.assertEqual(rows[1][9:12], ["", "", ""])
 
@@ -332,7 +335,8 @@ class BrowserTests(unittest.TestCase):
 
     def test_reference_recipe_stays_original_after_saving_edited_copy(self):
         expect(self.page.locator("#updateRecipe")).to_be_disabled()
-        expect(self.page.locator("#recipeNameField")).to_be_hidden()
+        expect(self.page.locator("#recipeNameField")).to_be_visible()
+        expect(self.page.locator("#recipeName")).to_have_value("")
         self.edit_plan([50, 150, 240], ["0:00", "", "1:30"])
         expect(self.page.locator("#updateRecipe")).to_be_disabled()
         self.create_custom_recipe("Mi versión")
@@ -709,7 +713,7 @@ class BrowserTests(unittest.TestCase):
             self.assertIsNone(data["pours"])
             self.assertEqual(data["bloomWater"], 50)
         rows = list(csv.reader(io.StringIO(self.download_text("#downloadCsv"))))
-        self.assertEqual(rows[1][-1], "3")
+        self.assertEqual(rows[1][18], "3")
         self.page.once("dialog", lambda dialog: dialog.accept())
         self.page.locator("#fileImport").set_input_files({
             "name": "vertidos.json", "mimeType": "application/json", "buffer": backup_text.encode(),
@@ -719,6 +723,112 @@ class BrowserTests(unittest.TestCase):
         self.page.select_option("#preset", recipe_id)
         expect(self.page.locator("#pourCount")).to_have_value("3")
         self.assertIsNone(self.stored(RECIPE_KEY)[0]["pours"])
+
+    def test_two_temperatures_persist_in_recipe_session_and_backups(self):
+        self.page.fill("#temp", "94")
+        self.page.fill("#temp2", "85")
+        expect(self.page.locator("#temp2Metric")).to_be_visible()
+        expect(self.page.locator("#temp2Out")).to_have_text("85°")
+        recipe_id = self.create_custom_recipe("Dos temperaturas")
+        self.page.reload()
+        expect(self.page.locator("#preset")).to_have_value(recipe_id)
+        expect(self.page.locator("#temp")).to_have_value("94")
+        expect(self.page.locator("#temp2")).to_have_value("85")
+        self.tab("journal")
+        self.page.click("#saveSession")
+        expect(self.page.locator("#sessions")).to_contain_text("T1 94 °C · T2 85 °C")
+        text = self.download_text("#exportJson")
+        backup = json.loads(text)
+        for data in [backup["recipes"][0], backup["sessions"][0]]:
+            self.assertEqual(data["temp"], 94)
+            self.assertEqual(data["temp2"], 85)
+        rows = list(csv.reader(io.StringIO(self.download_text("#downloadCsv"))))
+        self.assertEqual(rows[1][6], "94")
+        self.assertEqual(rows[1][-1], "85")
+        self.page.once("dialog", lambda dialog: dialog.accept())
+        self.page.locator("#fileImport").set_input_files({
+            "name": "temperaturas.json", "mimeType": "application/json", "buffer": text.encode(),
+        })
+        expect(self.page.locator("#toast")).to_contain_text("Respaldo importado")
+        self.tab("recipe")
+        self.page.select_option("#preset", recipe_id)
+        expect(self.page.locator("#temp2")).to_have_value("85")
+
+    def test_optional_second_temperature_is_unknown_in_v1_and_can_be_zero_or_cleared(self):
+        self.seed_legacy_data()
+        self.page.select_option("#preset", LEGACY_RECIPE["id"])
+        expect(self.page.locator("#temp")).to_have_value("91")
+        expect(self.page.locator("#temp2")).to_have_value("")
+        expect(self.page.locator("#temp2Metric")).to_be_hidden()
+        for invalid in ["-1", "101"]:
+            self.page.fill("#temp2", invalid)
+            self.page.click("#updateRecipe")
+            expect(self.page.locator("#recipeFeedback")).to_contain_text("temperatura 2")
+            self.assertEqual(self.stored(RECIPE_KEY), [LEGACY_RECIPE])
+        self.page.fill("#temp2", "0")
+        self.page.click("#updateRecipe")
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["temp2"], 0)
+        self.page.fill("#temp2", "")
+        self.page.click("#updateRecipe")
+        self.assertIsNone(self.stored(RECIPE_KEY)[0]["temp2"])
+
+    def test_save_has_no_native_prompt_and_restores_selection_in_new_tab(self):
+        self.page.evaluate("() => { window.prompt = () => { throw new Error('No debe usarse prompt'); }; }")
+        recipe_id = self.create_custom_recipe("Guardado sin ventanas emergentes")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("guardada en este navegador")
+        self.page.reload()
+        expect(self.page.locator("#preset")).to_have_value(recipe_id)
+        new_tab = self.context.new_page()
+        new_tab.goto(self.base_url)
+        expect(new_tab.locator("#preset")).to_have_value(recipe_id)
+        expect(new_tab.locator("#recipeName")).to_have_value("Guardado sin ventanas emergentes")
+
+    def test_missing_name_shows_persistent_inline_error_and_can_be_corrected(self):
+        expect(self.page.locator("#recipeNameField")).to_be_visible()
+        self.page.click("#saveRecipe")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("Escribe un nombre")
+        expect(self.page.locator("#recipeName")).to_have_attribute("aria-invalid", "true")
+        self.page.evaluate("document.getElementById('toast').style.display = 'none'")
+        expect(self.page.locator("#recipeFeedback")).to_be_visible()
+        self.assertIsNone(self.stored(RECIPE_KEY))
+        self.create_custom_recipe("Nombre corregido")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("guardada en este navegador")
+        expect(self.page.locator("#recipeName")).not_to_have_attribute("aria-invalid", "true")
+
+    def test_failed_save_offers_backup_of_pending_recipe_without_claiming_it_was_saved(self):
+        self.page.fill("#recipeName", "Pendiente de guardar")
+        self.page.fill("#temp2", "85")
+        self.page.evaluate("""() => {
+            window.originalSetItem = Storage.prototype.setItem;
+            Storage.prototype.setItem = function() { throw new Error('QuotaExceededError'); };
+        }""")
+        self.page.click("#saveRecipe")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("No se pudo guardar")
+        self.assertIsNone(self.stored(RECIPE_KEY))
+        backup = json.loads(self.download_text("#downloadPendingRecipe"))
+        self.assertEqual(backup["recipes"][0]["name"], "Pendiente de guardar")
+        self.assertEqual(backup["recipes"][0]["temp2"], 85)
+        self.page.evaluate("() => { Storage.prototype.setItem = window.originalSetItem; }")
+        self.page.click("#saveRecipe")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("guardada en este navegador")
+        self.assertEqual(len(self.stored(RECIPE_KEY)), 1)
+
+    def test_touch_mobile_can_save_without_dialog_and_recover_both_temperatures(self):
+        context = self.browser.new_context(
+            viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, locale="es-ES",
+        )
+        self.addCleanup(context.close)
+        page = context.new_page()
+        page.goto(self.base_url)
+        page.evaluate("() => { window.prompt = () => null; }")
+        page.fill("#recipeName", "Prueba táctil")
+        page.fill("#temp2", "80")
+        page.locator("#saveRecipe").tap()
+        expect(page.locator("#recipeFeedback")).to_contain_text("guardada en este navegador")
+        page.reload()
+        expect(page.locator("#recipeName")).to_have_value("Prueba táctil")
+        expect(page.locator("#temp2")).to_have_value("80")
+        self.assertTrue(page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171813" />
     <title>Blossom Brew Lab · Calculadora de recetas</title>
-    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.2.0" />
   </head>
   <body>
     <header class="hero">
@@ -17,7 +17,7 @@
             </div>
             <div class="tag">SPECIALTY COFFEE</div>
           </div>
-          <div class="version">BREW LAB · V1.1</div>
+          <div class="version">BREW LAB · V1.2</div>
         </div>
         <h1>Precisión que florece en cada taza.</h1>
         <p>
@@ -47,9 +47,15 @@
                   <label for="preset">Receta de referencia o guardada</label
                   ><select id="preset"></select>
                 </div>
-                <div class="field wide" id="recipeNameField" hidden>
-                  <label for="recipeName">Nombre de la receta guardada</label>
-                  <input id="recipeName" type="text" maxlength="100" />
+                <div class="field wide" id="recipeNameField">
+                  <label for="recipeName">Nombre para guardar la receta</label>
+                  <input
+                    id="recipeName"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Ej.: Mi receta V60"
+                    autocomplete="off"
+                  />
                 </div>
                 <div class="field">
                   <label for="method">Método</label
@@ -139,7 +145,7 @@
                     value="240"
                   />
                 </div>
-                <div class="field">
+                <div class="field wide">
                   <label for="targetRatio">Ratio objetivo (1:X)</label
                   ><input
                     id="targetRatio"
@@ -151,7 +157,7 @@
                   />
                 </div>
                 <div class="field">
-                  <label for="temp">Temperatura (°C)</label
+                  <label for="temp">Temperatura 1 (°C)</label
                   ><input
                     id="temp"
                     type="number"
@@ -161,6 +167,21 @@
                     value="92"
                   />
                 </div>
+                <div class="field">
+                  <label for="temp2">Temperatura 2 (°C)</label>
+                  <input
+                    id="temp2"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    placeholder="Sin segunda temperatura"
+                  />
+                </div>
+                <p class="hint" id="temp2Hint">
+                  Deja Temperatura 2 vacía si toda la preparación usa una sola
+                  temperatura.
+                </p>
                 <div class="field">
                   <label for="bloom">Bloom (segundos)</label
                   ><input
@@ -217,6 +238,21 @@
                   Actualizar receta guardada
                 </button>
               </div>
+              <p
+                class="status"
+                id="recipeFeedback"
+                role="status"
+                tabindex="-1"
+                hidden
+              ></p>
+              <button
+                class="btn"
+                id="downloadPendingRecipe"
+                type="button"
+                hidden
+              >
+                Descargar respaldo JSON
+              </button>
               <p class="note" id="recipeStatus" role="status"></p>
               <div class="note" style="margin-top: 11px">
                 Al cambiar la dosis, puedes recalcular el agua mediante el ratio
@@ -301,8 +337,17 @@
                   <div class="unit">g de café</div>
                 </div>
                 <div class="metric">
-                  <div class="lbl">Temperatura</div>
-                  <div class="num" id="tempOut">92°</div>
+                  <div class="lbl">Temperaturas</div>
+                  <div class="temperature-values">
+                    <div>
+                      <span class="mini">T1</span>
+                      <div class="num" id="tempOut">92°</div>
+                    </div>
+                    <div id="temp2Metric" hidden>
+                      <span class="mini">T2</span>
+                      <div class="num" id="temp2Out">—</div>
+                    </div>
+                  </div>
                   <div class="unit">Celsius</div>
                 </div>
               </div>
@@ -510,17 +555,17 @@
         </div>
       </section>
       <div class="footer">
-        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.1 · Herramienta experimental para
+        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.2 · Herramienta experimental para
         preparación y análisis sensorial
       </div>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js" defer></script>
-    <script src="src/plans.js" defer></script>
-    <script src="src/recipes.js" defer></script>
-    <script src="src/storage.js" defer></script>
-    <script src="src/transfers.js" defer></script>
-    <script src="src/pour-editor.js" defer></script>
-    <script src="src/app.js" defer></script>
+    <script src="src/calculations.js?v=1.2.0" defer></script>
+    <script src="src/plans.js?v=1.2.0" defer></script>
+    <script src="src/recipes.js?v=1.2.0" defer></script>
+    <script src="src/storage.js?v=1.2.0" defer></script>
+    <script src="src/transfers.js?v=1.2.0" defer></script>
+    <script src="src/pour-editor.js?v=1.2.0" defer></script>
+    <script src="src/app.js?v=1.2.0" defer></script>
   </body>
 </html>
