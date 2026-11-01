@@ -54,6 +54,13 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Conservar las ediciones al cancelar y evitar un borrado aparente si falla el almacenamiento.
 - [x] Cerrar la confirmación al cambiar de receta y recuperar una selección válida al recargar.
 
+## V1.4 — grosor en micrones
+
+- [x] Añadir «Avanzado (opcional)» debajo del grosor de molienda, con un campo numérico en µm.
+- [x] Permitir registrar micrones sin categoría ni molino, sin conversiones automáticas.
+- [x] Guardar, editar y recuperar el valor en recetas, bitácora y respaldos JSON/CSV, conservando los datos anteriores.
+- [x] Validar valores positivos o vacíos y conservar las sesiones anteriores al editar una receta.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

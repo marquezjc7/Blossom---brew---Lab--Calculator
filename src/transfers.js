@@ -29,6 +29,15 @@
     for (const item of [...data.recipes, ...data.sessions]) {
       if (
         item &&
+        item.grindMicrons != null &&
+        (!Number.isFinite(item.grindMicrons) || item.grindMicrons <= 0)
+      ) {
+        throw new Error(
+          "El grosor en µm debe ser un número mayor que 0, o quedar sin especificar.",
+        );
+      }
+      if (
+        item &&
         item.temp2 != null &&
         (!Number.isFinite(item.temp2) || item.temp2 < 0 || item.temp2 > 100)
       ) {
@@ -81,6 +90,7 @@
       "grosor_molienda",
       "vertidos_despues_bloom",
       "temperatura_2_C",
+      "grosor_molienda_um",
     ];
     const rows = sessions.map((session) => [
       session.date,
@@ -103,6 +113,7 @@
       session.grindSize ?? "",
       getPourCount(session) ?? "",
       session.temp2 ?? "",
+      session.grindMicrons ?? "",
     ]);
     return (
       "\uFEFF" +

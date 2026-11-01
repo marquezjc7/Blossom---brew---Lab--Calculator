@@ -185,6 +185,25 @@ label {
   color: var(--muted);
   font-weight: 400;
 }
+.grinding-advanced {
+  grid-column: 1/-1;
+  padding: 14px;
+  border: 1px solid #e7e0d5;
+  border-radius: 9px;
+  background: #f7f3ec;
+}
+.grinding-advanced summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 690;
+  color: #4e5047;
+}
+.grinding-advanced[open] > .field {
+  margin-top: 14px;
+}
+.grinding-advanced .hint {
+  margin: 2px 0 0;
+}
 .field input,
 .field select,
 .field textarea {

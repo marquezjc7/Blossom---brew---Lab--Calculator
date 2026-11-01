@@ -1,10 +1,10 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.3)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.4)
 
 **Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
-La V1.3 permite actualizar y eliminar recetas personalizadas con confirmación en la página. Conserva las dos temperaturas, la edición de vertidos y tiempos, el guardado con nombre dentro del formulario y los respaldos V1. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
+La V1.4 añade un grosor opcional en micrones a las recetas, la bitácora y los respaldos. Conserva la actualización y eliminación de recetas, las dos temperaturas y la edición de vertidos y tiempos. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
 
@@ -98,13 +98,13 @@ El guardado verifica que el navegador haya almacenado la receta y muestra una co
 
 Abrir **Editar vertidos** sin cambiar nada no impide guardar. Si editas los pesos o tiempos, **Revisar vertidos pendientes** te lleva a **Aplicar plan** y **Cancelar**. Un intento de guardado también muestra esas acciones: aplica para conservar los cambios o cancela para descartar solo esa edición; después guarda la receta. El nombre, las temperaturas y los demás parámetros se conservan al cancelar el editor.
 
-Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 16 columnas y agrega `molino`, `grosor_molienda`, `vertidos_despues_bloom` y `temperatura_2_C` al final; usa JSON para transferir planes y tiempos completos.
+Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 20 columnas y añade `grosor_molienda_um` al final; usa JSON para transferir planes y tiempos completos.
 
 ## Dos temperaturas
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.3.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.4.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 
@@ -122,11 +122,14 @@ En **Diseña tu preparación** se registran tres datos independientes:
 
 - **Molino:** Comandante C40, Mazzer Philos I200D u otro modelo que puedes escribir.
 - **Grosor de molienda:** fina, media fina, media, media gruesa, gruesa o extra gruesa. Esta descripción orientativa ayuda a compartir la receta entre personas con equipos distintos.
+- **Avanzado (opcional):** debajo del grosor, despliega la sección e introduce **Grosor de molienda en µm**. Acepta un número mayor que cero, incluidos decimales, o puede quedar vacío. No exige seleccionar una categoría de grosor ni indicar un molino.
 - **Ajuste del molino:** texto opcional para registrar los clics y la configuración del C40 o la posición del dial del Philos.
 
-No se convierte automáticamente un número en un grosor ni entre molinos. Al cambiar de modelo se vacía el ajuste para que lo registres en la escala del nuevo equipo; el grosor elegido se conserva. Las recetas y sesiones incluyen los tres datos, y cada sesión mantiene su propia referencia aunque edites la receta después.
+No se convierte automáticamente un número en un grosor ni entre molinos. Al cambiar de modelo se vacía el ajuste para que lo registres en la escala del nuevo equipo; el grosor elegido y los micrones se conservan. Los micrones son una referencia orientativa introducida por el usuario, no una conversión del dial o los clics. Cada sesión mantiene su propia referencia aunque edites la receta después.
 
 Los respaldos antiguos que solo contienen `grind` conservan ese ajuste. Si no incluyen el molino o el grosor, estos aparecen como **Sin especificar**, sin atribuir un modelo o una molienda al número guardado. Los campos opcionales `grinder` y `grindSize` se conservan en los respaldos JSON. En CSV, `molienda` mantiene el ajuste original y las dos nuevas columnas indican el modelo y el grosor por separado.
+
+El campo opcional `grindMicrons` conserva el valor numérico en recetas, sesiones y JSON; vacío se guarda como `null`. Los archivos anteriores sin este campo siguen funcionando sin asignar micrones a los ajustes guardados. Se rechazan valores no numéricos o no positivos antes de importar un respaldo. La bitácora muestra los micrones cuando se registran y el CSV los añade en `grosor_molienda_um`. Al seleccionar una receta con micrones, la sección avanzada se abre para que el dato quede visible.
 
 ## Cálculos
 

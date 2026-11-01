@@ -122,6 +122,7 @@
     flash(message);
     setTab("recipe");
     const field = fieldId ? $(fieldId) : null;
+    if (field?.closest("details")) field.closest("details").open = true;
     if (field?.closest(".field")) {
       const error = document.createElement("span");
       error.id = field.id + "Error";
@@ -191,6 +192,10 @@
           ? $("otherGrinder").value.trim()
           : $("grinder").value,
       grindSize: $("grindSize").value,
+      grindMicrons:
+        $("grindMicrons").value === "" && !$("grindMicrons").validity.badInput
+          ? null
+          : $("grindMicrons").valueAsNumber,
     };
   }
   function updateGrindingFields() {
@@ -243,6 +248,7 @@
       "bloom",
       "time",
       "grind",
+      "grindMicrons",
     ])
       $(id).value = r[id] ?? "";
     const grinder = typeof r.grinder === "string" ? r.grinder : "";
@@ -254,6 +260,7 @@
     $("otherGrinder").value =
       grinder && !builtInGrinders.includes(grinder) ? grinder : "";
     $("grindSize").value = r.grindSize ?? "";
+    $("grindingAdvanced").open = r.grindMicrons != null;
     $("pourCount").value = getPourCount(r) ?? "";
     updateGrindingFields();
     $("targetRatio").value = r.ratio ?? r.water / r.dose;
@@ -410,6 +417,12 @@
         "temp2",
       ],
       [
+        r.grindMicrons !== null &&
+          (!Number.isFinite(r.grindMicrons) || r.grindMicrons <= 0),
+        "El grosor en µm debe ser un número mayor que 0, o quedar vacío.",
+        "grindMicrons",
+      ],
+      [
         !Number.isInteger(r.bloom) || r.bloom < 0 || r.bloom > 900,
         "El bloom debe ser un número entero entre 0 y 900 segundos.",
         "bloom",
@@ -564,7 +577,11 @@
           Array.isArray(s.pours) && s.pours.length
             ? `<details class="session-plan"><summary>Ver vertidos registrados</summary><ol>${s.pours.map((weight, index) => `<li>${nf(Number(weight), 2)} g acumulados · ${formatTime(s.pourTimes?.[index]) ? `inicio ${formatTime(s.pourTimes[index])}` : "inicio sin registrar"}</li>`).join("")}</ol></details>`
             : "";
-        const grinding = `<div class="logmeta grinding-summary">Molino: ${escapeHtml(s.grinder || "sin especificar")} · Molienda: ${escapeHtml(s.grindSize || "sin especificar")}${s.grind ? ` · Ajuste: ${escapeHtml(s.grind)}` : ""}</div>`;
+        const microns =
+          Number.isFinite(s.grindMicrons) && s.grindMicrons > 0
+            ? ` · Grosor: ${s.grindMicrons.toLocaleString("es-ES", { maximumSignificantDigits: 15 })} µm`
+            : "";
+        const grinding = `<div class="logmeta grinding-summary">Molino: ${escapeHtml(s.grinder || "sin especificar")} · Molienda: ${escapeHtml(s.grindSize || "sin especificar")}${s.grind ? ` · Ajuste: ${escapeHtml(s.grind)}` : ""}${microns}</div>`;
         const count = `<div class="logmeta pour-count-summary">Vertidos después del bloom: ${getPourCount(s) ?? "sin especificar"}</div>`;
         return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · T1 ${nf(Number(s.temp))} °C${s.temp2 == null ? "" : ` · T2 ${nf(Number(s.temp2))} °C`} · ${escapeHtml(s.time)}</div>${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
       })
@@ -663,6 +680,7 @@
       "method",
       "grind",
       "grindSize",
+      "grindMicrons",
       "otherGrinder",
       "dose",
       "water",

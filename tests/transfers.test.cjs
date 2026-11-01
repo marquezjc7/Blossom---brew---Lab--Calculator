@@ -40,20 +40,20 @@ test("rechaza JSON ilegible, formatos ajenos y colecciones ausentes", () => {
   }
 });
 
-test("el CSV conserva las columnas anteriores y agrega el número de vertidos al final", () => {
+test("el CSV conserva las columnas anteriores y agrega los micrones al final", () => {
   const csv = sessionsToCsv([]);
   assert.ok(csv.startsWith('\uFEFF"fecha","cafe"'));
-  assert.equal(csv.slice(1).split(",").length, 20);
+  assert.equal(csv.slice(1).split(",").length, 21);
   assert.ok(
     csv.endsWith(
-      '"notas","molino","grosor_molienda","vertidos_despues_bloom","temperatura_2_C"',
+      '"notas","molino","grosor_molienda","vertidos_despues_bloom","temperatura_2_C","grosor_molienda_um"',
     ),
   );
   const cells = sessionsToCsv([{ grind: "116" }])
     .split("\r\n")[1]
     .split(",");
   assert.equal(cells[7], '"116"');
-  assert.deepEqual(cells.slice(16), ['""', '""', '""', '""']);
+  assert.deepEqual(cells.slice(16), ['""', '""', '""', '""', '""']);
 });
 
 test("JSON conserva molino, grosor y ajuste en recetas y sesiones", () => {
@@ -69,7 +69,7 @@ test("JSON conserva molino, grosor y ajuste en recetas y sesiones", () => {
   assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
   assert.ok(
     sessionsToCsv([grinding]).endsWith(
-      ',"Mazzer Philos I200D","Media fina","",""',
+      ',"Mazzer Philos I200D","Media fina","","",""',
     ),
   );
 });
@@ -156,9 +156,9 @@ test("CSV distingue un número desconocido, cero y un plan antiguo conocido", ()
   ])
     .split("\r\n")
     .slice(1);
-  assert.ok(rows[0].endsWith(',""'));
-  assert.ok(rows[1].endsWith(',"0",""'));
-  assert.ok(rows[2].endsWith(',"2",""'));
+  assert.equal(rows[0].split(",")[18], '""');
+  assert.equal(rows[1].split(",")[18], '"0"');
+  assert.equal(rows[2].split(",")[18], '"2"');
 });
 
 test("los respaldos conservan dos temperaturas y los archivos anteriores siguen sin T2", () => {
@@ -188,7 +188,48 @@ test("el CSV conserva temperatura 1 en su columna y distingue T2 vacía de cero"
     .split("\r\n")
     .slice(1);
   assert.equal(rows[0].split(",")[6], '"92"');
-  assert.ok(rows[0].endsWith(',""'));
-  assert.ok(rows[1].endsWith(',"0"'));
-  assert.ok(rows[2].endsWith(',"85"'));
+  assert.equal(rows[0].split(",")[19], '""');
+  assert.equal(rows[1].split(",")[19], '"0"');
+  assert.equal(rows[2].split(",")[19], '"85"');
+});
+
+test("conserva micrones en JSON y CSV sin asignarlos a datos anteriores", () => {
+  const backup = createBackup(
+    [{ name: "Solo micrones", grindMicrons: 700.5 }],
+    [{ coffee: "Mi café", grindMicrons: 700.5 }],
+  );
+  assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
+  const old = createBackup([{ grind: "116" }], [{ grind: "116" }]);
+  assert.deepEqual(parseBackup(JSON.stringify(old)), old);
+  const rows = sessionsToCsv([
+    {},
+    { grindMicrons: null },
+    { grindMicrons: 700.5 },
+  ])
+    .split("\r\n")
+    .slice(1);
+  assert.equal(rows[0].split(",")[20], '""');
+  assert.equal(rows[1].split(",")[20], '""');
+  assert.equal(rows[2].split(",")[20], '"700.5"');
+});
+
+test("rechaza micrones no numéricos o no positivos en recetas y sesiones importadas", () => {
+  for (const grindMicrons of [0, -1, "700", {}, []]) {
+    for (const [recipes, sessions] of [
+      [[{ grindMicrons }], []],
+      [[], [{ grindMicrons }]],
+    ]) {
+      assert.throws(
+        () => parseBackup(JSON.stringify(createBackup(recipes, sessions))),
+        /grosor en µm/,
+      );
+    }
+  }
+  assert.throws(
+    () =>
+      parseBackup(
+        '{"format":"blossom-brew-lab-v1","recipes":[{"grindMicrons":1e309}],"sessions":[]}',
+      ),
+    /grosor en µm/,
+  );
 });

@@ -249,8 +249,8 @@ class BrowserTests(unittest.TestCase):
         self.page.click("#saveSession")
         rows = list(csv.reader(io.StringIO(self.download_text("#downloadCsv"))))
         self.assertEqual(len(rows), 2)
-        self.assertEqual(len(rows[1]), 20)
-        self.assertEqual(rows[0][15:], ["notas", "molino", "grosor_molienda", "vertidos_despues_bloom", "temperatura_2_C"])
+        self.assertEqual(len(rows[1]), 21)
+        self.assertEqual(rows[0][15:], ["notas", "molino", "grosor_molienda", "vertidos_despues_bloom", "temperatura_2_C", "grosor_molienda_um"])
         self.assertEqual(rows[1][15], notes)
         self.assertEqual(rows[1][9:12], ["", "", ""])
 
@@ -621,6 +621,8 @@ class BrowserTests(unittest.TestCase):
         expect(self.page.locator("#grinder")).to_have_value("")
         expect(self.page.locator("#grindSize")).to_have_value("")
         expect(self.page.locator("#grind")).to_have_value("120")
+        expect(self.page.locator("#grindMicrons")).to_have_value("")
+        expect(self.page.locator("#grindMicrons")).to_be_hidden()
         self.assertEqual(self.stored(RECIPE_KEY), [LEGACY_RECIPE])
 
     def test_grinder_and_size_persist_and_switching_model_clears_only_the_setting(self):
@@ -710,6 +712,91 @@ class BrowserTests(unittest.TestCase):
                 saved = self.stored(RECIPE_KEY)[0]
                 self.assertEqual(saved["grindSize"], size)
                 self.assertEqual(saved["grind"], "24")
+
+    def test_microns_can_be_used_without_a_grind_category_and_keep_history(self):
+        self.page.set_viewport_size({"width": 375, "height": 812})
+        expect(self.page.locator("#grindingAdvanced summary")).to_have_text("Avanzado (opcional)")
+        expect(self.page.locator("#grindMicrons")).to_be_hidden()
+        self.page.click("#grindingAdvanced summary")
+        expect(self.page.locator('label[for="grindMicrons"]')).to_have_text("Grosor de molienda en µm")
+        self.page.fill("#grindMicrons", "700.5")
+        recipe_id = self.create_custom_recipe("Receta en micrones")
+        self.page.reload()
+        expect(self.page.locator("#preset")).to_have_value(recipe_id)
+        expect(self.page.locator("#grindMicrons")).to_be_visible()
+        expect(self.page.locator("#grindMicrons")).to_have_value("700.5")
+        expect(self.page.locator("#grindSize")).to_have_value("")
+        expect(self.page.locator("#grinder")).to_have_value("")
+        expect(self.page.locator("#grind")).to_have_value("116")
+        self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+        self.tab("journal")
+        self.page.click("#saveSession")
+        session = self.stored(SESSION_KEY)[0]
+        self.assertEqual(session["grindMicrons"], 700.5)
+        expect(self.page.locator(".grinding-summary")).to_contain_text("700,5 µm")
+        self.tab("recipe")
+        self.page.fill("#grindMicrons", "800")
+        self.page.click("#updateRecipe")
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["grindMicrons"], 800)
+        self.assertEqual(self.stored(SESSION_KEY)[0], session)
+
+    def test_microns_survive_grinder_changes_and_json_csv_round_trip(self):
+        self.page.click("#grindingAdvanced summary")
+        self.page.fill("#grindMicrons", "650")
+        self.page.select_option("#grinder", "Comandante C40")
+        self.page.fill("#grind", "24")
+        self.page.select_option("#grindSize", "Media fina")
+        expect(self.page.locator("#grindMicrons")).to_have_value("650")
+        recipe_id = self.create_custom_recipe("Referencia orientativa")
+        self.tab("journal")
+        self.page.click("#saveSession")
+        text = self.download_text("#exportJson")
+        backup = json.loads(text)
+        for data in [backup["recipes"][0], backup["sessions"][0]]:
+            self.assertEqual(data["grindMicrons"], 650)
+        rows = list(csv.reader(io.StringIO(self.download_text("#downloadCsv"))))
+        self.assertEqual(rows[0][20], "grosor_molienda_um")
+        self.assertEqual(rows[1][20], "650")
+        self.assertEqual(rows[1][7], "24")
+        self.tab("recipe")
+        self.page.fill("#grindMicrons", "900")
+        self.page.click("#updateRecipe")
+        self.tab("journal")
+        self.page.once("dialog", lambda dialog: dialog.accept())
+        self.page.locator("#fileImport").set_input_files({
+            "name": "micrones.json", "mimeType": "application/json", "buffer": text.encode(),
+        })
+        expect(self.page.locator("#toast")).to_contain_text("Respaldo importado con éxito")
+        self.tab("recipe")
+        self.page.select_option("#preset", recipe_id)
+        expect(self.page.locator("#grindMicrons")).to_have_value("650")
+        expect(self.page.locator("#grindSize")).to_have_value("Media fina")
+
+    def test_invalid_microns_reopen_advanced_without_overwriting_and_can_be_cleared(self):
+        self.create_custom_recipe("Micrones opcionales")
+        original = self.stored(RECIPE_KEY)
+        self.assertIsNone(original[0]["grindMicrons"])
+        self.page.click("#grindingAdvanced summary")
+        for invalid in ["0", "-10"]:
+            self.page.fill("#grindMicrons", invalid)
+            self.page.click("#grindingAdvanced summary")
+            self.page.click("#updateRecipe")
+            expect(self.page.locator("#grindMicrons")).to_be_visible()
+            expect(self.page.locator("#grindMicrons")).to_be_focused()
+            expect(self.page.locator("#recipeFeedback")).to_contain_text("mayor que 0")
+            self.assertEqual(self.stored(RECIPE_KEY), original)
+        self.page.fill("#grindMicrons", "650")
+        self.page.click("#updateRecipe")
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["grindMicrons"], 650)
+        self.page.fill("#grindMicrons", "")
+        self.page.click("#updateRecipe")
+        self.assertIsNone(self.stored(RECIPE_KEY)[0]["grindMicrons"])
+        self.page.reload()
+        expect(self.page.locator("#grindMicrons")).to_have_value("")
+        expect(self.page.locator("#grindMicrons")).to_be_hidden()
+        self.tab("journal")
+        self.page.click("#saveSession")
+        expect(self.page.locator(".grinding-summary")).not_to_contain_text("µm")
 
     def test_new_methods_can_be_saved_reloaded_and_recorded(self):
         for method in ["Solo Spin", "Orea", "Paragon"]:
@@ -816,7 +903,7 @@ class BrowserTests(unittest.TestCase):
             self.assertEqual(data["temp2"], 85)
         rows = list(csv.reader(io.StringIO(self.download_text("#downloadCsv"))))
         self.assertEqual(rows[1][6], "94")
-        self.assertEqual(rows[1][-1], "85")
+        self.assertEqual(rows[1][19], "85")
         self.page.once("dialog", lambda dialog: dialog.accept())
         self.page.locator("#fileImport").set_input_files({
             "name": "temperaturas.json", "mimeType": "application/json", "buffer": text.encode(),
