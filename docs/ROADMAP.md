@@ -41,7 +41,8 @@ La interfaz se identifica como V1.1. El formato de respaldo sigue siendo V1 con 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.
 - [x] Elegir GitHub Pages como alojamiento público y preparar la publicación con HTTPS, condicionada a las pruebas.
 - [x] Hacer público el repositorio con autorización del propietario y seleccionar GitHub Actions como fuente de Pages.
-- [ ] Verificar la dirección publicada y el manejo de respaldos al cambiar de origen.
+- [x] Completar la publicación y confirmar la carga de la dirección HTTPS en Safari de computadora y en teléfono, según la prueba del propietario.
+- [ ] Comprobar guardado, recarga y traslado de respaldos JSON entre los dispositivos del propietario.
 - [ ] Evaluar instalación como PWA y uso sin conexión después de la primera visita.
 
 Publicar una web y sincronizar datos son tareas distintas. La sincronización requiere definir cuentas, almacenamiento compartido y privacidad antes de implementarla.

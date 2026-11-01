@@ -2,6 +2,12 @@
 
 El sitio se prepara para GitHub Pages con HTTPS y acceso público. Las recetas y sesiones siguen almacenadas en el navegador de cada persona. No se envían a GitHub ni se sincronizan entre dispositivos.
 
+## Estado de la publicación
+
+Dirección pública: [Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
+
+[La ejecución de publicación](https://github.com/marquezjc7/Blossom---brew---Lab--Calculator/actions/runs/41269684345) terminó con estado **Success**. El propietario confirmó que el enlace carga tanto en Safari de computadora como en su teléfono. La prueba completa de guardado y traslado de respaldos entre esos dispositivos queda como siguiente comprobación de uso.
+
 ## Activación inicial
 
 Esta configuración se realiza una vez en GitHub, con una cuenta que pueda administrar el repositorio:

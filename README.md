@@ -2,6 +2,8 @@
 
 **Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
 
+**Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
+
 La V1.1 incorpora edición de recetas personalizadas, pesos acumulados y tiempos opcionales de inicio de vertidos. Conserva las recetas de referencia, los datos guardados y los respaldos V1. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
