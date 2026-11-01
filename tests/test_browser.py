@@ -6,6 +6,7 @@ import io
 import json
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import threading
 import unittest
@@ -280,12 +281,31 @@ class BrowserTests(unittest.TestCase):
                 ))
 
     def test_local_file_opens_without_network_and_calculates(self):
-        self.context.set_offline(True)
+        # Blocking network requests proves local-file independence without
+        # WebKit's offline emulation also disabling the file navigation itself.
+        self.context.route("http://**/*", lambda route: route.abort())
+        self.context.route("https://**/*", lambda route: route.abort())
         try:
             self.page.goto((ROOT / "index.html").as_uri())
         except Error as error:
             if "net::ERR_BLOCKED_BY_ADMINISTRATOR" in str(error):
                 self.skipTest("La política del navegador administrado bloquea file://; no se altera esa política")
+            if os.environ.get("BLOSSOM_BROWSER") == "webkit" and "internal error" in str(error):
+                # Only classify this as a runner limitation if an independent,
+                # minimal HTML file also fails. An application-only failure
+                # must remain a failure of this test.
+                with TemporaryDirectory(prefix="blossom-file-probe-") as directory:
+                    minimal = Path(directory) / "probe.html"
+                    minimal.write_text("<!doctype html><title>File probe</title><p>Local file</p>")
+                    probe = self.context.new_page()
+                    try:
+                        probe.goto(minimal.as_uri())
+                    except Error as minimal_error:
+                        if "internal error" in str(minimal_error):
+                            self.skipTest("El WebKit del runner no abre file:// ni con HTML mínimo; los flujos web siguen comprobándose")
+                        raise
+                    finally:
+                        probe.close()
             raise
         expect(self.page.locator("#preset option")).to_have_count(3)
         self.page.fill("#dose", "18")

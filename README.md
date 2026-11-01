@@ -62,6 +62,8 @@ La suite inicia y cierra su propio servidor en un puerto libre y usa un perfil n
 
 También prueba la apertura directa de archivos. Si una política del navegador administrado prohíbe `file://`, ese caso se informa como **omitido**, sin cambiar la política ni contarlo como aprobado. Las demás pruebas siguen ejecutándose.
 
+Para ese caso se bloquean las solicitudes HTTP/HTTPS, en lugar de usar la emulación de desconexión que también puede impedir la navegación `file://` de WebKit. Si el WebKit del runner no consigue abrir ni un archivo HTML mínimo independiente, se informa la limitación como omitida. Un fallo que solo ocurra con la aplicación sigue siendo un fallo. La apertura web, el uso sin conexión después de cargar y el guardado continúan comprobándose en ambos motores.
+
 El flujo `.github/workflows/tests.yml` está preparado para ejecutar ambas suites en GitHub Actions al subir cambios o abrir una pull request.
 
 ## Acceso web con GitHub Pages
