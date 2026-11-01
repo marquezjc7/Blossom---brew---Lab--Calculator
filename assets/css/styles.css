@@ -127,6 +127,22 @@ textarea:focus-visible {
 .panel.active {
   display: block;
 }
+.cloud-account {
+  margin-bottom: 18px;
+}
+.cloud-sign-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+}
+.cloud-sign-in .field {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.cloud-sign-in .btn {
+  min-height: 42px;
+}
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr);

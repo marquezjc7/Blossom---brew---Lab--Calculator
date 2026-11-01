@@ -67,6 +67,15 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Mantener Bourbon Lavado como referencia y recuperar una selección válida si estaba seleccionada alguna de las retiradas.
 - [x] Conservar las recetas personales, las sesiones y las pruebas de recetas con planes incompletos.
 
+## V1.5 — sincronización preparada
+
+- [x] Preparar acceso por enlace de correo y sincronización privada de recetas y bitácora.
+- [x] Incorporar las recetas locales al conectar la cuenta y conservar cambios pendientes sin conexión.
+- [x] Proteger las ediciones sin guardar, propagar borrados y conservar ambas versiones ante ediciones simultáneas.
+- [x] Probar permisos entre cuentas y acceso anónimo mediante PostgreSQL embebido, además del contrato de dos navegadores.
+- [ ] Conectar el proyecto de Supabase del propietario, aplicar el esquema y configurar el correo y la URL pública.
+- [ ] Publicar la configuración y verificar inicio de sesión y sincronización con el servicio real en computadora y teléfono.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

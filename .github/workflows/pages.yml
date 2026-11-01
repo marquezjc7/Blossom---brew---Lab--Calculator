@@ -31,6 +31,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Preparar solo los archivos de la aplicación
+        env:
+          BLOSSOM_SUPABASE_URL: ${{ vars.BLOSSOM_SUPABASE_URL }}
+          BLOSSOM_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BLOSSOM_SUPABASE_PUBLISHABLE_KEY }}
         run: python scripts/prepare_pages.py
       - name: Leer la configuración de GitHub Pages
         uses: actions/configure-pages@v5

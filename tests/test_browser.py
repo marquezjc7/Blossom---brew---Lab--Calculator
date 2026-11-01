@@ -12,6 +12,7 @@ import threading
 import unittest
 
 from playwright.sync_api import Error, sync_playwright, expect
+from cloud_mock import MockCloud
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1096,6 +1097,158 @@ class BrowserTests(unittest.TestCase):
         self.page.select_option("#preset", second)
         expect(self.page.locator("#deleteRecipePanel")).to_be_hidden()
         self.assertEqual(len(self.stored(RECIPE_KEY)), 2)
+
+    def test_failed_import_does_not_partially_replace_existing_collections(self):
+        self.seed_legacy_data()
+        self.page.evaluate("""() => {
+            const original = Storage.prototype.setItem;
+            Storage.prototype.setItem = function(key, value) {
+                if (key === 'blossom-brew-sessions-v1') throw new Error('QuotaExceededError');
+                return original.call(this, key, value);
+            };
+        }""")
+        self.tab("journal")
+        self.page.once("dialog", lambda dialog: dialog.accept())
+        self.page.locator("#fileImport").set_input_files({
+            "name": "otra-copia.json", "mimeType": "application/json",
+            "buffer": json.dumps({"format": "blossom-brew-lab-v1", "recipes": [{**LEGACY_RECIPE, "name": "Otra receta"}], "sessions": []}).encode(),
+        })
+        expect(self.page.locator("#toast")).to_contain_text("No se pudo guardar el respaldo")
+        self.assertEqual(self.stored(RECIPE_KEY), [LEGACY_RECIPE])
+        self.assertEqual(self.stored(SESSION_KEY), [LEGACY_SESSION])
+
+    def enable_cloud(self, backend=None):
+        backend = backend or MockCloud()
+        backend.attach(self.context)
+        self.page.reload()
+        expect(self.page.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        return backend
+
+    def cloud_phone(self, backend):
+        context = self.browser.new_context(locale="es-ES", viewport={"width": 375, "height": 812})
+        self.addCleanup(context.close)
+        backend.attach(context)
+        page = context.new_page()
+        page.on("pageerror", lambda error: self.errors.append(str(error)))
+        page.goto(self.base_url)
+        expect(page.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        return page
+
+    def wait_cloud_saved(self, page=None):
+        page = page or self.page
+        expect(page.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        expected = page.evaluate("""async () => {
+            const state = JSON.parse(localStorage.getItem('blossom-brew-cloud-state-v1'));
+            const entries = await BlossomLab.sync.snapshot({
+                recipes: JSON.parse(localStorage.getItem('blossom-brew-recipes-v1')) || [],
+                sessions: JSON.parse(localStorage.getItem('blossom-brew-sessions-v1')) || [],
+            });
+            const hashes = Object.fromEntries(entries.map(entry => [JSON.stringify([entry.kind, entry.id]), entry.hash]));
+            for (const key of Object.keys(state.base)) if (!(key in hashes)) hashes[key] = null;
+            return hashes;
+        }""")
+        page.wait_for_function("""expected => {
+            const state = JSON.parse(localStorage.getItem('blossom-brew-cloud-state-v1'));
+            return state && !state.batch && Object.entries(expected).every(([key, hash]) => state.base[key]?.hash === hash);
+        }""", arg=expected)
+
+    def test_cloud_sync_migrates_personal_data_updates_and_deletes_between_browsers(self):
+        self.page.click("#grindingAdvanced summary")
+        self.page.fill("#grindMicrons", "700")
+        recipe_id = self.create_custom_recipe("Receta de computadora")
+        self.tab("journal")
+        self.page.fill("#notes", "Sesión que viaja entre dispositivos")
+        self.page.click("#saveSession")
+        self.tab("recipe")
+        backend = self.enable_cloud()
+        phone = self.cloud_phone(backend)
+        expect(phone.locator("#preset option")).to_have_text(["Bourbon Lavado · Baseline", "Receta de computadora"])
+        phone.select_option("#preset", recipe_id)
+        expect(phone.locator("#grindMicrons")).to_have_value("700")
+        self.page.fill("#recipeName", "Receta actualizada")
+        self.page.fill("#grindMicrons", "650")
+        self.page.click("#updateRecipe")
+        expect(self.page.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        self.wait_cloud_saved()
+        phone.evaluate("window.dispatchEvent(new Event('focus'))")
+        expect(phone.locator("#recipeName")).to_have_value("Receta actualizada")
+        expect(phone.locator("#grindMicrons")).to_have_value("650")
+        phone.fill("#recipeName", "Receta creada en teléfono")
+        phone.click("#saveRecipe")
+        expect(phone.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        self.wait_cloud_saved(phone)
+        self.page.evaluate("window.dispatchEvent(new Event('focus'))")
+        expect(self.page.locator("#preset option")).to_have_count(3)
+        self.page.click("#deleteRecipe")
+        self.page.click("#confirmDeleteRecipe")
+        self.wait_cloud_saved()
+        phone.evaluate("window.dispatchEvent(new Event('focus'))")
+        expect(phone.locator("#preset option")).to_have_text(["Bourbon Lavado · Baseline", "Receta creada en teléfono"])
+        phone.locator('[data-tab="journal"]').click()
+        expect(phone.locator("#sessions")).to_contain_text("Sesión que viaja entre dispositivos")
+        self.assertTrue(phone.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+
+    def test_cloud_pending_edits_survive_offline_reload_and_upload_on_reconnect(self):
+        recipe_id = self.create_custom_recipe("Receta antes de desconectar")
+        backend = self.enable_cloud()
+        backend.offline = True
+        self.page.fill("#recipeName", "Guardada sin conexión")
+        self.page.click("#updateRecipe")
+        expect(self.page.locator("#cloudStatus")).to_contain_text("No se pudo conectar")
+        self.page.reload()
+        expect(self.page.locator("#recipeName")).to_have_value("Guardada sin conexión")
+        expect(self.page.locator("#cloudStatus")).to_contain_text("No se pudo conectar")
+        backend.offline = False
+        self.page.evaluate("window.dispatchEvent(new Event('online'))")
+        expect(self.page.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        phone = self.cloud_phone(backend)
+        phone.select_option("#preset", recipe_id)
+        expect(phone.locator("#recipeName")).to_have_value("Guardada sin conexión")
+
+    def test_cloud_does_not_replace_an_unsaved_recipe_and_preserves_both_edits(self):
+        recipe_id = self.create_custom_recipe("Receta compartida")
+        backend = self.enable_cloud()
+        phone = self.cloud_phone(backend)
+        phone.select_option("#preset", recipe_id)
+        phone.fill("#recipeName", "Cambios en teléfono")
+        self.page.fill("#recipeName", "Cambios en computadora")
+        self.page.click("#updateRecipe")
+        self.wait_cloud_saved()
+        phone.evaluate("window.dispatchEvent(new Event('focus'))")
+        expect(phone.locator("#cloudStatus")).to_contain_text("Guarda o cancela")
+        expect(phone.locator("#recipeName")).to_have_value("Cambios en teléfono")
+        phone.click("#updateRecipe")
+        expect(phone.locator("#recipeFeedback")).to_contain_text("copia conservada")
+        expect(phone.locator("#preset option")).to_have_text([
+            "Bourbon Lavado · Baseline", "Cambios en computadora", "Cambios en teléfono · copia conservada",
+        ])
+
+    def test_cloud_sign_out_keeps_local_recipes_and_does_not_auto_sign_in_after_reload(self):
+        self.create_custom_recipe("Receta que permanece local")
+        self.enable_cloud()
+        original = self.stored(RECIPE_KEY)
+        self.page.click("#cloudSignOut")
+        expect(self.page.locator("#cloudStatus")).to_contain_text("Sesión cerrada")
+        self.page.reload()
+        expect(self.page.locator("#cloudSignIn")).to_be_visible()
+        expect(self.page.locator("#cloudConnected")).to_be_hidden()
+        self.assertEqual(self.stored(RECIPE_KEY), original)
+
+    def test_cloud_email_link_is_verified_and_removed_from_the_address(self):
+        self.create_custom_recipe("Receta anterior a conectar la cuenta")
+        backend = MockCloud()
+        backend.attach(self.context, authenticated=False)
+        self.page.reload()
+        expect(self.page.locator("#cloudSignIn")).to_be_visible()
+        self.page.fill("#cloudEmail", "julio@example.com")
+        self.page.click("#cloudSendLink")
+        expect(self.page.locator("#cloudStatus")).to_contain_text("Revisa tu correo")
+        self.assertEqual(backend.calls[0]["email"], "julio@example.com")
+        self.page.goto(self.base_url + "#access_token=test-access&refresh_token=test-refresh&expires_in=3600")
+        expect(self.page.locator("#cloudConnected")).to_be_visible()
+        expect(self.page.locator("#cloudStatus")).to_contain_text("están sincronizadas")
+        self.assertNotIn("access_token", self.page.url)
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["name"], "Receta anterior a conectar la cuenta")
 
 
 if __name__ == "__main__":

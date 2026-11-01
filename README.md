@@ -1,10 +1,10 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.4.1)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.5)
 
-**Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
+**Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
-La V1.4.1 retira Bourbon Natural y Pacas Natural del catálogo de referencias, a petición del propietario. Bourbon Lavado continúa como referencia inicial. Se conservan las recetas personales, la bitácora y las funciones de molienda en micrones, dos temperaturas y edición de vertidos. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
+La V1.5 prepara la sincronización de recetas y bitácora mediante una cuenta por correo, conservando el guardado local y los datos anteriores. Requiere completar [la conexión del servicio de datos](docs/CLOUD_SYNC.md) antes de activarla en el sitio publicado. Bourbon Lavado continúa como referencia inicial. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
 
@@ -14,7 +14,7 @@ Puedes abrir `index.html` directamente, conservando las carpetas `assets/` y `sr
 python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
-El servidor solo entrega archivos locales; no es un backend y no sincroniza datos. Usa siempre el mismo navegador y origen para acceder a tus sesiones. Antes de cambiar de dispositivo, dirección o forma de apertura, exporta un respaldo JSON.
+El servidor solo entrega archivos locales. Sin configuración de nube, usa el mismo navegador y origen para acceder a tus sesiones y trasládalas mediante JSON. Con la nube configurada y una sesión iniciada, la aplicación sincroniza esos datos mediante Supabase.
 
 ## Organización del proyecto
 
@@ -27,6 +27,9 @@ El servidor solo entrega archivos locales; no es un backend y no sincroniza dato
 | `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio           |
 | `src/recipes.js`        | Catálogo de recetas de referencia                             |
 | `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1     |
+| `src/sync.js`           | Lotes persistentes, conciliación de cambios y sincronización  |
+| `src/cloud-api.js`      | Acceso por correo y conexión autenticada al servicio de datos |
+| `src/cloud-config.js`   | Configuración pública; vacía mantiene el funcionamiento local |
 | `src/transfers.js`      | Formato de respaldo JSON y generación de CSV                  |
 | `src/app.js`            | Interacciones, estado de la pantalla y renderizado            |
 | `tests/`                | Pruebas de lógica y recorridos completos en Chromium y WebKit |
@@ -35,9 +38,10 @@ Los scripts son locales y se cargan en orden con `defer`. Se usa el espacio de n
 
 ## Pruebas automáticas
 
-Para comprobar cálculos, almacenamiento y formatos de respaldo se necesita Node.js 20 o posterior. No hay que ejecutar `npm install`:
+Para comprobar cálculos, almacenamiento, respaldos y el esquema de sincronización se necesita Node.js 20 o posterior. PGlite es una dependencia de desarrollo para ejecutar PostgreSQL en las pruebas; no se incluye en la aplicación:
 
 ```bash
+npm ci --ignore-scripts
 npm test
 ```
 
@@ -47,16 +51,16 @@ Las pruebas de navegador usan Python 3.12 y Playwright. La instalación siguient
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python -m playwright install chromium webkit
-.venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v
+.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 En Linux puede ser necesario instalar las bibliotecas del navegador con `python -m playwright install --with-deps chromium` desde ese entorno virtual. Si ya tienes un Chromium compatible, puedes indicarlo sin descargar otro:
 
 ```bash
-BLOSSOM_BROWSER_EXECUTABLE=/usr/bin/chromium .venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v
+BLOSSOM_BROWSER_EXECUTABLE=/usr/bin/chromium .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-Para ejecutar la misma suite en WebKit: `BLOSSOM_BROWSER=webkit .venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v`. No establezcas `BLOSSOM_BROWSER_EXECUTABLE` al usar el WebKit descargado por Playwright. GitHub Actions ejecuta ambos motores en Ubuntu 24.04 y la publicación requiere que pasen los dos. WebKit comprueba el motor usado por Safari; las pruebas en un Safari y un teléfono reales siguen siendo una comprobación adicional.
+Para ejecutar la misma suite en WebKit: `BLOSSOM_BROWSER=webkit .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v`. No establezcas `BLOSSOM_BROWSER_EXECUTABLE` al usar el WebKit descargado por Playwright. GitHub Actions ejecuta ambos motores en Ubuntu 24.04 y la publicación requiere que pasen los dos. WebKit comprueba el motor usado por Safari; las pruebas en un Safari y un teléfono reales siguen siendo una comprobación adicional.
 
 La suite inicia y cierra su propio servidor en un puerto libre y usa un perfil nuevo por prueba. No necesita el servidor del puerto 8000 ni modifica los datos de tu navegador personal. Comprueba recetas, edición de vertidos y tiempos, actualización sin duplicados, errores de almacenamiento, extracción, guardado, compatibilidad con datos V1, importación y exportaciones, pantallas pequeñas y operación sin conexión después de cargar la página.
 
@@ -70,7 +74,7 @@ El flujo `.github/workflows/tests.yml` está preparado para ejecutar ambas suite
 
 La publicación está preparada en `.github/workflows/pages.yml`. En `main`, el flujo ejecuta las pruebas mediante el flujo reutilizable de validación y publica solo si pasan. En otras ramas y pull requests, las pruebas se ejecutan sin publicar.
 
-La activación inicial y la comprobación de la dirección HTTPS están explicadas paso a paso en [Publicar Blossom Brew Lab](docs/PUBLISHING.md). `python3 scripts/prepare_pages.py` genera el sitio en `_site/`, una carpeta ignorada por Git que contiene solo la aplicación. Publicar no sincroniza las recetas personales: se conservan en el navegador y se trasladan mediante JSON.
+La activación inicial y la comprobación de la dirección HTTPS están explicadas paso a paso en [Publicar Blossom Brew Lab](docs/PUBLISHING.md). `python3 scripts/prepare_pages.py` genera el sitio en `_site/`, una carpeta ignorada por Git que contiene solo la aplicación. La sincronización requiere además [conectar Supabase](docs/CLOUD_SYNC.md); publicar los archivos sin esa conexión conserva el funcionamiento local.
 
 ## Abrir y probar
 
@@ -106,7 +110,7 @@ Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.4.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.5.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 
@@ -144,13 +148,14 @@ El campo opcional `grindMicrons` conserva el valor numérico en recetas, sesione
 ## Datos y privacidad
 
 - Las recetas personalizadas y sesiones se intentan almacenar en `localStorage`, en el navegador y dispositivo donde se abre el archivo.
+- Con la nube activada, entrar con el mismo correo en ambos dispositivos sincroniza recetas y bitácora en una cuenta privada. Las recetas locales se incorporan automáticamente al conectar ese navegador. El repositorio público no recibe esos datos ni los tokens de acceso.
 - El almacenamiento local de archivos `file://` puede variar entre navegadores y no sincroniza dispositivos; **exporta JSON** para conservar tus datos.
 - Exporta CSV para abrir tu bitácora en Excel o Google Sheets.
-- Importar JSON reemplaza las recetas personalizadas y sesiones del navegador actual.
+- Importar JSON reemplaza las recetas personales y sesiones del navegador actual. Al sincronizar una cuenta, esos cambios también se envían a los otros dispositivos. El diálogo de importación lo indica antes de continuar.
 
 ## Solicitudes recomendadas para Codex
 
 1. Preparar alojamiento HTTPS y comprobar la experiencia móvil en dispositivos reales.
 2. Añadir comparativas A/B de una misma variedad y gráficas históricas de atributos sensoriales.
 3. Permitir catálogo editable de molinos, métodos, agua GH/KH y metadatos de origen, sin presentar valores no medidos como científicos.
-4. Preparar versión instalable tipo PWA; para sincronización multiplataforma necesitaría diseñarse un backend y privacidad.
+4. Preparar una versión instalable tipo PWA y completar la activación y comprobación real del servicio de sincronización.

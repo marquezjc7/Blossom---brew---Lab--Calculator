@@ -21,7 +21,17 @@
     SELECTED_RECIPE_KEY,
     createStore,
   } = BlossomLab.storage;
-  const store = createStore();
+  const localStore = createStore();
+  let cloudSync = null;
+  const store = {
+    read: (key) => localStore.read(key),
+    write(key, value) {
+      const saved = localStore.write(key, value);
+      if (saved && (key === STORAGE_R || key === STORAGE_S))
+        cloudSync?.notify();
+      return saved;
+    },
+  };
   const defaults = BlossomLab.recipes;
   const builtInGrinders = ["Comandante C40", "Mazzer Philos I200D"];
 
@@ -160,6 +170,18 @@
         "No se pudo guardar en este navegador. Exporta tus datos como respaldo.",
       );
     return saved;
+  }
+  function writeCollections(data) {
+    const previous = {
+      recipes: localStore.read(STORAGE_R),
+      sessions: localStore.read(STORAGE_S),
+    };
+    if (!localStore.write(STORAGE_R, data.recipes)) return false;
+    if (!localStore.write(STORAGE_S, data.sessions)) {
+      localStore.write(STORAGE_R, previous.recipes);
+      return false;
+    }
+    return true;
   }
   function flash(message) {
     const t = $("toast");
@@ -505,6 +527,9 @@
     deletionTarget = selected;
     $("deleteRecipeTitle").textContent =
       `¿Eliminar la receta «${selected.name}»?`;
+    if (cloudSync)
+      $("deleteRecipeNote").textContent =
+        "Se eliminará junto con los cambios sin guardar de esta preparación. Al sincronizar tu cuenta, el borrado también llegará a tus otros dispositivos. La bitácora y las demás recetas se conservan.";
     $("deleteRecipePanel").hidden = false;
     $("cancelDeleteRecipe").focus();
     $("deleteRecipePanel").scrollIntoView({ block: "center" });
@@ -540,7 +565,7 @@
       return;
     }
     const session = {
-      id: Date.now().toString(),
+      id: globalThis.crypto?.randomUUID?.() ?? Date.now().toString(),
       date: new Date().toISOString(),
       ...r,
       realRatio: r.water / r.dose,
@@ -611,11 +636,11 @@
       const data = parseBackup(await file.text());
       if (
         !confirm(
-          `Importar ${data.recipes.length} recetas y ${data.sessions.length} sesiones? Esto reemplazará los registros personalizados actuales.`,
+          `Importar ${data.recipes.length} recetas y ${data.sessions.length} sesiones? Esto reemplazará los registros personalizados actuales.${cloudSync ? " Al sincronizar tu cuenta, los cambios también llegarán a tus otros dispositivos." : ""}`,
         )
       )
         return;
-      customRecipes = data.recipes
+      const nextRecipes = data.recipes
         .filter(
           (x) =>
             x &&
@@ -624,13 +649,20 @@
             valid(Number(x.water)),
         )
         .slice(0, 200);
-      sessions = data.sessions
+      const nextSessions = data.sessions
         .filter(
           (x) => x && typeof x.coffee === "string" && valid(Number(x.dose)),
         )
         .slice(0, 2000);
-      persist(STORAGE_R, customRecipes);
-      persist(STORAGE_S, sessions);
+      if (!writeCollections({ recipes: nextRecipes, sessions: nextSessions })) {
+        flash(
+          "No se pudo guardar el respaldo importado. Tus registros anteriores se conservan.",
+        );
+        return;
+      }
+      customRecipes = nextRecipes;
+      sessions = nextSessions;
+      cloudSync?.notify();
       loadRecipe(defaults[0]);
       renderSessions();
       flash("Respaldo importado con éxito.");
@@ -648,6 +680,180 @@
       .querySelectorAll(".panel")
       .forEach((el) => el.classList.toggle("active", el.id === tab));
     if (tab === "extraction") calcEy();
+  }
+  async function initCloud() {
+    let api;
+    try {
+      api = BlossomLab.cloudApi.createCloudApi({
+        config: BlossomLab.cloudConfig,
+        store: localStore,
+      });
+    } catch {
+      return;
+    }
+    if (!api) return;
+    $("cloudAccount").hidden = false;
+    $("storageNote").textContent =
+      "Los registros se conservan en este navegador. Al entrar con tu cuenta, se sincronizan con tus otros dispositivos. El respaldo JSON sigue disponible para conservar otra copia.";
+    const showStatus = (message, error = false) => {
+      $("cloudStatus").textContent = message;
+      $("cloudStatus").classList.toggle("error", error);
+    };
+    const readData = () => ({
+      recipes: localStore.read(STORAGE_R),
+      sessions: localStore.read(STORAGE_S),
+    });
+    const writeData = (data) => {
+      const previous = readData();
+      if (JSON.stringify(previous) === JSON.stringify(data)) return true;
+      try {
+        parseBackup(JSON.stringify(createBackup(data.recipes, data.sessions)));
+      } catch {
+        return false;
+      }
+      if (!writeCollections(data)) return false;
+      const active = selected.id;
+      customRecipes = data.recipes;
+      sessions = data.sessions;
+      loadRecipe(
+        recipeItems().find((recipe) => recipe.id === active) ??
+          customRecipes[0] ??
+          defaults[0],
+      );
+      renderSessions();
+      return true;
+    };
+    cloudSync = BlossomLab.sync.createSync({
+      readData,
+      writeData,
+      readState: () => localStore.read(BlossomLab.sync.STATE_KEY),
+      writeState: (state) => localStore.write(BlossomLab.sync.STATE_KEY, state),
+      exchange: (changes) => api.exchange(changes),
+      canApply: () => !recipeDirty && !editor.isOpen && !deletionTarget,
+      onStatus: ({ phase, message }) => showStatus(message, phase === "error"),
+      onConflict: (conflicts) => {
+        const copied = conflicts.some(
+          (conflict) => conflict.action === "copied",
+        );
+        recipeFeedback(
+          copied
+            ? "Una receta o sesión cambió en ambos dispositivos. Conservamos las dos versiones; las recetas duplicadas llevan «copia conservada» en el nombre."
+            : "Una receta o sesión cambió en otro dispositivo antes del borrado. Conservamos esa versión para que puedas revisarla.",
+        );
+      },
+    });
+    let connectedUser = null;
+    let restoring = false;
+    let callback = location.href;
+    const signedIn = async (user) => {
+      connectedUser = user;
+      $("cloudSignIn").hidden = true;
+      $("cloudConnected").hidden = false;
+      $("cloudUserEmail").textContent = user.email;
+      await cloudSync.connect(user);
+    };
+    $("cloudSignIn").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = $("cloudSendLink");
+      button.disabled = true;
+      try {
+        const redirect = new URL(location.href);
+        redirect.hash = "";
+        redirect.search = "";
+        await api.sendLink($("cloudEmail").value.trim(), redirect.href);
+        showStatus(
+          "Revisa tu correo y abre el enlace en este dispositivo. Si no lo ves, comprueba la carpeta de correo no deseado.",
+        );
+      } catch (error) {
+        showStatus(error.message, true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+    $("cloudSignOut").addEventListener("click", async () => {
+      cloudSync.disconnect();
+      try {
+        await api.signOut();
+        connectedUser = null;
+        callback = location.href;
+        $("cloudSignIn").hidden = false;
+        $("cloudConnected").hidden = true;
+        $("cloudUserEmail").textContent = "";
+        showStatus(
+          "Sesión cerrada. Tus datos siguen guardados en este navegador.",
+        );
+      } catch (error) {
+        showStatus(error.message, true);
+      }
+    });
+    const restoreAccount = async () => {
+      if (restoring || connectedUser) return;
+      restoring = true;
+      try {
+        const user = await api.restore(callback);
+        if (user) {
+          callback = location.href;
+          await signedIn(user);
+        }
+      } catch (error) {
+        showStatus(error.message, true);
+      } finally {
+        restoring = false;
+      }
+    };
+    const wakeCloud = () =>
+      connectedUser ? cloudSync.run() : restoreAccount();
+    window.addEventListener("online", wakeCloud);
+    window.addEventListener("focus", wakeCloud);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") wakeCloud();
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key === BlossomLab.cloudApi.AUTH_KEY) {
+        // Do not keep syncing in another tab after the user signs out.
+        if (!localStore.read(BlossomLab.cloudApi.AUTH_KEY)?.access_token) {
+          cloudSync.disconnect();
+          connectedUser = null;
+          callback = location.href;
+          $("cloudSignIn").hidden = false;
+          $("cloudConnected").hidden = true;
+          showStatus(
+            "Sesión cerrada. Tus datos siguen guardados en este navegador.",
+          );
+        } else if (
+          connectedUser &&
+          localStore.read(BlossomLab.cloudApi.AUTH_KEY)?.user?.id !==
+            connectedUser.id
+        ) {
+          cloudSync.disconnect();
+          showStatus(
+            "La cuenta cambió en otra pestaña. Recarga la aplicación antes de sincronizar.",
+            true,
+          );
+        } else if (!connectedUser) {
+          restoreAccount();
+        }
+      }
+    });
+    setInterval(() => {
+      if (document.visibilityState === "visible") {
+        if (connectedUser) cloudSync.run();
+        else restoreAccount();
+      }
+    }, 15000);
+    const captureCallback = () => {
+      const fragment = new URLSearchParams(location.hash.slice(1));
+      if (!fragment.has("access_token") && !fragment.has("error")) return false;
+      callback = location.href;
+      // Never leave access tokens in a copied URL or the browser history.
+      history.replaceState(null, "", location.pathname + location.search);
+      return true;
+    };
+    window.addEventListener("hashchange", () => {
+      if (captureCallback()) restoreAccount();
+    });
+    captureCallback();
+    await restoreAccount();
   }
   function init() {
     const storedR = getStored(STORAGE_R),
@@ -777,11 +983,14 @@
       if (!sessions.length) return;
       if (
         confirm(
-          "¿Quieres borrar todo el historial local? Exporta un respaldo antes de continuar.",
+          "¿Quieres borrar todo el historial local? Exporta un respaldo antes de continuar." +
+            (cloudSync
+              ? " Al sincronizar tu cuenta, el borrado también llegará a tus otros dispositivos."
+              : ""),
         )
       ) {
+        if (!persist(STORAGE_S, [])) return;
         sessions = [];
-        persist(STORAGE_S, sessions);
         renderSessions();
         flash("Historial vaciado.");
       }
@@ -791,6 +1000,7 @@
     );
     loadRecipe(lastRecipe ?? defaults[0]);
     renderSessions();
+    initCloud();
   }
   init();
 })();

@@ -1,6 +1,6 @@
 # Publicar Blossom Brew Lab
 
-El sitio se prepara para GitHub Pages con HTTPS y acceso público. Las recetas y sesiones siguen almacenadas en el navegador de cada persona. No se envían a GitHub ni se sincronizan entre dispositivos.
+El sitio se prepara para GitHub Pages con HTTPS y acceso público. Las recetas y sesiones conservan una copia local. No se envían a GitHub. La sincronización privada requiere conectar el proyecto de datos descrito en [Sincronización de Blossom Brew Lab](CLOUD_SYNC.md); sin esa configuración, la aplicación continúa guardando solo en el navegador.
 
 ## Estado de la publicación
 
@@ -33,8 +33,9 @@ El entorno de despliegue se llama `github-pages`. Si GitHub pide una revisión p
 Desde la raíz del proyecto:
 
 ```bash
+npm ci --ignore-scripts
 npm test
-BLOSSOM_BROWSER_EXECUTABLE=/usr/bin/chromium .venv/bin/python -m unittest discover -s tests -p 'test_browser.py' -v
+BLOSSOM_BROWSER_EXECUTABLE=/usr/bin/chromium .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 python3 scripts/prepare_pages.py
 python3 -m http.server 8000 --bind 127.0.0.1 --directory _site
 ```
