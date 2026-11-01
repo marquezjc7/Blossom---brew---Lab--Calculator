@@ -50,7 +50,8 @@
     selected = defaults[0],
     planReference = defaults[0],
     recipeDirty = false,
-    pendingRecipeBackup = null;
+    pendingRecipeBackup = null,
+    deletionTarget = null;
   const editor = BlossomLab.createPourEditor({
     getRecipe: current,
     onDraftChange() {
@@ -74,6 +75,8 @@
   function updateRecipeStatus() {
     const custom = isCustomRecipe();
     $("updateRecipe").disabled = !custom || (!recipeDirty && !editor.isDirty);
+    const deleteButton = $("deleteRecipe");
+    if (deleteButton) deleteButton.disabled = !custom;
     const reviewButton = $("reviewPours");
     if (reviewButton) reviewButton.hidden = !editor.isOpen || !editor.isDirty;
     $("recipeStatus").textContent = editor.isOpen
@@ -85,7 +88,7 @@
           ? "Cambios sin guardar. Actualiza esta receta o guarda una copia nueva."
           : "Cambios sin guardar. Guarda una receta nueva para conservar esta preparación."
         : custom
-          ? "Receta personalizada guardada. Puedes cambiar el nombre, los parámetros y los vertidos."
+          ? "Receta personalizada guardada. Puedes actualizar sus datos o eliminarla."
           : "Receta de referencia. Guarda una copia para conservar tus ajustes; la referencia original se mantiene.";
   }
   function markRecipeDirty() {
@@ -224,6 +227,7 @@
     $("preset").value = keep;
   }
   function loadRecipe(r) {
+    clearDeleteConfirmation();
     clearRecipeFeedback();
     selected = r;
     planReference = r;
@@ -476,6 +480,42 @@
     flash("Receta actualizada.");
     recipeFeedback(`Receta «${name}» actualizada en este navegador.`);
   }
+  function clearDeleteConfirmation(focus = false) {
+    deletionTarget = null;
+    const panel = $("deleteRecipePanel");
+    if (panel) panel.hidden = true;
+    if (focus) $("deleteRecipe")?.focus();
+  }
+  function requestRecipeDeletion() {
+    if (!isCustomRecipe()) return;
+    clearRecipeFeedback();
+    deletionTarget = selected;
+    $("deleteRecipeTitle").textContent =
+      `¿Eliminar la receta «${selected.name}»?`;
+    $("deleteRecipePanel").hidden = false;
+    $("cancelDeleteRecipe").focus();
+    $("deleteRecipePanel").scrollIntoView({ block: "center" });
+  }
+  function confirmRecipeDeletion() {
+    const target = deletionTarget;
+    const index = customRecipes.indexOf(target);
+    if (!target || selected !== target || index < 0) {
+      clearDeleteConfirmation();
+      return;
+    }
+    const next = customRecipes.filter((recipe) => recipe !== target);
+    if (!store.write(STORAGE_R, next)) {
+      return recipeError(
+        "No se pudo eliminar la receta en este navegador. Sigue en tu lista; puedes volver a intentarlo o cancelar.",
+      );
+    }
+    customRecipes = next;
+    loadRecipe(next[Math.min(index, next.length - 1)] ?? defaults[0]);
+    recipeFeedback(
+      `Receta «${target.name}» eliminada de este navegador. Tus sesiones guardadas se conservan.`,
+    );
+    flash("Receta eliminada.");
+  }
   function saveSession() {
     const r = recipeForSaving();
     if (!r) return;
@@ -685,6 +725,11 @@
       );
     });
     $("updateRecipe").addEventListener("click", updateRecipe);
+    $("deleteRecipe")?.addEventListener("click", requestRecipeDeletion);
+    $("confirmDeleteRecipe")?.addEventListener("click", confirmRecipeDeletion);
+    $("cancelDeleteRecipe")?.addEventListener("click", () =>
+      clearDeleteConfirmation(true),
+    );
     for (const id of ["eyDose", "cup", "tds"])
       $(id).addEventListener("input", calcEy);
     $("syncDose").addEventListener("click", () => {

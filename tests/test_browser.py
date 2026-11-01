@@ -902,6 +902,90 @@ class BrowserTests(unittest.TestCase):
         expect(page.locator("#temp2")).to_have_value("80")
         self.assertTrue(page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
 
+    def test_delete_saved_recipe_requires_confirmation_and_persists_after_reload(self):
+        expect(self.page.locator("#deleteRecipe")).to_be_disabled()
+        self.page.evaluate("() => { window.confirm = () => { throw new Error('No native confirmation expected'); }; }")
+        recipe_id = self.create_custom_recipe("Receta a eliminar")
+        self.page.click("#deleteRecipe")
+        expect(self.page.locator("#deleteRecipePanel")).to_be_visible()
+        expect(self.page.locator("#deleteRecipeTitle")).to_contain_text("Receta a eliminar")
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["id"], recipe_id)
+        self.page.click("#confirmDeleteRecipe")
+        self.assertEqual(self.stored(RECIPE_KEY), [])
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("eliminada de este navegador")
+        expect(self.page.locator("#preset")).to_have_value("bourbon-natural")
+        self.page.reload()
+        expect(self.page.locator("#preset option")).to_have_count(3)
+        expect(self.page.locator("#deleteRecipe")).to_be_disabled()
+
+    def test_cancelling_deletion_preserves_unsaved_recipe_and_pour_edits(self):
+        self.page.set_viewport_size({"width": 375, "height": 812})
+        self.create_custom_recipe("Conservar esta receta")
+        original = self.stored(RECIPE_KEY)
+        self.page.fill("#recipeName", "Cambios pendientes")
+        self.page.fill("#temp2", "85")
+        self.page.click("#editPours")
+        self.page.locator(".pour-weight").first.fill("50")
+        self.page.click("#deleteRecipe")
+        self.page.click("#cancelDeleteRecipe")
+        expect(self.page.locator("#deleteRecipePanel")).to_be_hidden()
+        expect(self.page.locator("#recipeName")).to_have_value("Cambios pendientes")
+        expect(self.page.locator("#temp2")).to_have_value("85")
+        expect(self.page.locator(".pour-weight").first).to_have_value("50")
+        self.assertEqual(self.stored(RECIPE_KEY), original)
+        self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+
+    def test_deleting_recipe_keeps_other_recipes_and_historical_sessions(self):
+        self.page.fill("#temp2", "85")
+        first = self.create_custom_recipe("Primera receta")
+        self.tab("journal")
+        self.page.fill("#notes", "Sesión que se conserva")
+        self.page.click("#saveSession")
+        sessions = self.stored(SESSION_KEY)
+        self.tab("recipe")
+        second = self.create_custom_recipe("Segunda receta")
+        self.page.select_option("#preset", first)
+        self.page.click("#deleteRecipe")
+        self.page.click("#confirmDeleteRecipe")
+        self.assertEqual([r["id"] for r in self.stored(RECIPE_KEY)], [second])
+        self.assertEqual(self.stored(SESSION_KEY), sessions)
+        expect(self.page.locator("#preset")).to_have_value(second)
+        self.page.reload()
+        expect(self.page.locator("#preset")).to_have_value(second)
+        self.tab("journal")
+        expect(self.page.locator("#sessions")).to_contain_text("Sesión que se conserva")
+        backup = json.loads(self.download_text("#exportJson"))
+        self.assertEqual([r["id"] for r in backup["recipes"]], [second])
+        self.assertEqual(backup["sessions"], sessions)
+
+    def test_failed_deletion_keeps_recipe_and_can_be_retried(self):
+        self.create_custom_recipe("Debe conservarse si falla")
+        original = self.stored(RECIPE_KEY)
+        self.page.evaluate("""() => {
+            window.originalSetItem = Storage.prototype.setItem;
+            Storage.prototype.setItem = function(key, value) {
+                if (key === 'blossom-brew-recipes-v1') throw new Error('QuotaExceededError');
+                return window.originalSetItem.call(this, key, value);
+            };
+        }""")
+        self.page.click("#deleteRecipe")
+        self.page.click("#confirmDeleteRecipe")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("No se pudo eliminar")
+        self.assertEqual(self.stored(RECIPE_KEY), original)
+        expect(self.page.locator("#deleteRecipePanel")).to_be_visible()
+        self.page.evaluate("() => { Storage.prototype.setItem = window.originalSetItem; }")
+        self.page.click("#confirmDeleteRecipe")
+        self.assertEqual(self.stored(RECIPE_KEY), [])
+
+    def test_changing_selected_recipe_cancels_the_pending_deletion(self):
+        first = self.create_custom_recipe("Primera")
+        second = self.create_custom_recipe("Segunda")
+        self.page.select_option("#preset", first)
+        self.page.click("#deleteRecipe")
+        self.page.select_option("#preset", second)
+        expect(self.page.locator("#deleteRecipePanel")).to_be_hidden()
+        self.assertEqual(len(self.stored(RECIPE_KEY)), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

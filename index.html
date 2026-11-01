@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171813" />
     <title>Blossom Brew Lab · Calculadora de recetas</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.2.1" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.3.0" />
   </head>
   <body>
     <header class="hero">
@@ -17,7 +17,7 @@
             </div>
             <div class="tag">SPECIALTY COFFEE</div>
           </div>
-          <div class="version">BREW LAB · V1.2.1</div>
+          <div class="version">BREW LAB · V1.3</div>
         </div>
         <h1>Precisión que florece en cada taza.</h1>
         <p>
@@ -237,9 +237,43 @@
                 <button class="btn tan" id="updateRecipe" disabled>
                   Actualizar receta guardada
                 </button>
+                <button
+                  class="btn danger"
+                  type="button"
+                  id="deleteRecipe"
+                  disabled
+                >
+                  Eliminar receta
+                </button>
                 <button class="btn" type="button" id="reviewPours" hidden>
                   Revisar vertidos pendientes
                 </button>
+              </div>
+              <div
+                id="deleteRecipePanel"
+                class="delete-confirmation"
+                role="group"
+                aria-labelledby="deleteRecipeTitle"
+                hidden
+              >
+                <p id="deleteRecipeTitle"></p>
+                <p class="note">
+                  Se eliminará de este navegador junto con los cambios sin
+                  guardar de esta preparación. La bitácora y las demás recetas
+                  se conservan.
+                </p>
+                <div class="buttonbar">
+                  <button class="btn" type="button" id="cancelDeleteRecipe">
+                    Cancelar
+                  </button>
+                  <button
+                    class="btn danger primary"
+                    type="button"
+                    id="confirmDeleteRecipe"
+                  >
+                    Eliminar esta receta
+                  </button>
+                </div>
               </div>
               <p
                 class="status"
@@ -558,17 +592,17 @@
         </div>
       </section>
       <div class="footer">
-        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.2.1 · Herramienta experimental
-        para preparación y análisis sensorial
+        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.3 · Herramienta experimental para
+        preparación y análisis sensorial
       </div>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.2.1" defer></script>
-    <script src="src/plans.js?v=1.2.1" defer></script>
-    <script src="src/recipes.js?v=1.2.1" defer></script>
-    <script src="src/storage.js?v=1.2.1" defer></script>
-    <script src="src/transfers.js?v=1.2.1" defer></script>
-    <script src="src/pour-editor.js?v=1.2.1" defer></script>
-    <script src="src/app.js?v=1.2.1" defer></script>
+    <script src="src/calculations.js?v=1.3.0" defer></script>
+    <script src="src/plans.js?v=1.3.0" defer></script>
+    <script src="src/recipes.js?v=1.3.0" defer></script>
+    <script src="src/storage.js?v=1.3.0" defer></script>
+    <script src="src/transfers.js?v=1.3.0" defer></script>
+    <script src="src/pour-editor.js?v=1.3.0" defer></script>
+    <script src="src/app.js?v=1.3.0" defer></script>
   </body>
 </html>

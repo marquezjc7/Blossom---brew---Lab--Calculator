@@ -1,10 +1,10 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.2.1)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.3)
 
 **Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
-La V1.2 permite registrar dos temperaturas y guardar recetas con un nombre dentro del formulario. Conserva la edición de vertidos y tiempos, los datos anteriores y los respaldos V1. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
+La V1.3 permite actualizar y eliminar recetas personalizadas con confirmación en la página. Conserva las dos temperaturas, la edición de vertidos y tiempos, el guardado con nombre dentro del formulario y los respaldos V1. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
 
@@ -88,6 +88,9 @@ La activación inicial y la comprobación de la dirección HTTPS están explicad
 3. Abre **Editar vertidos** para agregar, quitar o cambiar cantidades acumuladas. Deben aumentar y el último peso debe coincidir con el agua total. Puedes quitar todas las filas para dejar la receta sin plan documentado.
 4. Cada inicio es opcional y se registra en `mm:ss` desde que comienza la preparación: por ejemplo, `0:00`, `0:45`, `1:30`. Deja vacíos los tiempos desconocidos. Los conocidos deben aumentar y quedar antes del tiempo final, si este está registrado.
 5. Pulsa **Aplicar plan**, revisa el resultado y guarda o actualiza la receta. **Cancelar** descarta solo la edición del plan que está abierta. Si cambias el agua con el editor abierto, ajusta también el último peso antes de aplicar.
+6. Para borrar una receta personalizada, selecciónala y pulsa **Eliminar receta**. La confirmación muestra su nombre: **Eliminar esta receta** completa el borrado y **Cancelar** conserva la receta y los cambios pendientes. La bitácora y las demás recetas se mantienen. Las tres referencias iniciales se conservan.
+
+La eliminación solo se refleja si el navegador confirma la escritura. Si falla el almacenamiento, la receta permanece en la lista y puedes reintentar o cancelar. Al borrar una receta, se selecciona otra disponible o la primera referencia y se recuerda esa selección al recargar. Cada navegador tiene su propia lista: borrar en el teléfono no borra los datos de la computadora.
 
 Al cambiar el agua se escalan las cantidades del plan; los tiempos se conservan. Para Pacas Natural solo se conoce el bloom: el editor no inventa los vertidos restantes. Una sesión captura su propio plan, de modo que editar la receta después no cambia el historial anterior. Los avisos de cambios sin guardar permiten cancelar al cambiar de receta o salir de la página.
 
@@ -101,7 +104,7 @@ Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.2.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.3.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

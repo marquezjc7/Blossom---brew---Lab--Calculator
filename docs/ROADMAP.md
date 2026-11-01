@@ -47,6 +47,13 @@ La interfaz se identifica como V1.1. El formato de respaldo sigue siendo V1 con 
 
 La causa exacta del fallo reportado en los dispositivos del propietario no se había reproducido en Chromium. El nuevo flujo permite ver el error concreto y guardar sin ventanas emergentes; la confirmación final en sus dispositivos queda pendiente de una nueva prueba tras publicar V1.2.
 
+## V1.3 — gestión de recetas personales
+
+- [x] Eliminar una receta personalizada con una confirmación que identifica la receta dentro de la página.
+- [x] Conservar la bitácora, las demás recetas y las referencias iniciales al eliminar una receta.
+- [x] Conservar las ediciones al cancelar y evitar un borrado aparente si falla el almacenamiento.
+- [x] Cerrar la confirmación al cambiar de receta y recuperar una selección válida al recargar.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

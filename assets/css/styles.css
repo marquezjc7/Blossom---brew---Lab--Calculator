@@ -442,6 +442,28 @@ hr {
   border-color: #8d352c;
   color: #7b3028;
 }
+.btn.danger {
+  color: #8d352c;
+  border-color: #c99890;
+  background: #fff7f5;
+}
+.btn.danger.primary {
+  color: #fff;
+  background: #8d352c;
+  border-color: #8d352c;
+}
+.delete-confirmation {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #e7c5c0;
+  border-radius: 10px;
+  background: #fff7f5;
+}
+#deleteRecipeTitle {
+  margin-top: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
 #pourEditor {
   margin-top: 18px;
   border-top: 1px solid var(--line);
