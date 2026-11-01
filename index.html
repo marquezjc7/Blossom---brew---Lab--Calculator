@@ -1,113 +1,526 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="theme-color" content="#171813" />
-<title>Blossom Brew Lab · Calculadora de recetas</title>
-<style>
-:root{--ink:#292a24;--dark:#171813;--cream:#f4f0e8;--paper:#fffcf5;--muted:#74766d;--line:#ddd7cc;--gold:#b78a4a;--soft:#eee7db;--ok:#2c6b50;--warn:#9f7134}
-*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b78a4a99;outline-offset:2px}
-.hero{background:radial-gradient(circle at 88% 15%,#3b3226 0,#1a1b17 44%,#12130f 100%);color:#fff;min-height:208px;padding:30px 0 27px}.wrap{max-width:1110px;margin:0 auto;padding:0 24px}.mast{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:32px}.brand{font-family:Georgia,serif;font-size:26px;letter-spacing:-1px}.tag{font-size:10px;letter-spacing:2px;color:#d6bd93;font-weight:700}.version{color:#c4b69d;font-size:11px;letter-spacing:1px;border:1px solid #746044;padding:7px 10px;border-radius:40px}.hero h1{font-family:Georgia,serif;letter-spacing:-1px;font-weight:400;font-size:clamp(30px,5vw,46px);margin:0 0 6px}.hero p{color:#d2c5b1;margin:0;font-size:14px;max-width:650px}.shell{margin:22px auto 60px}.tabs{display:flex;gap:6px;background:#e8e3da;padding:5px;border-radius:13px;width:max-content;max-width:100%;margin-bottom:20px;flex-wrap:wrap}.tabs button{background:transparent;border:0;padding:11px 16px;border-radius:9px;color:#65685f;font-weight:650;font-size:13px}.tabs button.active{background:#fff;color:#23251e;box-shadow:0 2px 8px #00000010}.panel{display:none}.panel.active{display:block}.layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(280px,.82fr);gap:18px}.stack{display:grid;gap:18px}.card{background:var(--paper);border:1px solid #e7e0d5;border-radius:16px;padding:23px;box-shadow:0 8px 22px #15170b05}.card h2{font-family:Georgia,serif;font-weight:400;font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px;margin:0 0 20px}.kicker{font-weight:750;text-transform:uppercase;letter-spacing:1.8px;color:#9d793f;font-size:10px;margin:0 0 8px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:1/-1}label{font-size:12px;font-weight:690;color:#4e5047}.hint{font-size:11px;color:var(--muted);font-weight:400}.field input,.field select,.field textarea{width:100%;min-height:42px;border:1px solid #d8d2c7;background:#fff;border-radius:9px;padding:9px 12px;color:#24251f}.field textarea{min-height:89px;resize:vertical}.buttonbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.btn{padding:11px 15px;border:1px solid #c9bba5;background:#fff;border-radius:9px;color:#302f25;font-size:13px;font-weight:700}.btn.primary{background:#24261d;border-color:#24261d;color:white}.btn.tan{background:#eee7d9}.btn:disabled{opacity:.4;cursor:not-allowed}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.metric{padding:19px 17px;background:#f0ece3;border-radius:12px}.metric .lbl{color:#64675d;text-transform:uppercase;letter-spacing:1.4px;font-size:10px;font-weight:750}.metric .num{font-family:Georgia,serif;font-size:30px;margin:5px 0 0;letter-spacing:-1px;line-height:1.1}.metric .unit{font-size:12px;color:#73776d}.note{font-size:12px;color:#6b6d65;line-height:1.5}.status{font-size:12px;padding:12px 14px;background:#f1ebdc;border-left:3px solid var(--gold);border-radius:5px;color:#6d5739}.step{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #eae5da;font-size:13px}.step:last-child{border-bottom:0}.step strong{white-space:nowrap}.ey-result{font-family:Georgia,serif;font-size:43px;line-height:1.1;padding:4px 0}.ey-result small{font-family:inherit;font-size:13px;color:#777}.ey-note{font-size:12px;color:var(--muted);margin-top:7px}.score{display:grid;grid-template-columns:1fr 100px 30px;align-items:center;gap:10px;padding:9px 0}.score input{width:100%;accent-color:#8c6c42}.scores h3{font-size:13px;margin:10px 0 5px}.logitem{padding:17px 0;border-bottom:1px solid #e8e1d4}.logitem:last-child{border:0}.logtitle{font-weight:750}.logmeta{font-size:12px;color:#73766b;margin-top:3px}.lognotes{font-size:13px;color:#4b4e44;margin-top:8px;white-space:pre-wrap}.pill{font-size:11px;border-radius:999px;padding:5px 9px;background:#e8e5da;color:#5d5f55;display:inline-block}.headrow{display:flex;justify-content:space-between;align-items:start;gap:10px}.empty{padding:28px;background:#f2eee6;border-radius:12px;text-align:center;color:#77796e}.callout{border:1px solid #dcd3c1;padding:16px;border-radius:12px;background:#f7f2e9;font-size:13px;line-height:1.6}.callout h3{font-family:Georgia,serif;font-weight:400;font-size:20px;margin:0 0 5px}.callout p{margin:0}hr{border:0;border-top:1px solid #e7dfd2;margin:20px 0}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22251e;color:#fff;padding:12px 17px;border-radius:9px;box-shadow:0 6px 20px #0004;font-size:13px;z-index:20;display:none;text-align:center}.mini{font-size:12px;color:var(--muted)}.footer{text-align:center;font-size:12px;color:#8b8a7f;margin-top:34px}.noline{font-size:11px;background:#f2ede2;padding:8px 10px;border-radius:6px;color:#746e61}
-@media(max-width:790px){.layout{grid-template-columns:1fr}.hero{min-height:185px}.mast{margin-bottom:26px}.version{display:none}}@media(max-width:500px){.wrap{padding:0 14px}.hero{padding-top:24px}.card{padding:18px}.tabs{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.tabs button{padding:10px 5px;font-size:11px}.fields{gap:12px}.metrics .metric{padding:15px 12px}.metric .num{font-size:26px}}
-</style>
-</head>
-<body>
-<header class="hero"><div class="wrap"><div class="mast"><div><div class="brand">Blossom<span style="color:#c4a377">.</span></div><div class="tag">SPECIALTY COFFEE</div></div><div class="version">BREW LAB · PROTOTIPO V1.0</div></div><h1>Precisión que florece en cada taza.</h1><p>Calculadora de recetas, rendimiento de extracción y bitácora sensorial para tu laboratorio de café.</p></div></header>
-<main class="wrap shell">
-<nav class="tabs" aria-label="Secciones"><button class="active" data-tab="recipe">01 · Recetas</button><button data-tab="extraction">02 · Extracción</button><button data-tab="journal">03 · Bitácora</button></nav>
-<section id="recipe" class="panel active">
-<div class="layout">
-<div class="stack">
-<div class="card"><p class="kicker">Configuración</p><h2>Diseña tu preparación</h2><p class="sub">Selecciona una receta de referencia o introduce tus propios parámetros.</p>
-<div class="fields">
-<div class="field wide"><label for="preset">Receta de referencia</label><select id="preset"></select></div>
-<div class="field"><label for="method">Método</label><select id="method"><option>V60 Neo</option><option>V60</option><option>Origami</option><option>Kalita Wave</option><option>Chemex</option><option>V60 Switch</option><option>AeroPress</option><option>French Press</option><option>Otros</option></select></div>
-<div class="field"><label for="grind">Ajuste del molino <span class="hint">(texto)</span></label><input id="grind" type="text" value="116" maxlength="40"></div>
-<div class="field"><label for="dose">Café molido (g)</label><input id="dose" type="number" min="0.1" max="1000" step="0.1" value="15"></div>
-<div class="field"><label for="water">Agua total (g)</label><input id="water" type="number" min="0.1" max="20000" step="0.1" value="240"></div>
-<div class="field"><label for="targetRatio">Ratio objetivo (1:X)</label><input id="targetRatio" type="number" min="1" max="100" step="0.1" value="16"></div>
-<div class="field"><label for="temp">Temperatura (°C)</label><input id="temp" type="number" min="0" max="100" step="0.5" value="92"></div>
-<div class="field"><label for="bloom">Bloom (segundos)</label><input id="bloom" type="number" min="0" max="900" step="1" value="45"></div>
-<div class="field"><label for="time">Tiempo final (mm:ss)</label><input id="time" placeholder="2:47" value="2:47" pattern="[0-9]{1,3}:[0-5][0-9]"></div>
-<div class="field wide"><label for="coffee">Café / lote</label><input id="coffee" type="text" maxlength="120" value="Bourbon Natural"></div>
-</div>
-<div class="buttonbar"><button class="btn primary" id="matchRatio">Calcular agua al ratio objetivo</button><button class="btn" id="saveRecipe">Guardar como nueva receta</button></div>
-<div class="note" style="margin-top:11px">Al cambiar la dosis, puedes recalcular el agua mediante el ratio objetivo. Si modificas el agua manualmente, verás el ratio real actualizado.</div>
-</div>
-<div class="card"><p class="kicker">Protocolo</p><h2>Plan de vertidos</h2><p class="sub">Pesos acumulados e incrementales, escalados con respecto a la receta de referencia.</p><div id="pours"></div><p class="note" id="pourNote" style="margin:12px 0 0"></p></div>
-</div>
-<div class="stack">
-<div class="card"><p class="kicker">Cálculos en vivo</p><h2>Tu receta en números</h2><p class="sub">Los resultados cambian automáticamente con los parámetros.</p><div class="metrics"><div class="metric"><div class="lbl">Ratio real</div><div class="num" id="ratioOut">1:16</div><div class="unit">Café : agua</div></div><div class="metric"><div class="lbl">Agua objetivo</div><div class="num" id="waterOut">240</div><div class="unit">g para el ratio deseado</div></div><div class="metric"><div class="lbl">Dosis</div><div class="num" id="doseOut">15</div><div class="unit">g de café</div></div><div class="metric"><div class="lbl">Temperatura</div><div class="num" id="tempOut">92°</div><div class="unit">Celsius</div></div></div><div class="status" style="margin-top:17px" id="ratioStatus">Receta equilibrada respecto al ratio objetivo.</div></div>
-<div class="callout"><h3>Precisión y límites</h3><p>El tiempo, la temperatura y el ratio describen la receta, pero <strong>no permiten deducir el porcentaje real de extracción</strong>. Para eso, utiliza la segunda pestaña con el TDS de bebida y su peso final.</p></div>
-<div class="card"><p class="kicker">Referencia</p><h2>Notas del lote</h2><p class="sub" id="referenceNotes">Perfil y contexto de tu receta.</p><div class="noline" id="referenceLabel">Datos de referencia: no son mediciones de rendimiento.</div></div>
-</div></div></section>
-<section id="extraction" class="panel"><div class="layout"><div class="stack"><div class="card"><p class="kicker">Medición</p><h2>Rendimiento de extracción</h2><p class="sub">Registra la masa obtenida en la taza y el TDS medido con refractómetro para café.</p><div class="fields"><div class="field"><label for="eyDose">Dosis seca (g)</label><input id="eyDose" type="number" min="0.1" step="0.1" value="15"></div><div class="field"><label for="cup">Bebida obtenida (g)</label><input id="cup" type="number" min="0.1" step="0.1" placeholder="Ej. 210"></div><div class="field wide"><label for="tds">TDS de bebida (%) <span class="hint">Ej. 1.40, no 140 ni ppm del agua</span></label><input id="tds" type="number" min="0.01" max="30" step="0.01" placeholder="Ej. 1.40"></div></div><div class="buttonbar"><button class="btn primary" id="syncDose">Usar dosis de la receta activa</button><button class="btn" id="demoEy">Introducir ejemplo didáctico</button></div><div class="note" style="margin-top:15px">Para obtener un valor válido, mide por separado el peso del líquido en el servidor (no los gramos de agua vertida) y el TDS de ese líquido. El TDS mineral del agua de preparación no sirve en esta fórmula.</div></div></div>
-<div class="stack"><div class="card"><p class="kicker">Resultado</p><h2>Extraction Yield</h2><div class="ey-result" id="ey">— <small>%</small></div><div id="eyStatus" class="status">Introduce el peso de bebida y el TDS para calcular.</div><p class="ey-note" id="solubles">Sólidos disueltos: —</p><hr><p class="note">La banda histórica de referencia de 18–22% es solo una orientación, no una calificación automática de sabor. La calidad de taza depende también de la distribución de extracción y la evaluación sensorial.</p></div></div></div></section>
-<section id="journal" class="panel"><div class="layout"><div class="stack"><div class="card"><p class="kicker">Registro sensorial</p><h2>Guarda una prueba</h2><p class="sub">Se registran los parámetros actuales de la receta y los datos de extracción, si los has medido.</p>
-<div class="scores"><h3>Evaluación descriptiva · escala interna de 0 a 10</h3><div class="score"><label for="sweet">Dulzura</label><input id="sweet" type="range" min="0" max="10" step="1" value="7"><strong id="sweetV">7</strong></div><div class="score"><label for="acid">Acidez</label><input id="acid" type="range" min="0" max="10" step="1" value="6"><strong id="acidV">6</strong></div><div class="score"><label for="body">Cuerpo</label><input id="body" type="range" min="0" max="10" step="1" value="6"><strong id="bodyV">6</strong></div></div>
-<div class="field wide" style="margin-top:10px"><label for="notes">Notas sensoriales y diagnóstico</label><textarea id="notes" placeholder="Ej. naranja dulce, piña, textura cremosa. A/B: menor agitación, mayor claridad."></textarea></div>
-<div class="buttonbar"><button class="btn primary" id="saveSession">Guardar sesión</button><button class="btn" id="downloadCsv">Exportar sesiones CSV</button><button class="btn" id="exportJson">Respaldo JSON</button></div><p class="note" style="margin:14px 0 0">Los registros se guardan localmente en este navegador cuando lo permite. Exporta un respaldo para no perderlos o trasladarlos a otro dispositivo.</p></div></div>
-<div class="stack"><div class="card"><div class="headrow"><div><p class="kicker">Historial</p><h2>Pruebas anteriores</h2></div><span class="pill" id="count">0 sesiones</span></div><div id="sessions" style="margin-top:12px"></div><hr><div class="buttonbar"><label class="btn" for="fileImport" style="cursor:pointer">Importar respaldo JSON</label><input id="fileImport" type="file" accept="application/json,.json" style="display:none"><button class="btn" id="clearSessions">Vaciar historial</button></div></div></div></div></section>
-<div class="footer">BLOSSOM SPECIALTY COFFEE · BREW LAB V1.0 · Herramienta experimental para preparación y análisis sensorial</div>
-</main><div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>
-'use strict';
-const STORAGE_R='blossom-brew-recipes-v1'; const STORAGE_S='blossom-brew-sessions-v1';
-const defaults=[
-{id:'bourbon-natural',name:'Bourbon Natural · V60 Neo',coffee:'Bourbon Natural',method:'V60 Neo',dose:15,water:240,ratio:16,temp:92,bloom:45,time:'2:47',grind:'116',pours:[45,145,240],notes:'Perfil registrado: azúcar morena, naranja roja, cuerpo medio y posgusto largo. Versión preferida por mayor dulzura y complejidad.'},
-{id:'bourbon-lavado',name:'Bourbon Lavado · Baseline',coffee:'Bourbon Lavado',method:'V60 Neo',dose:15,water:240,ratio:16,temp:93,bloom:45,time:'2:47',grind:'116',pours:[45,145,240],notes:'Receta base de comparación. Los valores sensoriales deben registrarse después de cada sesión.'},
-{id:'pacas-natural',name:'Pacas Natural · V60 Neo',coffee:'Pacas Natural',method:'V60 Neo',dose:15,water:240,ratio:16,temp:88,bloom:45,time:'2:52',grind:'116',pours:null,bloomWater:50,notes:'Prueba registrada: piña, frambuesa, naranja dulce, arándanos, avellana y toffee; final cremoso. El plan exacto de vertidos posteriores al bloom no está documentado.'}
-];
-const $=id=>document.getElementById(id); const nf=(n,d=1)=>Number.isFinite(n)?Number(n.toFixed(d)).toLocaleString('es-ES',{maximumFractionDigits:d}):'—';
-const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const valid=(x,min=0)=>Number.isFinite(x)&&x>min;
-let customRecipes=[],sessions=[],selected=defaults[0];
-function getStored(key){try{const x=localStorage.getItem(key);return x?JSON.parse(x):[]}catch(e){return []}}
-function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(e){flash('No se pudo guardar en este navegador. Exporta tus datos como respaldo.');return false}}
-function flash(message){const t=$('toast');t.textContent=message;t.style.display='block';clearTimeout(flash.timer);flash.timer=setTimeout(()=>t.style.display='none',3600)}
-function current(){return {coffee:$('coffee').value.trim(),method:$('method').value,dose:Number($('dose').value),water:Number($('water').value),ratio:Number($('targetRatio').value),temp:Number($('temp').value),bloom:Number($('bloom').value),time:$('time').value,grind:$('grind').value.trim()}}
-function recipeItems(){return [...defaults,...customRecipes]}
-function fillPresets(){const keep=selected?.id||defaults[0].id;$('preset').innerHTML=recipeItems().map(r=>`<option value="${escapeHtml(r.id)}">${escapeHtml(r.name)}</option>`).join('');$('preset').value=keep}
-function loadRecipe(r){selected=r;for(const id of ['coffee','method','dose','water','temp','bloom','time','grind'])$(id).value=r[id];$('targetRatio').value=r.ratio??(r.water/r.dose);fillPresets();render()}
-function render(){const r=current(),ratio=valid(r.dose)&&valid(r.water)?r.water/r.dose:NaN;const target=valid(r.dose)&&valid(r.ratio)?r.dose*r.ratio:NaN;
-$('ratioOut').textContent=valid(ratio)?'1:'+nf(ratio,2):'—';$('waterOut').textContent=nf(target);$('doseOut').textContent=nf(r.dose);$('tempOut').textContent=Number.isFinite(r.temp)?nf(r.temp)+'°':'—';
-const delta=ratio-r.ratio;$('ratioStatus').textContent=!valid(ratio)||!valid(r.ratio)?'Introduce una dosis, un volumen y un ratio válidos.':Math.abs(delta)<.02?'La relación actual coincide con tu ratio objetivo.':`Ratio actual 1:${nf(ratio,2)}; objetivo 1:${nf(r.ratio,2)}. Puedes mantenerlo así o recalcular el agua.`;
-$('referenceNotes').textContent=selected?.notes||'Receta personalizada.';
-$('referenceLabel').textContent='Receta de referencia, no un resultado de extracción medido.';
-renderPours(r);calcEy()}
-function renderPours(r){const base=selected,pours=base?.pours;const holder=$('pours');holder.innerHTML='';if(!valid(r.water)||!valid(base?.water)){holder.textContent='Introduzca un peso de agua válido.';return}
-const k=r.water/base.water;if(Array.isArray(pours)&&pours.length){let previous=0;const arr=pours.map((p,i)=>{const cum=p*k,inc=(p-previous)*k;previous=p;return `<div class="step"><span>${i===0?'Bloom':`Vertido ${i}`} · <span class="mini">+${nf(inc)} g</span></span><strong>${nf(cum)} g acumulados</strong></div>`});holder.innerHTML=arr.join('');$('pourNote').textContent=`Bloom: ${nf(r.bloom,0)} s. Los pesos se escalan proporcionalmente con el agua. Este plan es una referencia y no ajusta automáticamente los tiempos de los vertidos.`}
-else if(valid(base?.bloomWater)){let first=base.bloomWater*k;holder.innerHTML=`<div class="step"><span>Bloom · <span class="mini">${nf(r.bloom,0)} s</span></span><strong>${nf(first)} g</strong></div><div class="step"><span>Agua restante · <span class="mini">sin plan detallado</span></span><strong>${nf(r.water-first)} g</strong></div>`;$('pourNote').textContent='Solo se conoce el peso del bloom. No inventamos número ni secuencia de vertidos posteriores.'}
-else{holder.textContent='No hay un plan documentado de vertidos para esta receta.';$('pourNote').textContent='Puedes añadir una secuencia de vertidos personalizada en una siguiente versión con Codex.'}}
-function calcEy(){const dose=Number($('eyDose').value), cup=Number($('cup').value),tds=Number($('tds').value),ready=valid(dose)&&valid(cup)&&valid(tds)&&tds<=30;const ey=ready?tds*cup/dose:NaN;
-$('ey').innerHTML=ready?nf(ey,2)+' <small>%</small>':'— <small>%</small>';
-$('eyStatus').textContent=!ready?'Introduce dosis, bebida obtenida y TDS válidos.':ey<18?'Extracción por debajo del rango histórico de referencia (18–22%). Evalúa la taza antes de modificar variables.':ey<=22?'Dentro del rango histórico de referencia (18–22%). La evaluación sensorial sigue siendo necesaria.':'Extracción por encima del rango histórico de referencia (18–22%). No implica automáticamente un defecto sensorial.';
-$('solubles').textContent=ready?'Sólidos disueltos en taza: '+nf(tds/100*cup,2)+' g':'Sólidos disueltos: —';return ready?ey:null}
-function exportFile(data,name,mime){const blob=new Blob([data],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-function saveNewRecipe(){const r=current();if(!valid(r.dose)||!valid(r.water)||!valid(r.ratio)||!r.coffee){flash('Completa el café, la dosis, el agua y el ratio.');return}
-let name=prompt('Nombre de la nueva receta:',r.coffee+' · '+r.method+' · '+nf(r.dose)+' g');if(name===null)return;name=name.trim().slice(0,100);if(!name){flash('La receta necesita un nombre.');return}
-const copy={...r,id:'custom-'+Date.now(),name,pours:Array.isArray(selected?.pours)?selected.pours.map(v=>v*r.water/selected.water):null,bloomWater:!selected?.pours&&selected?.bloomWater?selected.bloomWater*r.water/selected.water:undefined,notes:'Receta personalizada creada en Blossom Brew Lab.'};customRecipes.push(copy);persist(STORAGE_R,customRecipes);loadRecipe(copy);flash('Nueva receta guardada.')}
-function saveSession(){const r=current();if(!valid(r.dose)||!valid(r.water)||!r.coffee){flash('Completa la receta antes de guardar.');return}
-const ey=calcEy();if(ey!==null&&Math.abs(Number($('eyDose').value)-r.dose)>0.0001){flash('La dosis del cálculo EY no coincide con la receta. En Extracción, selecciona «Usar dosis de la receta activa».');return}const session={id:Date.now().toString(),date:new Date().toISOString(),...r,realRatio:r.water/r.dose,tds:ey===null?null:Number($('tds').value),cup:ey===null?null:Number($('cup').value),extraction:ey,score:{sweet:Number($('sweet').value),acid:Number($('acid').value),body:Number($('body').value)},notes:$('notes').value.trim().slice(0,2000)};sessions.unshift(session);persist(STORAGE_S,sessions);renderSessions();flash('Sesión guardada en el historial.')}
-function renderSessions(){const holder=$('sessions');$('count').textContent=`${sessions.length} ${sessions.length===1?'sesión':'sesiones'}`;if(!sessions.length){holder.innerHTML='<div class="empty">Todavía no hay sesiones registradas.</div>';return}
-holder.innerHTML=sessions.slice(0,100).map(s=>{const date=new Date(s.date);return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime())?'Fecha no disponible':date.toLocaleString('es-ES')} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio),2)} · ${nf(Number(s.temp))} °C · ${escapeHtml(s.time)}</div><div class="logmeta">Dulzura ${s.score?.sweet??'—'}/10 · Acidez ${s.score?.acid??'—'}/10 · Cuerpo ${s.score?.body??'—'}/10 · EY ${s.extraction==null?'no medido':nf(Number(s.extraction),2)+'%'}</div>${s.notes?`<div class="lognotes">${escapeHtml(s.notes)}</div>`:''}</article>`}).join('')}
-function downloadCsv(){const heads=['fecha','cafe','metodo','dosis_g','agua_g','ratio','temperatura_C','molienda','tiempo','TDS_bebida_pct','bebida_g','EY_pct','dulzura_0_10','acidez_0_10','cuerpo_0_10','notas'];const rows=sessions.map(s=>[s.date,s.coffee,s.method,s.dose,s.water,s.realRatio,s.temp,s.grind,s.time,s.tds??'',s.cup??'',s.extraction??'',s.score?.sweet??'',s.score?.acid??'',s.score?.body??'',s.notes||'']);const esc=x=>{let v=String(x??'');if(/^[=+@\-]/.test(v)&&isNaN(Number(v)))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};exportFile('\uFEFF'+[heads,...rows].map(row=>row.map(esc).join(',')).join('\r\n'),'blossom_sesiones.csv','text/csv;charset=utf-8');flash('Sesiones exportadas a CSV.')}
-function exportJson(){const data={format:'blossom-brew-lab-v1',version:1,exportedAt:new Date().toISOString(),recipes:customRecipes,sessions};exportFile(JSON.stringify(data,null,2),'blossom_respaldo.json','application/json');flash('Respaldo exportado. Guárdalo en un lugar seguro.')}
-async function importJson(e){const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=='blossom-brew-lab-v1'||!Array.isArray(data.recipes)||!Array.isArray(data.sessions))throw new Error('Archivo no compatible');if(!confirm(`Importar ${data.recipes.length} recetas y ${data.sessions.length} sesiones? Esto reemplazará los registros personalizados actuales.`))return;customRecipes=data.recipes.filter(x=>x&&typeof x.name==='string'&&valid(Number(x.dose))&&valid(Number(x.water))).slice(0,200);sessions=data.sessions.filter(x=>x&&typeof x.coffee==='string'&&valid(Number(x.dose))).slice(0,2000);persist(STORAGE_R,customRecipes);persist(STORAGE_S,sessions);loadRecipe(defaults[0]);renderSessions();flash('Respaldo importado con éxito.')}catch(err){flash('No se pudo importar: JSON incorrecto o incompatible.')}finally{e.target.value=''}}
-function setTab(tab){document.querySelectorAll('.tabs button').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));document.querySelectorAll('.panel').forEach(el=>el.classList.toggle('active',el.id===tab));if(tab==='extraction')calcEy()}
-function init(){const storedR=getStored(STORAGE_R),storedS=getStored(STORAGE_S);customRecipes=Array.isArray(storedR)?storedR.filter(r=>r&&typeof r.name==='string'):[];sessions=Array.isArray(storedS)?storedS.filter(s=>s&&typeof s.coffee==='string'):[];
-document.querySelectorAll('.tabs button').forEach(el=>el.addEventListener('click',()=>setTab(el.dataset.tab)));
-$('preset').addEventListener('change',()=>{const r=recipeItems().find(r=>r.id===$('preset').value);if(r)loadRecipe(r)});
-for(const id of ['method','grind','dose','water','targetRatio','temp','bloom','time','coffee'])$(id).addEventListener('input',render);
-$('matchRatio').addEventListener('click',()=>{const r=current();if(!valid(r.dose)||!valid(r.ratio)){flash('La dosis y el ratio deben ser positivos.');return}$('water').value=Number((r.dose*r.ratio).toFixed(2));render();flash('Agua recalculada al ratio objetivo.')});
-$('saveRecipe').addEventListener('click',saveNewRecipe);for(const id of ['eyDose','cup','tds'])$(id).addEventListener('input',calcEy);
-$('syncDose').addEventListener('click',()=>{$('eyDose').value=$('dose').value;calcEy();flash('Dosis sincronizada. Completa los datos medidos.')});
-$('demoEy').addEventListener('click',()=>{$('eyDose').value=15;$('cup').value=210;$('tds').value=1.42;calcEy();flash('Ejemplo ficticio: no corresponde a una extracción medida de Blossom.')});
-for(const id of ['sweet','acid','body'])$(id).addEventListener('input',()=>$(id+'V').textContent=$(id).value);
-$('saveSession').addEventListener('click',saveSession);$('downloadCsv').addEventListener('click',downloadCsv);$('exportJson').addEventListener('click',exportJson);$('fileImport').addEventListener('change',importJson);
-$('clearSessions').addEventListener('click',()=>{if(!sessions.length)return;if(confirm('¿Quieres borrar todo el historial local? Exporta un respaldo antes de continuar.')){sessions=[];persist(STORAGE_S,sessions);renderSessions();flash('Historial vaciado.')}});
-loadRecipe(defaults[0]);renderSessions()}
-init();
-</script>
-</body></html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#171813" />
+    <title>Blossom Brew Lab · Calculadora de recetas</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="wrap">
+        <div class="mast">
+          <div>
+            <div class="brand">
+              Blossom<span style="color: #c4a377">.</span>
+            </div>
+            <div class="tag">SPECIALTY COFFEE</div>
+          </div>
+          <div class="version">BREW LAB · V1.1</div>
+        </div>
+        <h1>Precisión que florece en cada taza.</h1>
+        <p>
+          Calculadora de recetas, rendimiento de extracción y bitácora sensorial
+          para tu laboratorio de café.
+        </p>
+      </div>
+    </header>
+    <main class="wrap shell">
+      <nav class="tabs" aria-label="Secciones">
+        <button class="active" data-tab="recipe">01 · Recetas</button
+        ><button data-tab="extraction">02 · Extracción</button
+        ><button data-tab="journal">03 · Bitácora</button>
+      </nav>
+      <section id="recipe" class="panel active">
+        <div class="layout">
+          <div class="stack">
+            <div class="card">
+              <p class="kicker">Configuración</p>
+              <h2>Diseña tu preparación</h2>
+              <p class="sub">
+                Selecciona una receta de referencia o introduce tus propios
+                parámetros.
+              </p>
+              <div class="fields">
+                <div class="field wide">
+                  <label for="preset">Receta de referencia o guardada</label
+                  ><select id="preset"></select>
+                </div>
+                <div class="field wide" id="recipeNameField" hidden>
+                  <label for="recipeName">Nombre de la receta guardada</label>
+                  <input id="recipeName" type="text" maxlength="100" />
+                </div>
+                <div class="field">
+                  <label for="method">Método</label
+                  ><select id="method">
+                    <option>V60 Neo</option>
+                    <option>V60</option>
+                    <option>Origami</option>
+                    <option>Kalita Wave</option>
+                    <option>Chemex</option>
+                    <option>V60 Switch</option>
+                    <option>AeroPress</option>
+                    <option>French Press</option>
+                    <option>Solo Spin</option>
+                    <option>Orea</option>
+                    <option>Paragon</option>
+                    <option>Otros</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="grinder">Molino</label>
+                  <select id="grinder">
+                    <option value="">Sin especificar</option>
+                    <option>Comandante C40</option>
+                    <option>Mazzer Philos I200D</option>
+                    <option value="other">Otro molino</option>
+                  </select>
+                </div>
+                <div class="field wide" id="otherGrinderField" hidden>
+                  <label for="otherGrinder">Nombre del otro molino</label>
+                  <input
+                    id="otherGrinder"
+                    type="text"
+                    maxlength="80"
+                    placeholder="Marca y modelo"
+                  />
+                </div>
+                <div class="field">
+                  <label for="grindSize">Grosor de molienda</label>
+                  <select id="grindSize" aria-describedby="grindSizeHint">
+                    <option value="">Sin especificar</option>
+                    <option>Fina</option>
+                    <option>Media fina</option>
+                    <option>Media</option>
+                    <option>Media gruesa</option>
+                    <option>Gruesa</option>
+                    <option>Extra gruesa</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="grind" id="grindLabel"
+                    >Ajuste del molino (opcional)</label
+                  >
+                  <input
+                    id="grind"
+                    type="text"
+                    value="116"
+                    maxlength="40"
+                    aria-describedby="grindHint"
+                  />
+                </div>
+                <div class="field wide grinding-help">
+                  <p class="hint" id="grindSizeHint">
+                    El grosor describe la molienda para compartir la receta.
+                    Cada molino tiene su propia escala de ajuste.
+                  </p>
+                  <p class="hint" id="grindHint" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                  <label for="dose">Café molido (g)</label
+                  ><input
+                    id="dose"
+                    type="number"
+                    min="0.1"
+                    max="1000"
+                    step="0.1"
+                    value="15"
+                  />
+                </div>
+                <div class="field">
+                  <label for="water">Agua total (g)</label
+                  ><input
+                    id="water"
+                    type="number"
+                    min="0.1"
+                    max="20000"
+                    step="0.1"
+                    value="240"
+                  />
+                </div>
+                <div class="field">
+                  <label for="targetRatio">Ratio objetivo (1:X)</label
+                  ><input
+                    id="targetRatio"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="0.1"
+                    value="16"
+                  />
+                </div>
+                <div class="field">
+                  <label for="temp">Temperatura (°C)</label
+                  ><input
+                    id="temp"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value="92"
+                  />
+                </div>
+                <div class="field">
+                  <label for="bloom">Bloom (segundos)</label
+                  ><input
+                    id="bloom"
+                    type="number"
+                    min="0"
+                    max="900"
+                    step="1"
+                    value="45"
+                  />
+                </div>
+                <div class="field">
+                  <label for="pourCount">Número de vertidos</label>
+                  <input
+                    id="pourCount"
+                    type="number"
+                    min="0"
+                    max="49"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder="Sin especificar"
+                    aria-describedby="pourCountHint"
+                  />
+                </div>
+                <p class="hint wide" id="pourCountHint" role="status">
+                  Sin incluir el bloom. Deja vacío si no lo conoces.
+                </p>
+                <div class="field">
+                  <label for="time">Tiempo final (mm:ss)</label
+                  ><input
+                    id="time"
+                    placeholder="2:47"
+                    value="2:47"
+                    pattern="[0-9]{1,3}:[0-5][0-9]"
+                  />
+                </div>
+                <div class="field wide">
+                  <label for="coffee">Café / lote</label
+                  ><input
+                    id="coffee"
+                    type="text"
+                    maxlength="120"
+                    value="Bourbon Natural"
+                  />
+                </div>
+              </div>
+              <div class="buttonbar">
+                <button class="btn primary" id="matchRatio">
+                  Calcular agua al ratio objetivo</button
+                ><button class="btn" id="saveRecipe">
+                  Guardar como nueva receta
+                </button>
+                <button class="btn tan" id="updateRecipe" disabled>
+                  Actualizar receta guardada
+                </button>
+              </div>
+              <p class="note" id="recipeStatus" role="status"></p>
+              <div class="note" style="margin-top: 11px">
+                Al cambiar la dosis, puedes recalcular el agua mediante el ratio
+                objetivo. Si modificas el agua manualmente, verás el ratio real
+                actualizado.
+              </div>
+            </div>
+            <div class="card">
+              <p class="kicker">Protocolo</p>
+              <h2>Plan de vertidos</h2>
+              <p class="sub">
+                Pesos acumulados e incrementales, escalados con respecto a la
+                receta de referencia.
+              </p>
+              <div id="pours"></div>
+              <p class="note" id="pourNote" style="margin: 12px 0 0"></p>
+              <div class="buttonbar">
+                <button
+                  class="btn"
+                  id="editPours"
+                  aria-expanded="false"
+                  aria-controls="pourEditor"
+                >
+                  Editar vertidos
+                </button>
+              </div>
+              <form
+                id="pourEditor"
+                aria-label="Editar plan de vertidos"
+                hidden
+                novalidate
+              >
+                <p class="note" id="pourEditorHelp">
+                  Introduce pesos acumulados. El último debe coincidir con el
+                  agua total. Los tiempos de inicio se cuentan desde que empieza
+                  la preparación y pueden quedar vacíos si no los conoces.
+                </p>
+                <div id="pourRows"></div>
+                <div class="buttonbar">
+                  <button type="button" class="btn" id="addPour">
+                    Agregar vertido
+                  </button>
+                </div>
+                <p id="pourError" class="status" role="alert" hidden></p>
+                <div class="buttonbar">
+                  <button type="submit" class="btn primary" id="applyPours">
+                    Aplicar plan
+                  </button>
+                  <button type="button" class="btn" id="cancelPours">
+                    Cancelar
+                  </button>
+                </div>
+                <p class="note">
+                  Aplicar actualiza esta preparación. Guarda una receta nueva o
+                  actualiza la receta guardada para conservar el plan. Si
+                  eliminas todas las filas, quedará sin plan documentado.
+                </p>
+              </form>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <p class="kicker">Cálculos en vivo</p>
+              <h2>Tu receta en números</h2>
+              <p class="sub">
+                Los resultados cambian automáticamente con los parámetros.
+              </p>
+              <div class="metrics">
+                <div class="metric">
+                  <div class="lbl">Ratio real</div>
+                  <div class="num" id="ratioOut">1:16</div>
+                  <div class="unit">Café : agua</div>
+                </div>
+                <div class="metric">
+                  <div class="lbl">Agua objetivo</div>
+                  <div class="num" id="waterOut">240</div>
+                  <div class="unit">g para el ratio deseado</div>
+                </div>
+                <div class="metric">
+                  <div class="lbl">Dosis</div>
+                  <div class="num" id="doseOut">15</div>
+                  <div class="unit">g de café</div>
+                </div>
+                <div class="metric">
+                  <div class="lbl">Temperatura</div>
+                  <div class="num" id="tempOut">92°</div>
+                  <div class="unit">Celsius</div>
+                </div>
+              </div>
+              <div class="status" style="margin-top: 17px" id="ratioStatus">
+                Receta equilibrada respecto al ratio objetivo.
+              </div>
+            </div>
+            <div class="callout">
+              <h3>Precisión y límites</h3>
+              <p>
+                El tiempo, la temperatura y el ratio describen la receta, pero
+                <strong
+                  >no permiten deducir el porcentaje real de extracción</strong
+                >. Para eso, utiliza la segunda pestaña con el TDS de bebida y
+                su peso final.
+              </p>
+            </div>
+            <div class="card">
+              <p class="kicker">Referencia</p>
+              <h2>Notas del lote</h2>
+              <p class="sub" id="referenceNotes">
+                Perfil y contexto de tu receta.
+              </p>
+              <div class="noline" id="referenceLabel">
+                Datos de referencia: no son mediciones de rendimiento.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="extraction" class="panel">
+        <div class="layout">
+          <div class="stack">
+            <div class="card">
+              <p class="kicker">Medición</p>
+              <h2>Rendimiento de extracción</h2>
+              <p class="sub">
+                Registra la masa obtenida en la taza y el TDS medido con
+                refractómetro para café.
+              </p>
+              <div class="fields">
+                <div class="field">
+                  <label for="eyDose">Dosis seca (g)</label
+                  ><input
+                    id="eyDose"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value="15"
+                  />
+                </div>
+                <div class="field">
+                  <label for="cup">Bebida obtenida (g)</label
+                  ><input
+                    id="cup"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    placeholder="Ej. 210"
+                  />
+                </div>
+                <div class="field wide">
+                  <label for="tds"
+                    >TDS de bebida (%)
+                    <span class="hint"
+                      >Ej. 1.40, no 140 ni ppm del agua</span
+                    ></label
+                  ><input
+                    id="tds"
+                    type="number"
+                    min="0.01"
+                    max="30"
+                    step="0.01"
+                    placeholder="Ej. 1.40"
+                  />
+                </div>
+              </div>
+              <div class="buttonbar">
+                <button class="btn primary" id="syncDose">
+                  Usar dosis de la receta activa</button
+                ><button class="btn" id="demoEy">
+                  Introducir ejemplo didáctico
+                </button>
+              </div>
+              <div class="note" style="margin-top: 15px">
+                Para obtener un valor válido, mide por separado el peso del
+                líquido en el servidor (no los gramos de agua vertida) y el TDS
+                de ese líquido. El TDS mineral del agua de preparación no sirve
+                en esta fórmula.
+              </div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <p class="kicker">Resultado</p>
+              <h2>Extraction Yield</h2>
+              <div class="ey-result" id="ey">— <small>%</small></div>
+              <div id="eyStatus" class="status">
+                Introduce el peso de bebida y el TDS para calcular.
+              </div>
+              <p class="ey-note" id="solubles">Sólidos disueltos: —</p>
+              <hr />
+              <p class="note">
+                La banda histórica de referencia de 18–22% es solo una
+                orientación, no una calificación automática de sabor. La calidad
+                de taza depende también de la distribución de extracción y la
+                evaluación sensorial.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="journal" class="panel">
+        <div class="layout">
+          <div class="stack">
+            <div class="card">
+              <p class="kicker">Registro sensorial</p>
+              <h2>Guarda una prueba</h2>
+              <p class="sub">
+                Se registran los parámetros actuales de la receta y los datos de
+                extracción, si los has medido.
+              </p>
+              <div class="scores">
+                <h3>Evaluación descriptiva · escala interna de 0 a 10</h3>
+                <div class="score">
+                  <label for="sweet">Dulzura</label
+                  ><input
+                    id="sweet"
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value="7"
+                  /><strong id="sweetV">7</strong>
+                </div>
+                <div class="score">
+                  <label for="acid">Acidez</label
+                  ><input
+                    id="acid"
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value="6"
+                  /><strong id="acidV">6</strong>
+                </div>
+                <div class="score">
+                  <label for="body">Cuerpo</label
+                  ><input
+                    id="body"
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value="6"
+                  /><strong id="bodyV">6</strong>
+                </div>
+              </div>
+              <div class="field wide" style="margin-top: 10px">
+                <label for="notes">Notas sensoriales y diagnóstico</label
+                ><textarea
+                  id="notes"
+                  placeholder="Ej. naranja dulce, piña, textura cremosa. A/B: menor agitación, mayor claridad."
+                ></textarea>
+              </div>
+              <div class="buttonbar">
+                <button class="btn primary" id="saveSession">
+                  Guardar sesión</button
+                ><button class="btn" id="downloadCsv">
+                  Exportar sesiones CSV</button
+                ><button class="btn" id="exportJson">Respaldo JSON</button>
+              </div>
+              <p class="note" style="margin: 14px 0 0">
+                Los registros se guardan localmente en este navegador cuando lo
+                permite. Exporta un respaldo para no perderlos o trasladarlos a
+                otro dispositivo.
+              </p>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="headrow">
+                <div>
+                  <p class="kicker">Historial</p>
+                  <h2>Pruebas anteriores</h2>
+                </div>
+                <span class="pill" id="count">0 sesiones</span>
+              </div>
+              <div id="sessions" style="margin-top: 12px"></div>
+              <hr />
+              <div class="buttonbar">
+                <label class="btn" for="fileImport" style="cursor: pointer"
+                  >Importar respaldo JSON</label
+                ><input
+                  id="fileImport"
+                  type="file"
+                  accept="application/json,.json"
+                  style="display: none"
+                /><button class="btn" id="clearSessions">
+                  Vaciar historial
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="footer">
+        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.1 · Herramienta experimental para
+        preparación y análisis sensorial
+      </div>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="src/calculations.js" defer></script>
+    <script src="src/plans.js" defer></script>
+    <script src="src/recipes.js" defer></script>
+    <script src="src/storage.js" defer></script>
+    <script src="src/transfers.js" defer></script>
+    <script src="src/pour-editor.js" defer></script>
+    <script src="src/app.js" defer></script>
+  </body>
+</html>

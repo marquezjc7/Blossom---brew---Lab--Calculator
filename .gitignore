@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+test-results/
+_site/
+.blossom-site-*/
