@@ -1,10 +1,10 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.4)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.4.1)
 
 **Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
-La V1.4 añade un grosor opcional en micrones a las recetas, la bitácora y los respaldos. Conserva la actualización y eliminación de recetas, las dos temperaturas y la edición de vertidos y tiempos. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
+La V1.4.1 retira Bourbon Natural y Pacas Natural del catálogo de referencias, a petición del propietario. Bourbon Lavado continúa como referencia inicial. Se conservan las recetas personales, la bitácora y las funciones de molienda en micrones, dos temperaturas y edición de vertidos. El avance y las siguientes etapas están en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
 
@@ -25,7 +25,7 @@ El servidor solo entrega archivos locales; no es un backend y no sincroniza dato
 | `src/calculations.js`   | Ratio, agua objetivo, extracción y escalado de vertidos       |
 | `src/plans.js`          | Validación, tiempos y copia del plan según el agua total      |
 | `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio           |
-| `src/recipes.js`        | Tres recetas iniciales y sus datos de referencia              |
+| `src/recipes.js`        | Catálogo de recetas de referencia                             |
 | `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1     |
 | `src/transfers.js`      | Formato de respaldo JSON y generación de CSV                  |
 | `src/app.js`            | Interacciones, estado de la pantalla y renderizado            |
@@ -75,24 +75,26 @@ La activación inicial y la comprobación de la dirección HTTPS están explicad
 ## Abrir y probar
 
 1. Abre `index.html` con Safari, Chrome u otro navegador moderno.
-2. Elige uno de los tres ejemplos: Bourbon Natural, Bourbon Lavado o Pacas Natural.
+2. Selecciona la referencia Bourbon Lavado o una receta personal guardada.
 3. Cambia la dosis de 15 a 18 g, conserva ratio objetivo 1:16 y selecciona «Calcular agua al ratio objetivo». Obtendrás 288 g.
-4. Comprueba que los vertidos del Bourbon Natural se escalen de 45/145/240 g a 54/174/288 g acumulados.
+4. Comprueba que los vertidos del Bourbon Lavado se escalen de 45/145/240 g a 54/174/288 g acumulados.
 5. En «Extracción» introduce solo valores medidos. El botón «Ejemplo didáctico» muestra 15 g, 210 g de bebida, 1.42% TDS y EY 19.88%. Es un dato ficticio.
 6. En «Bitácora» guarda una sesión y exporta CSV o JSON como respaldo.
 
 ## Editar recetas y vertidos
 
-1. Selecciona una receta, escribe **Nombre para guardar la receta** y modifica los parámetros. Con una referencia inicial, usa **Guardar como nueva receta** para crear tu copia. Las tres referencias originales se mantienen. El nombre se escribe en la página, sin una ventana emergente.
+1. Selecciona una receta, escribe **Nombre para guardar la receta** y modifica los parámetros. Con Bourbon Lavado, usa **Guardar como nueva receta** para crear tu copia y conservar la referencia. El nombre se escribe en la página, sin una ventana emergente.
 2. Al seleccionar una receta personalizada, puedes editar su nombre y parámetros. **Actualizar receta guardada** reemplaza esa receta sin crear un duplicado. **Guardar como nueva receta** crea una copia independiente.
 3. Abre **Editar vertidos** para agregar, quitar o cambiar cantidades acumuladas. Deben aumentar y el último peso debe coincidir con el agua total. Puedes quitar todas las filas para dejar la receta sin plan documentado.
 4. Cada inicio es opcional y se registra en `mm:ss` desde que comienza la preparación: por ejemplo, `0:00`, `0:45`, `1:30`. Deja vacíos los tiempos desconocidos. Los conocidos deben aumentar y quedar antes del tiempo final, si este está registrado.
 5. Pulsa **Aplicar plan**, revisa el resultado y guarda o actualiza la receta. **Cancelar** descarta solo la edición del plan que está abierta. Si cambias el agua con el editor abierto, ajusta también el último peso antes de aplicar.
-6. Para borrar una receta personalizada, selecciónala y pulsa **Eliminar receta**. La confirmación muestra su nombre: **Eliminar esta receta** completa el borrado y **Cancelar** conserva la receta y los cambios pendientes. La bitácora y las demás recetas se mantienen. Las tres referencias iniciales se conservan.
+6. Para borrar una receta personalizada, selecciónala y pulsa **Eliminar receta**. La confirmación muestra su nombre: **Eliminar esta receta** completa el borrado y **Cancelar** conserva la receta y los cambios pendientes. La bitácora y las demás recetas se mantienen. Bourbon Lavado sigue siendo una referencia protegida.
 
 La eliminación solo se refleja si el navegador confirma la escritura. Si falla el almacenamiento, la receta permanece en la lista y puedes reintentar o cancelar. Al borrar una receta, se selecciona otra disponible o la primera referencia y se recuerda esa selección al recargar. Cada navegador tiene su propia lista: borrar en el teléfono no borra los datos de la computadora.
 
-Al cambiar el agua se escalan las cantidades del plan; los tiempos se conservan. Para Pacas Natural solo se conoce el bloom: el editor no inventa los vertidos restantes. Una sesión captura su propio plan, de modo que editar la receta después no cambia el historial anterior. Los avisos de cambios sin guardar permiten cancelar al cambiar de receta o salir de la página.
+Al cambiar el agua se escalan las cantidades del plan; los tiempos se conservan. Si una receta solo documenta el bloom, el editor no inventa los vertidos restantes. Una sesión captura su propio plan, de modo que editar la receta después no cambia el historial anterior. Los avisos de cambios sin guardar permiten cancelar al cambiar de receta o salir de la página.
+
+Bourbon Natural y Pacas Natural ya no se incluyen en el catálogo. Si una de ellas era la última referencia seleccionada, al recargar se abre Bourbon Lavado. Retirar estas referencias no modifica las recetas personales ni las sesiones históricas del navegador.
 
 El guardado verifica que el navegador haya almacenado la receta y muestra una confirmación persistente. La receta queda seleccionada y se recupera esa selección al recargar. Los errores señalan el campo que necesita corregirse. Si el navegador impide escribir en el almacenamiento, conserva los cambios en pantalla y ofrece **Descargar respaldo JSON** con la receta pendiente, sin afirmar que quedó guardada. Las recetas anteriores permanecen intactas.
 
@@ -104,7 +106,7 @@ Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.4.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.4.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 
@@ -112,7 +114,7 @@ El selector de métodos incluye **Solo Spin**, **Orea** y **Paragon**, además d
 
 Después de **Bloom (segundos)** aparece **Número de vertidos**, que cuenta los vertidos **sin incluir el bloom**. Por ejemplo, el plan 45/145/240 g contiene un bloom y dos vertidos posteriores; el campo muestra `2`. Al aplicar cambios en el editor del plan, el número se actualiza automáticamente.
 
-El número es opcional: si conoces cuántos vertidos harás pero aún no sus pesos, puedes registrarlo sin crear una secuencia ficticia. Para Pacas Natural queda vacío inicialmente, porque solo está documentado el bloom. Si existe un plan completo y escribes un número diferente, debes ajustar el plan con **Editar vertidos** antes de guardar. Una receta sin vertidos posteriores puede registrar `0`; si queda agua pendiente después de un bloom conocido, ese cero se rechaza.
+El número es opcional: si conoces cuántos vertidos harás pero aún no sus pesos, puedes registrarlo sin crear una secuencia ficticia. Si solo está documentado el bloom, no se deduce cuántos vertidos faltan. Si existe un plan completo y escribes un número diferente, debes ajustar el plan con **Editar vertidos** antes de guardar. Una receta sin vertidos posteriores puede registrar `0`; si queda agua pendiente después de un bloom conocido, ese cero se rechaza.
 
 El campo opcional `pourCount` se guarda en recetas, sesiones y JSON. En archivos anteriores se deduce del plan completo cuando existe; de lo contrario queda sin especificar. El CSV agrega `vertidos_despues_bloom` después de las columnas de molino y grosor, conservando las posiciones anteriores.
 

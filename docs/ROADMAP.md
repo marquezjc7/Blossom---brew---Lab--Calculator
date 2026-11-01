@@ -61,6 +61,12 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Guardar, editar y recuperar el valor en recetas, bitácora y respaldos JSON/CSV, conservando los datos anteriores.
 - [x] Validar valores positivos o vacíos y conservar las sesiones anteriores al editar una receta.
 
+## V1.4.1 — retirar referencias
+
+- [x] Retirar Bourbon Natural y Pacas Natural del catálogo incluido en la aplicación, a petición del propietario.
+- [x] Mantener Bourbon Lavado como referencia y recuperar una selección válida si estaba seleccionada alguna de las retiradas.
+- [x] Conservar las recetas personales, las sesiones y las pruebas de recetas con planes incompletos.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

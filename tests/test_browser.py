@@ -30,6 +30,11 @@ LEGACY_SESSION = {
     "tds": None, "cup": None, "extraction": None,
     "score": {"sweet": 0, "acid": 6, "body": 5}, "notes": "Respaldo anterior",
 }
+INCOMPLETE_RECIPE = {
+    **LEGACY_RECIPE,
+    "id": "custom-incomplete", "name": "Mi receta sin plan completo",
+    "dose": 15, "water": 240, "pours": None, "bloomWater": 50,
+}
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -112,6 +117,15 @@ class BrowserTests(unittest.TestCase):
         expect(self.page.locator("#recipeName")).to_have_value(name)
         return self.stored(RECIPE_KEY)[-1]["id"]
 
+    def seed_incomplete_recipe(self, select=True):
+        self.page.evaluate(
+            "recipe => localStorage.setItem('blossom-brew-recipes-v1', JSON.stringify([recipe]))",
+            INCOMPLETE_RECIPE,
+        )
+        self.page.reload()
+        if select:
+            self.page.select_option("#preset", INCOMPLETE_RECIPE["id"])
+
     def edit_plan(self, weights, times=None):
         self.page.click("#editPours")
         rows = self.page.locator("#pourRows .pour-row")
@@ -124,20 +138,28 @@ class BrowserTests(unittest.TestCase):
             rows.nth(index).locator(".pour-start").fill((times or [""] * len(weights))[index])
         self.page.click("#applyPours")
 
-    def test_reference_recipes_and_unknown_pacas_pours(self):
-        expect(self.page.locator("#preset option")).to_have_count(3)
-        for recipe, coffee, temperature in [
-            ("bourbon-natural", "Bourbon Natural", "92"),
-            ("bourbon-lavado", "Bourbon Lavado", "93"),
-            ("pacas-natural", "Pacas Natural", "88"),
-        ]:
-            with self.subTest(recipe=recipe):
-                self.page.select_option("#preset", recipe)
-                expect(self.page.locator("#coffee")).to_have_value(coffee)
-                expect(self.page.locator("#temp")).to_have_value(temperature)
-                expect(self.page.locator("#waterOut")).to_have_text("240")
-        expect(self.page.locator("#pours strong")).to_have_text(["50 g", "190 g"])
-        expect(self.page.locator("#pourNote")).to_contain_text("Solo se conoce el peso del bloom")
+    def test_only_remaining_reference_is_available(self):
+        expect(self.page.locator("#preset option")).to_have_text(["Bourbon Lavado · Baseline"])
+        expect(self.page.locator("#preset")).to_have_value("bourbon-lavado")
+        expect(self.page.locator("#coffee")).to_have_value("Bourbon Lavado")
+        expect(self.page.locator("#temp")).to_have_value("93")
+        expect(self.page.locator("#waterOut")).to_have_text("240")
+
+    def test_removed_reference_selection_falls_back_without_changing_saved_data(self):
+        self.seed_legacy_data()
+        for removed in ["bourbon-natural", "pacas-natural"]:
+            with self.subTest(removed=removed):
+                self.page.evaluate(
+                    "id => localStorage.setItem('blossom-brew-selected-recipe-v1', JSON.stringify(id))",
+                    removed,
+                )
+                self.page.reload()
+                expect(self.page.locator("#preset option")).to_have_text([
+                    "Bourbon Lavado · Baseline", LEGACY_RECIPE["name"],
+                ])
+                expect(self.page.locator("#preset")).to_have_value("bourbon-lavado")
+                self.assertEqual(self.stored(RECIPE_KEY), [LEGACY_RECIPE])
+                self.assertEqual(self.stored(SESSION_KEY), [LEGACY_SESSION])
 
     def test_target_water_and_scaled_pours(self):
         self.page.fill("#dose", "18")
@@ -214,7 +236,7 @@ class BrowserTests(unittest.TestCase):
 
     def test_existing_v1_recipes_and_sessions_remain_usable(self):
         self.seed_legacy_data()
-        expect(self.page.locator("#preset option")).to_have_count(4)
+        expect(self.page.locator("#preset option")).to_have_count(2)
         self.page.select_option("#preset", LEGACY_RECIPE["id"])
         expect(self.page.locator("#coffee")).to_have_value("Café de Julio")
         expect(self.page.locator("#waterOut")).to_have_text("288")
@@ -307,7 +329,7 @@ class BrowserTests(unittest.TestCase):
                     finally:
                         probe.close()
             raise
-        expect(self.page.locator("#preset option")).to_have_count(3)
+        expect(self.page.locator("#preset option")).to_have_count(1)
         self.page.fill("#dose", "18")
         self.page.click("#matchRatio")
         expect(self.page.locator("#water")).to_have_value("288")
@@ -360,7 +382,7 @@ class BrowserTests(unittest.TestCase):
         self.edit_plan([50, 150, 240], ["0:00", "", "1:30"])
         expect(self.page.locator("#updateRecipe")).to_be_disabled()
         self.create_custom_recipe("Mi versión")
-        self.page.select_option("#preset", "bourbon-natural")
+        self.page.select_option("#preset", "bourbon-lavado")
         expect(self.page.locator("#pours strong")).to_have_text([
             "45 g acumulados", "145 g acumulados", "240 g acumulados",
         ])
@@ -393,8 +415,8 @@ class BrowserTests(unittest.TestCase):
                 expect(self.page.locator("#pourEditor")).to_be_visible()
         self.assertIsNone(self.stored(RECIPE_KEY))
 
-    def test_pacas_editor_never_fills_unknown_pours_or_times(self):
-        self.page.select_option("#preset", "pacas-natural")
+    def test_incomplete_recipe_editor_never_fills_unknown_pours_or_times(self):
+        self.seed_incomplete_recipe()
         self.page.click("#editPours")
         expect(self.page.locator(".pour-row")).to_have_count(1)
         expect(self.page.locator(".pour-weight")).to_have_value("50")
@@ -404,7 +426,7 @@ class BrowserTests(unittest.TestCase):
         self.page.click("#cancelPours")
         expect(self.page.locator("#pours strong")).to_have_text(["50 g", "190 g"])
         self.edit_plan([50, 150, 240], ["0:00", "0:45", ""])
-        self.create_custom_recipe("Pacas con mi plan")
+        self.page.click("#updateRecipe")
         self.assertEqual(self.stored(RECIPE_KEY)[0]["pourTimes"], [0, 45, None])
 
     def test_scaling_preserves_times_and_journal_keeps_its_own_snapshot(self):
@@ -475,14 +497,15 @@ class BrowserTests(unittest.TestCase):
         self.assertEqual(self.stored(RECIPE_KEY)[0]["name"], "Edición pendiente")
 
     def test_switching_recipe_can_cancel_or_confirm_discarding_edits(self):
+        self.seed_incomplete_recipe(select=False)
         self.page.fill("#dose", "18")
         self.page.once("dialog", lambda dialog: dialog.dismiss())
-        self.page.select_option("#preset", "pacas-natural")
-        expect(self.page.locator("#preset")).to_have_value("bourbon-natural")
+        self.page.select_option("#preset", INCOMPLETE_RECIPE["id"])
+        expect(self.page.locator("#preset")).to_have_value("bourbon-lavado")
         expect(self.page.locator("#dose")).to_have_value("18")
         self.page.once("dialog", lambda dialog: dialog.accept())
-        self.page.select_option("#preset", "pacas-natural")
-        expect(self.page.locator("#preset")).to_have_value("pacas-natural")
+        self.page.select_option("#preset", INCOMPLETE_RECIPE["id"])
+        expect(self.page.locator("#preset")).to_have_value(INCOMPLETE_RECIPE["id"])
         expect(self.page.locator("#dose")).to_have_value("15")
 
     def test_open_plan_draft_blocks_recipe_and_session_save_until_applied_or_cancelled(self):
@@ -597,7 +620,7 @@ class BrowserTests(unittest.TestCase):
         self.create_custom_recipe()
         original = self.stored(RECIPE_KEY)
         for selector, value, restored in [
-            ("#temp", "", "92"), ("#bloom", "", "45"),
+            ("#temp", "", "93"), ("#bloom", "", "45"),
             ("#bloom", "10.5", "45"), ("#time", "2:75", "2:47"),
             ("#recipeName", "   ", "Mi receta de prueba"),
         ]:
@@ -819,9 +842,9 @@ class BrowserTests(unittest.TestCase):
         ))
         expect(self.page.locator("#pourCount")).to_have_value("2")
         expect(self.page.locator("#pourCountHint")).to_contain_text("Sin incluir el bloom")
-        self.page.select_option("#preset", "pacas-natural")
+        self.seed_incomplete_recipe()
         expect(self.page.locator("#pourCount")).to_have_value("")
-        self.assertIsNone(self.stored(RECIPE_KEY))
+        self.assertEqual(self.stored(RECIPE_KEY), [INCOMPLETE_RECIPE])
 
     def test_applying_a_plan_updates_count_and_history_keeps_its_own_number(self):
         self.edit_plan([45, 110, 180, 240])
@@ -853,9 +876,10 @@ class BrowserTests(unittest.TestCase):
         self.assertEqual(self.stored(RECIPE_KEY)[0]["pourCount"], 2)
 
     def test_declared_count_survives_backup_without_inventing_pour_weights(self):
-        self.page.select_option("#preset", "pacas-natural")
+        self.seed_incomplete_recipe()
         self.page.fill("#pourCount", "3")
-        recipe_id = self.create_custom_recipe("Pacas · número conocido")
+        self.page.click("#updateRecipe")
+        recipe_id = INCOMPLETE_RECIPE["id"]
         self.page.reload()
         self.page.select_option("#preset", recipe_id)
         expect(self.page.locator("#pourCount")).to_have_value("3")
@@ -1000,9 +1024,9 @@ class BrowserTests(unittest.TestCase):
         self.page.click("#confirmDeleteRecipe")
         self.assertEqual(self.stored(RECIPE_KEY), [])
         expect(self.page.locator("#recipeFeedback")).to_contain_text("eliminada de este navegador")
-        expect(self.page.locator("#preset")).to_have_value("bourbon-natural")
+        expect(self.page.locator("#preset")).to_have_value("bourbon-lavado")
         self.page.reload()
-        expect(self.page.locator("#preset option")).to_have_count(3)
+        expect(self.page.locator("#preset option")).to_have_count(1)
         expect(self.page.locator("#deleteRecipe")).to_be_disabled()
 
     def test_cancelling_deletion_preserves_unsaved_recipe_and_pour_edits(self):
