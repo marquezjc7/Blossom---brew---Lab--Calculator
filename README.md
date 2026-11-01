@@ -1,4 +1,4 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.2)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.2.1)
 
 **Archivo principal:** `index.html`. La aplicación funciona en el navegador sin instalar dependencias ni crear cuentas. No usa servicios externos.
 
@@ -93,13 +93,15 @@ Al cambiar el agua se escalan las cantidades del plan; los tiempos se conservan.
 
 El guardado verifica que el navegador haya almacenado la receta y muestra una confirmación persistente. La receta queda seleccionada y se recupera esa selección al recargar. Los errores señalan el campo que necesita corregirse. Si el navegador impide escribir en el almacenamiento, conserva los cambios en pantalla y ofrece **Descargar respaldo JSON** con la receta pendiente, sin afirmar que quedó guardada. Las recetas anteriores permanecen intactas.
 
+Abrir **Editar vertidos** sin cambiar nada no impide guardar. Si editas los pesos o tiempos, **Revisar vertidos pendientes** te lleva a **Aplicar plan** y **Cancelar**. Un intento de guardado también muestra esas acciones: aplica para conservar los cambios o cancela para descartar solo esa edición; después guarda la receta. El nombre, las temperaturas y los demás parámetros se conservan al cancelar el editor.
+
 Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 16 columnas y agrega `molino`, `grosor_molienda`, `vertidos_despues_bloom` y `temperatura_2_C` al final; usa JSON para transferir planes y tiempos completos.
 
 ## Dos temperaturas
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.2.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.2.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

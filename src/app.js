@@ -53,7 +53,10 @@
     pendingRecipeBackup = null;
   const editor = BlossomLab.createPourEditor({
     getRecipe: current,
-    onDraftChange: updateRecipeStatus,
+    onDraftChange() {
+      clearRecipeFeedback();
+      updateRecipeStatus();
+    },
     onApply(plan) {
       planReference = { ...plan, water: current().water };
       $("pourCount").value = getPourCount(plan) ?? "";
@@ -70,9 +73,13 @@
   }
   function updateRecipeStatus() {
     const custom = isCustomRecipe();
-    $("updateRecipe").disabled = !custom || !recipeDirty || editor.isOpen;
+    $("updateRecipe").disabled = !custom || (!recipeDirty && !editor.isDirty);
+    const reviewButton = $("reviewPours");
+    if (reviewButton) reviewButton.hidden = !editor.isOpen || !editor.isDirty;
     $("recipeStatus").textContent = editor.isOpen
-      ? "Aplica o cancela la edición del plan antes de guardar la preparación."
+      ? editor.isDirty
+        ? "Tienes cambios en los vertidos. Pulsa «Aplicar plan» para conservarlos o «Cancelar» para descartarlos antes de guardar."
+        : "El editor de vertidos está abierto sin cambios; puedes guardar la receta."
       : recipeDirty
         ? custom
           ? "Cambios sin guardar. Actualiza esta receta o guarda una copia nueva."
@@ -121,6 +128,9 @@
       field.setAttribute("aria-invalid", "true");
       field.setAttribute("aria-errormessage", error.id);
       field.focus();
+    } else if (field) {
+      field.focus();
+      field.scrollIntoView({ block: "center" });
     } else {
       $("recipeFeedback").focus();
     }
@@ -352,9 +362,13 @@
   function recipeForSaving() {
     clearRecipeFeedback();
     if (editor.isOpen) {
-      return recipeError(
-        "Aplica o cancela la edición del plan antes de guardar.",
-      );
+      if (editor.isDirty) {
+        return recipeError(
+          "Aplica o cancela la edición del plan antes de guardar: pulsa «Aplicar plan» para conservar los vertidos que editaste o «Cancelar» para descartarlos. Después guarda la receta.",
+          "applyPours",
+        );
+      }
+      editor.close(false);
     }
     const r = current();
     if ($("grinder").value === "other" && !r.grinder) {
@@ -631,6 +645,12 @@
       render();
     });
     $("recipeName").addEventListener("input", markRecipeDirty);
+    $("reviewPours")?.addEventListener("click", () => {
+      if (!editor.isOpen) return;
+      setTab("recipe");
+      $("applyPours").focus();
+      $("applyPours").scrollIntoView({ block: "center" });
+    });
     $("editPours").addEventListener("click", () => {
       if (!valid(current().water)) {
         flash("Introduce un peso de agua válido antes de definir el plan.");

@@ -497,6 +497,58 @@ class BrowserTests(unittest.TestCase):
         self.page.click("#cancelPours")
         expect(self.page.locator("#pours strong").first).to_have_text("45 g acumulados")
 
+    def test_unchanged_open_plan_does_not_block_save(self):
+        self.page.fill("#recipeName", "Editor abierto sin cambios")
+        self.page.click("#editPours")
+        self.page.click("#saveRecipe")
+        expect(self.page.locator("#pourEditor")).to_be_hidden()
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("guardada en este navegador")
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["pours"], [45, 145, 240])
+
+    def test_pending_plan_actions_are_visible_and_apply_allows_saving(self):
+        self.page.fill("#recipeName", "Plan pendiente")
+        self.page.fill("#temp2", "85")
+        self.page.click("#editPours")
+        self.page.locator(".pour-weight").first.fill("50")
+        expect(self.page.locator("#reviewPours")).to_be_visible()
+        self.page.click("#saveRecipe")
+        expect(self.page.locator("#recipeFeedback")).to_contain_text("Aplicar plan")
+        expect(self.page.locator("#applyPours")).to_be_focused()
+        expect(self.page.locator("#applyPours")).to_be_in_viewport()
+        self.assertIsNone(self.stored(RECIPE_KEY))
+        self.page.click("#applyPours")
+        expect(self.page.locator("#reviewPours")).to_be_hidden()
+        self.page.click("#saveRecipe")
+        saved = self.stored(RECIPE_KEY)[0]
+        self.assertEqual(saved["pours"], [50, 145, 240])
+        self.assertEqual(saved["temp2"], 85)
+        self.assertEqual(saved["name"], "Plan pendiente")
+
+    def test_pending_editor_can_be_cancelled_without_losing_other_recipe_fields(self):
+        self.page.fill("#recipeName", "Conservar parámetros")
+        self.page.fill("#temp2", "80")
+        self.page.click("#editPours")
+        self.page.locator(".pour-weight").first.fill("50")
+        self.page.click("#saveRecipe")
+        self.page.click("#cancelPours")
+        expect(self.page.locator("#recipeFeedback")).to_be_hidden()
+        self.page.click("#saveRecipe")
+        saved = self.stored(RECIPE_KEY)[0]
+        self.assertEqual(saved["pours"], [45, 145, 240])
+        self.assertEqual(saved["temp2"], 80)
+
+    def test_update_button_handles_pending_plan_edits(self):
+        self.create_custom_recipe()
+        self.page.click("#editPours")
+        self.page.locator(".pour-weight").first.fill("50")
+        expect(self.page.locator("#updateRecipe")).to_be_enabled()
+        self.page.click("#updateRecipe")
+        expect(self.page.locator("#applyPours")).to_be_focused()
+        self.page.click("#applyPours")
+        self.page.click("#updateRecipe")
+        self.assertEqual(len(self.stored(RECIPE_KEY)), 1)
+        self.assertEqual(self.stored(RECIPE_KEY)[0]["pours"], [50, 145, 240])
+
     def test_incompatible_new_backup_does_not_replace_legacy_data(self):
         self.seed_legacy_data()
         self.tab("journal")

@@ -42,6 +42,7 @@ La interfaz se identifica como V1.1. El formato de respaldo sigue siendo V1 con 
 - [x] Escribir el nombre de la receta en el formulario, eliminando la dependencia de `prompt()`.
 - [x] Mostrar errores y confirmaciones persistentes, verificar la escritura y ofrecer un respaldo del intento si falla el almacenamiento.
 - [x] Recuperar la última receta seleccionada al recargar y conservar las claves de datos anteriores.
+- [x] Permitir guardar con el editor de vertidos abierto sin cambios y llevar a Aplicar/Cancelar cuando hay cambios pendientes, conservando los demás parámetros.
 - [x] Añadir comprobaciones de guardado y recuperación en Chromium y WebKit a la publicación automática.
 
 La causa exacta del fallo reportado en los dispositivos del propietario no se había reproducido en Chromium. El nuevo flujo permite ver el error concreto y guardar sin ventanas emergentes; la confirmación final en sus dispositivos queda pendiente de una nueva prueba tras publicar V1.2.
