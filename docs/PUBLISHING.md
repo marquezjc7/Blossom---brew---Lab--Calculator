@@ -12,6 +12,8 @@ Esta configuración se realiza una vez en GitHub, con una cuenta que pueda admin
 4. Entra en **Actions → Publicar Blossom Brew Lab → Run workflow**, selecciona `main` y ejecuta el flujo.
 5. Cuando el trabajo **deploy** termine correctamente, abre la dirección que muestra GitHub Pages en el resumen del flujo o en **Settings → Pages**.
 
+La selección **Source → GitHub Actions** se guarda automáticamente. El botón **Save** de **Custom domain** corresponde únicamente a un dominio propio; para la dirección gratuita de GitHub, ese campo queda vacío. Si una ejecución anterior falló porque Pages no estaba activado, vuelve a ejecutar el flujo después de seleccionar la fuente.
+
 Si **Settings → Pages** indica que la publicación no está disponible para el plan o la visibilidad actual del repositorio, no cambies su visibilidad automáticamente: revisa las opciones de la cuenta o elige otro alojamiento estático. Publicar la aplicación no requiere hacer público el repositorio si el plan admite Pages para repositorios privados.
 
 ## Publicaciones posteriores
