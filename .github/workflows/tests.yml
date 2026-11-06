@@ -6,11 +6,31 @@ on:
       - main
   pull_request:
   workflow_call:
+    inputs:
+      require_cloud:
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
 
 jobs:
+  cloud:
+    if: inputs.require_cloud || vars.BLOSSOM_SUPABASE_URL != '' || vars.BLOSSOM_SUPABASE_PUBLISHABLE_KEY != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Comprobar Supabase y los permisos de acceso
+        env:
+          BLOSSOM_SUPABASE_URL: ${{ vars.BLOSSOM_SUPABASE_URL }}
+          BLOSSOM_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BLOSSOM_SUPABASE_PUBLISHABLE_KEY }}
+        run: python scripts/check_cloud.py
+
   tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 10

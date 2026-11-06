@@ -17,6 +17,8 @@ jobs:
   validate:
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/tests.yml
+    with:
+      require_cloud: true
 
   build:
     needs: validate
@@ -56,3 +58,37 @@ jobs:
       - name: Publicar en GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Comprobar la versión y la conexión publicadas
+        env:
+          BLOSSOM_SITE_URL: ${{ steps.deployment.outputs.page_url }}
+          BLOSSOM_SUPABASE_URL: ${{ vars.BLOSSOM_SUPABASE_URL }}
+          BLOSSOM_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BLOSSOM_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          python3 -u - <<'PY'
+          import os
+          import time
+          from urllib.request import urlopen
+          from urllib.parse import urljoin
+          site = os.environ['BLOSSOM_SITE_URL']
+          expected_url = os.environ['BLOSSOM_SUPABASE_URL'].strip().rstrip('/')
+          expected_key = os.environ['BLOSSOM_SUPABASE_PUBLISHABLE_KEY'].strip()
+          for attempt in range(12):
+              try:
+                  stamp = str(time.time_ns())
+                  with urlopen(site + '?verify=' + stamp, timeout=20) as response:
+                      html = response.read().decode()
+                  if 'id="cloudAccount"' not in html or 'BREW LAB · V1.5' not in html:
+                      raise ValueError('La página todavía no muestra la nueva versión')
+                  with urlopen(urljoin(site, 'src/cloud-config.js') + '?verify=' + stamp, timeout=20) as response:
+                      config = response.read().decode()
+                  if expected_url not in config or expected_key not in config:
+                      raise ValueError('La configuración pública todavía no coincide con el proyecto')
+                  print('Versión 1.5 publicada y configuración de Supabase verificada.')
+                  break
+              except Exception as error:
+                  if attempt == 11:
+                      print(f'::error::No se pudo comprobar la publicación: {error}')
+                      raise SystemExit(1)
+                  print('Esperando la actualización de GitHub Pages…')
+                  time.sleep(5)
+          PY

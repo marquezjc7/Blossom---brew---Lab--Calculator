@@ -14,6 +14,8 @@ El código está preparado para Supabase Auth y PostgreSQL. **No se activa hasta
 
 Solo hace falta realizar esta conexión una vez. No hay credenciales de servidor en el repositorio ni en el navegador. El esquema de respaldo y las claves de almacenamiento local de versiones anteriores se conservan.
 
+Antes de publicar, GitHub Actions exige las dos variables y comprueba el proyecto real: Auth accesible, correo y registro habilitados, y acceso anónimo denegado tanto a `blossom_records` como a `blossom_sync`. Estas comprobaciones no envían correos ni leen recetas. Tras desplegar, también comprueba que la página muestra V1.5 y que su configuración pública coincide con las variables del proyecto. El primer acceso por correo del propietario sigue siendo necesario para incorporar los datos guardados en su navegador.
+
 ## Uso en la aplicación
 
 En la computadora y el navegador donde ya están las recetas, escribir el correo en «Tus recetas, en tus dispositivos», solicitar el enlace y abrirlo en ese mismo navegador. Las recetas personales y la bitácora locales se incorporan automáticamente a la cuenta. Entrar con el mismo correo en el teléfono para recibirlas. No se requiere exportar ni importar JSON para ese traslado.
