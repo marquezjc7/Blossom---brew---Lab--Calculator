@@ -73,8 +73,15 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Incorporar las recetas locales al conectar la cuenta y conservar cambios pendientes sin conexión.
 - [x] Proteger las ediciones sin guardar, propagar borrados y conservar ambas versiones ante ediciones simultáneas.
 - [x] Probar permisos entre cuentas y acceso anónimo mediante PostgreSQL embebido, además del contrato de dos navegadores.
-- [ ] Conectar el proyecto de Supabase del propietario, aplicar el esquema y configurar el correo y la URL pública.
-- [ ] Publicar la configuración y verificar inicio de sesión y sincronización con el servicio real en computadora y teléfono.
+- [x] Conectar el proyecto de Supabase del propietario, aplicar el esquema y configurar el correo y la URL pública.
+- [x] Publicar la configuración y confirmar el acceso y el mensaje de sincronización en la computadora del propietario.
+- [ ] Confirmar el acceso y la recuperación de recetas en el teléfono del propietario.
+
+## V1.5.1 — acceso entre dispositivos
+
+- [x] Distinguir las cuotas de correo y las solicitudes frecuentes, conservar las esperas y evitar reenvíos durante el bloqueo.
+- [x] Configurar una contraseña desde una sesión verificada y entrar con ella desde otro dispositivo sin solicitar otro correo.
+- [x] Conservar las recetas ante credenciales inválidas y comprobar que las contraseñas no se almacenen con los datos del navegador.
 
 ## Etapa 3: acceso desde el teléfono
 

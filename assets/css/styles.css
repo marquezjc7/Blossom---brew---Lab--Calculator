@@ -143,6 +143,19 @@ textarea:focus-visible {
 .cloud-sign-in .btn {
   min-height: 42px;
 }
+.cloud-password {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.cloud-password summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+.cloud-password form {
+  margin-top: 12px;
+}
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr);

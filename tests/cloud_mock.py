@@ -12,6 +12,8 @@ class MockCloud:
         self.records = {}
         self.offline = False
         self.calls = []
+        self.email_limit = None
+        self.password = None
 
     def attach(self, context, authenticated=True):
         config = {"url": "https://cloud.example.test", "publishableKey": "sb_publishable_test"}
@@ -37,12 +39,31 @@ class MockCloud:
             return
         path = urlsplit(request.url).path
         if path == "/auth/v1/user":
+            if request.method == "PUT":
+                self.password = request.post_data_json["password"]
+                self.calls.append({"action": "set_password"})
             route.fulfill(headers=headers, json={"id": USER_ID, "email": "julio@example.com"})
         elif path == "/auth/v1/logout":
             route.fulfill(status=204, headers=headers)
         elif path == "/auth/v1/otp":
             self.calls.append(request.post_data_json)
-            route.fulfill(headers=headers, json={})
+            if self.email_limit:
+                if self.email_limit.get("retry_after"):
+                    headers["Retry-After"] = self.email_limit["retry_after"]
+                    headers["Access-Control-Expose-Headers"] = "Retry-After"
+                route.fulfill(status=429, headers=headers, json={"code": self.email_limit["code"]})
+            else:
+                route.fulfill(headers=headers, json={})
+        elif path == "/auth/v1/token" and "grant_type=password" in request.url:
+            data = request.post_data_json
+            self.calls.append({"action": "password_login", "email": data["email"]})
+            if not self.password or data["email"] != "julio@example.com" or data["password"] != self.password:
+                route.fulfill(status=400, headers=headers, json={"code": "invalid_credentials"})
+            else:
+                route.fulfill(headers=headers, json={
+                    "access_token": "test-access", "refresh_token": "test-refresh", "expires_at": 9999999999,
+                    "user": {"id": USER_ID, "email": "julio@example.com"},
+                })
         elif path == "/rest/v1/rpc/blossom_sync":
             changes = request.post_data_json["changes"]
             self.calls.append(copy.deepcopy(changes))

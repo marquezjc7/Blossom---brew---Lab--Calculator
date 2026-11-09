@@ -24,6 +24,8 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      app_version: ${{ steps.version.outputs.value }}
     permissions:
       contents: read
       pages: read
@@ -32,6 +34,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Leer la versión que se va a publicar
+        id: version
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          with open('package.json') as source:
+              version = json.load(source)['version']
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'value={version}\n')
+          PY
       - name: Preparar solo los archivos de la aplicación
         env:
           BLOSSOM_SUPABASE_URL: ${{ vars.BLOSSOM_SUPABASE_URL }}
@@ -61,6 +74,7 @@ jobs:
       - name: Comprobar la versión y la conexión publicadas
         env:
           BLOSSOM_SITE_URL: ${{ steps.deployment.outputs.page_url }}
+          BLOSSOM_APP_VERSION: ${{ needs.build.outputs.app_version }}
           BLOSSOM_SUPABASE_URL: ${{ vars.BLOSSOM_SUPABASE_URL }}
           BLOSSOM_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BLOSSOM_SUPABASE_PUBLISHABLE_KEY }}
         run: |
@@ -69,7 +83,8 @@ jobs:
           import time
           from urllib.request import urlopen
           from urllib.parse import urljoin
-          site = os.environ['BLOSSOM_SITE_URL']
+          site = os.environ['BLOSSOM_SITE_URL'].rstrip('/') + '/'
+          version = os.environ['BLOSSOM_APP_VERSION']
           expected_url = os.environ['BLOSSOM_SUPABASE_URL'].strip().rstrip('/')
           expected_key = os.environ['BLOSSOM_SUPABASE_PUBLISHABLE_KEY'].strip()
           for attempt in range(12):
@@ -77,13 +92,13 @@ jobs:
                   stamp = str(time.time_ns())
                   with urlopen(site + '?verify=' + stamp, timeout=20) as response:
                       html = response.read().decode()
-                  if 'id="cloudAccount"' not in html or 'BREW LAB · V1.5' not in html:
+                  if 'id="cloudAccount"' not in html or f'src/cloud-api.js?v={version}' not in html:
                       raise ValueError('La página todavía no muestra la nueva versión')
                   with urlopen(urljoin(site, 'src/cloud-config.js') + '?verify=' + stamp, timeout=20) as response:
                       config = response.read().decode()
                   if expected_url not in config or expected_key not in config:
                       raise ValueError('La configuración pública todavía no coincide con el proyecto')
-                  print('Versión 1.5 publicada y configuración de Supabase verificada.')
+                  print(f'Versión {version} publicada y configuración de Supabase verificada.')
                   break
               except Exception as error:
                   if attempt == 11:

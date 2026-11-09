@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171813" />
     <title>Blossom Brew Lab · Calculadora de recetas</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.5.0" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.5.1" />
   </head>
   <body>
     <header class="hero">
@@ -17,7 +17,7 @@
             </div>
             <div class="tag">SPECIALTY COFFEE</div>
           </div>
-          <div class="version">BREW LAB · V1.5</div>
+          <div class="version">BREW LAB · V1.5.1</div>
         </div>
         <h1>Precisión que florece en cada taza.</h1>
         <p>
@@ -53,6 +53,37 @@
             Enviar enlace para entrar
           </button>
         </form>
+        <p class="hint" id="cloudEmailWait" role="status" hidden></p>
+        <details class="cloud-password" id="cloudPasswordSignIn">
+          <summary>Entrar con contraseña</summary>
+          <p class="hint">
+            Si ya configuraste una contraseña desde tu cuenta, puedes entrar sin
+            solicitar un correo.
+          </p>
+          <form class="cloud-sign-in" id="cloudPasswordForm">
+            <div class="field">
+              <label for="cloudPasswordEmail">Tu correo electrónico</label>
+              <input
+                id="cloudPasswordEmail"
+                type="email"
+                autocomplete="username"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="cloudPassword">Contraseña</label>
+              <input
+                id="cloudPassword"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+            <button class="btn primary" type="submit" id="cloudPasswordSubmit">
+              Entrar con contraseña
+            </button>
+          </form>
+        </details>
         <div id="cloudConnected" hidden>
           <p class="note">Cuenta: <strong id="cloudUserEmail"></strong></p>
           <button class="btn" type="button" id="cloudSignOut">
@@ -61,6 +92,47 @@
           <p class="hint">
             Cerrar sesión mantiene los datos guardados en este navegador.
           </p>
+          <details class="cloud-password" id="cloudPasswordSetup">
+            <summary>Configurar o cambiar contraseña</summary>
+            <p class="hint">
+              Configura una contraseña para entrar desde el teléfono u otro
+              navegador sin pedir otro correo.
+            </p>
+            <form class="cloud-sign-in" id="cloudSetPassword">
+              <div class="field">
+                <label for="cloudNewPassword"
+                  >Nueva contraseña (mínimo 12 caracteres)</label
+                >
+                <input
+                  id="cloudNewPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  minlength="12"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="cloudConfirmPassword">Repite la contraseña</label>
+                <input
+                  id="cloudConfirmPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  minlength="12"
+                  required
+                />
+              </div>
+              <button class="btn primary" type="submit" id="cloudSavePassword">
+                Guardar contraseña
+              </button>
+            </form>
+          </details>
+          <p
+            class="status"
+            id="cloudPasswordFeedback"
+            role="status"
+            tabindex="-1"
+            hidden
+          ></p>
         </div>
         <p id="cloudStatus" class="status" role="status" aria-live="polite">
           Tus datos locales se conservarán al conectar tu cuenta.
@@ -651,20 +723,20 @@
         </div>
       </section>
       <div class="footer">
-        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.5 · Herramienta experimental para
-        preparación y análisis sensorial
+        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.5.1 · Herramienta experimental
+        para preparación y análisis sensorial
       </div>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.5.0" defer></script>
-    <script src="src/plans.js?v=1.5.0" defer></script>
-    <script src="src/recipes.js?v=1.5.0" defer></script>
-    <script src="src/storage.js?v=1.5.0" defer></script>
-    <script src="src/transfers.js?v=1.5.0" defer></script>
-    <script src="src/pour-editor.js?v=1.5.0" defer></script>
-    <script src="src/cloud-config.js?v=1.5.0" defer></script>
-    <script src="src/sync.js?v=1.5.0" defer></script>
-    <script src="src/cloud-api.js?v=1.5.0" defer></script>
-    <script src="src/app.js?v=1.5.0" defer></script>
+    <script src="src/calculations.js?v=1.5.1" defer></script>
+    <script src="src/plans.js?v=1.5.1" defer></script>
+    <script src="src/recipes.js?v=1.5.1" defer></script>
+    <script src="src/storage.js?v=1.5.1" defer></script>
+    <script src="src/transfers.js?v=1.5.1" defer></script>
+    <script src="src/pour-editor.js?v=1.5.1" defer></script>
+    <script src="src/cloud-config.js?v=1.5.1" defer></script>
+    <script src="src/sync.js?v=1.5.1" defer></script>
+    <script src="src/cloud-api.js?v=1.5.1" defer></script>
+    <script src="src/app.js?v=1.5.1" defer></script>
   </body>
 </html>

@@ -2,6 +2,8 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const {
   AUTH_KEY,
+  EMAIL_RETRY_KEY,
+  retryAfterSeconds,
   validateConfig,
   createCloudApi,
 } = require("../src/cloud-api.js");
@@ -21,25 +23,30 @@ const token = (overrides = {}) => ({
 function harness() {
   const h = {
     saved: null,
+    cooldown: null,
+    now: Date.now(),
     calls: [],
     reply: () => ({ status: 200, data: user }),
   };
   h.store = {
-    read: () => structuredClone(h.saved),
-    write: (_key, value) => {
-      h.saved = structuredClone(value);
+    read: (key) => structuredClone(key === AUTH_KEY ? h.saved : h.cooldown),
+    write: (key, value) => {
+      if (key === AUTH_KEY) h.saved = structuredClone(value);
+      else h.cooldown = structuredClone(value);
       return true;
     },
   };
   h.api = createCloudApi({
     config,
     store: h.store,
+    now: () => h.now,
     fetch: async (url, options) => {
       h.calls.push({ url, ...options });
       const reply = h.reply(url, options);
       return {
         ok: reply.status >= 200 && reply.status < 300,
         status: reply.status,
+        headers: new Headers(reply.headers ?? {}),
         json: async () => reply.data,
       };
     },
@@ -149,4 +156,137 @@ test("cerrar sesión retira el token local incluso sin conexión", async () => {
   assert.equal(h.saved, null);
   assert.ok(AUTH_KEY.endsWith("-v1"));
   await assert.rejects(h.api.exchange([]));
+});
+
+test("interpreta Retry-After sin confundir números inválidos con fechas", () => {
+  const now = Date.parse("2026-11-09T00:00:00Z");
+  assert.equal(retryAfterSeconds("120", now), 120);
+  assert.equal(retryAfterSeconds("Mon, 09 Nov 2026 00:02:00 GMT", now), 120);
+  for (const value of [null, "", "0", "-1", "no es una fecha"])
+    assert.equal(retryAfterSeconds(value, now), null);
+});
+
+test("distingue el límite de correos y conserva la espera al restaurar la aplicación", async () => {
+  const h = harness();
+  h.reply = () => ({
+    status: 429,
+    data: { code: "over_email_send_rate_limit" },
+    headers: { "Retry-After": "600" },
+  });
+  await assert.rejects(
+    h.api.sendLink(user.email, "https://example.com/"),
+    (error) => {
+      assert.equal(error.code, "over_email_send_rate_limit");
+      assert.equal(error.retryAfterSeconds, 600);
+      assert.match(error.message, /límite horario/);
+      return true;
+    },
+  );
+  assert.equal(h.api.getEmailCooldown().seconds, 600);
+  assert.equal(h.saved, null);
+  const restored = createCloudApi({
+    config,
+    store: h.store,
+    now: () => h.now,
+    fetch: async () => {
+      throw new Error("No debe reenviar");
+    },
+  });
+  await assert.rejects(
+    restored.sendLink(user.email, "https://example.com/"),
+    /límite horario/,
+  );
+  assert.equal(h.calls.length, 1);
+  assert.equal(restored.getEmailCooldown().seconds, 600);
+});
+
+test("las esperas sin cabecera diferencian cuota de correo y solicitudes frecuentes", async () => {
+  for (const [code, expected] of [
+    ["over_email_send_rate_limit", 3600],
+    ["over_request_rate_limit", 60],
+  ]) {
+    const h = harness();
+    h.reply = () => ({ status: 429, data: { code } });
+    await assert.rejects(h.api.sendLink(user.email, "https://example.com/"));
+    assert.equal(h.api.getEmailCooldown().seconds, expected);
+  }
+  const legacy = harness();
+  legacy.reply = () => ({
+    status: 400,
+    data: { code: "over_email_send_rate_limit" },
+  });
+  await assert.rejects(legacy.api.sendLink(user.email, "https://example.com/"));
+  assert.equal(legacy.api.getEmailCooldown().seconds, 3600);
+});
+
+test("un envío correcto se pausa sin alterar la sesión y permite reenviar tras la espera", async () => {
+  const h = harness();
+  h.saved = token();
+  const session = structuredClone(h.saved);
+  await h.api.sendLink(user.email, "https://example.com/");
+  assert.equal(h.api.getEmailCooldown().seconds, 60);
+  await assert.rejects(h.api.sendLink(user.email, "https://example.com/"));
+  assert.equal(h.calls.length, 1);
+  h.now += 61000;
+  assert.equal(h.api.getEmailCooldown(), null);
+  await h.api.sendLink(user.email, "https://example.com/");
+  assert.equal(h.calls.length, 2);
+  assert.deepEqual(h.saved, session);
+  assert.equal(EMAIL_RETRY_KEY, "blossom-brew-email-retry-v1");
+});
+
+test("entrar con contraseña funciona aunque los correos estén limitados y no guarda la contraseña", async () => {
+  const h = harness();
+  const password = "contraseña-de-prueba-123";
+  h.cooldown = {
+    url: config.url,
+    until: h.now + 3600000,
+    reason: "over_email_send_rate_limit",
+  };
+  h.reply = (url) => ({
+    status: 200,
+    data: url.includes("grant_type=password") ? token() : user,
+  });
+  assert.deepEqual(await h.api.signInWithPassword(user.email, password), user);
+  assert.equal(h.calls.length, 2);
+  assert.deepEqual(JSON.parse(h.calls[0].body), {
+    email: user.email,
+    password,
+  });
+  assert.ok(!h.calls.some((call) => call.url.includes("/otp")));
+  assert.ok(!JSON.stringify([h.saved, h.cooldown]).includes(password));
+});
+
+test("la contraseña se configura con la sesión actual y no modifica los datos guardados", async () => {
+  const h = harness();
+  const password = "contraseña-de-prueba-123";
+  h.saved = token();
+  await h.api.restore("https://example.com/");
+  const session = structuredClone(h.saved);
+  await h.api.setPassword(password);
+  const call = h.calls.at(-1);
+  assert.equal(call.method, "PUT");
+  assert.ok(call.url.endsWith("/auth/v1/user"));
+  assert.equal(call.headers.Authorization, "Bearer test-access");
+  assert.deepEqual(JSON.parse(call.body), { password });
+  assert.deepEqual(h.saved, session);
+  assert.ok(!JSON.stringify(h.saved).includes(password));
+  h.reply = () => ({ status: 200, data: { user } });
+  await h.api.setPassword(password);
+  assert.deepEqual(h.saved, session);
+});
+
+test("no configura contraseñas sin una sesión y explica credenciales inválidas", async () => {
+  const h = harness();
+  await assert.rejects(
+    h.api.setPassword("contraseña-de-prueba-123"),
+    /Entra con tu correo/,
+  );
+  assert.equal(h.calls.length, 0);
+  h.reply = () => ({ status: 400, data: { error: "invalid_grant" } });
+  await assert.rejects(
+    h.api.signInWithPassword(user.email, "incorrecta"),
+    /correo o la contraseña/,
+  );
+  assert.equal(h.saved, null);
 });

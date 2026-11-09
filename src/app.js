@@ -745,17 +745,57 @@
     let connectedUser = null;
     let restoring = false;
     let callback = location.href;
-    const signedIn = async (user) => {
+    let loginBusy = false;
+    let emailTimer = null;
+    const updateLoginControls = () => {
+      const wait = api.getEmailCooldown();
+      const emailButton = $("cloudSendLink");
+      emailButton.disabled = loginBusy || !!wait;
+      emailButton.textContent = "Enviar enlace para entrar";
+      $("cloudPasswordSubmit").disabled = loginBusy;
+      $("cloudEmailWait").hidden = !!connectedUser || !wait;
+      if (wait) {
+        const minutes = Math.floor(wait.seconds / 60);
+        const seconds = String(wait.seconds % 60).padStart(2, "0");
+        $("cloudEmailWait").textContent =
+          wait.reason === "over_email_send_rate_limit"
+            ? `El servicio limitó los correos. Próximo intento en ${minutes}:${seconds}. Si ya configuraste una contraseña, puedes entrar con ella.`
+            : `Puedes solicitar otro enlace en ${minutes}:${seconds}.`;
+        if (!emailTimer && !connectedUser)
+          emailTimer = setInterval(updateLoginControls, 1000);
+      } else {
+        clearInterval(emailTimer);
+        emailTimer = null;
+      }
+      if (connectedUser) {
+        clearInterval(emailTimer);
+        emailTimer = null;
+      }
+    };
+    const renderAccount = (user) => {
       connectedUser = user;
-      $("cloudSignIn").hidden = true;
-      $("cloudConnected").hidden = false;
-      $("cloudUserEmail").textContent = user.email;
+      $("cloudSignIn").hidden = !!user;
+      $("cloudPasswordSignIn").hidden = !!user;
+      $("cloudConnected").hidden = !user;
+      $("cloudUserEmail").textContent = user?.email ?? "";
+      $("cloudPassword").value = "";
+      $("cloudNewPassword").value = "";
+      $("cloudConfirmPassword").value = "";
+      $("cloudPasswordFeedback").hidden = true;
+      $("cloudSavePassword").disabled = false;
+      $("cloudPasswordSetup").open = false;
+      updateLoginControls();
+    };
+    const signedIn = async (user) => {
+      renderAccount(user);
       await cloudSync.connect(user);
     };
+    updateLoginControls();
     $("cloudSignIn").addEventListener("submit", async (event) => {
       event.preventDefault();
-      const button = $("cloudSendLink");
-      button.disabled = true;
+      if (loginBusy) return;
+      loginBusy = true;
+      updateLoginControls();
       try {
         const redirect = new URL(location.href);
         redirect.hash = "";
@@ -767,18 +807,80 @@
       } catch (error) {
         showStatus(error.message, true);
       } finally {
-        button.disabled = false;
+        loginBusy = false;
+        updateLoginControls();
+      }
+    });
+    $("cloudPasswordSignIn").addEventListener("toggle", () => {
+      if ($("cloudPasswordSignIn").open && !$("cloudPasswordEmail").value) {
+        $("cloudPasswordEmail").value = $("cloudEmail").value.trim();
+      }
+    });
+    $("cloudPasswordForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (loginBusy) return;
+      loginBusy = true;
+      updateLoginControls();
+      try {
+        const user = await api.signInWithPassword(
+          $("cloudPasswordEmail").value.trim(),
+          $("cloudPassword").value,
+        );
+        $("cloudPassword").value = "";
+        callback = location.href;
+        await signedIn(user);
+      } catch (error) {
+        showStatus(error.message, true);
+      } finally {
+        loginBusy = false;
+        updateLoginControls();
+      }
+    });
+    $("cloudSetPassword").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!connectedUser) return;
+      const feedback = $("cloudPasswordFeedback");
+      const showPasswordFeedback = (message, error = false) => {
+        feedback.textContent = message;
+        feedback.hidden = false;
+        feedback.classList.toggle("error", error);
+        feedback.setAttribute("role", error ? "alert" : "status");
+      };
+      const password = $("cloudNewPassword").value;
+      if (password !== $("cloudConfirmPassword").value) {
+        showPasswordFeedback(
+          "Las contraseñas no coinciden. Escríbelas iguales en los dos campos.",
+          true,
+        );
+        $("cloudConfirmPassword").focus();
+        return;
+      }
+      const account = connectedUser.id;
+      const button = $("cloudSavePassword");
+      button.disabled = true;
+      try {
+        await api.setPassword(password);
+        if (connectedUser?.id !== account) return;
+        $("cloudNewPassword").value = "";
+        $("cloudConfirmPassword").value = "";
+        $("cloudPasswordSetup").open = false;
+        showPasswordFeedback(
+          "Contraseña configurada. En el teléfono, abre «Entrar con contraseña» y usa tu mismo correo.",
+        );
+        feedback.focus();
+      } catch (error) {
+        if (connectedUser?.id === account)
+          showPasswordFeedback(error.message, true);
+      } finally {
+        if (connectedUser?.id === account) button.disabled = false;
       }
     });
     $("cloudSignOut").addEventListener("click", async () => {
       cloudSync.disconnect();
       try {
         await api.signOut();
-        connectedUser = null;
+        renderAccount(null);
         callback = location.href;
-        $("cloudSignIn").hidden = false;
-        $("cloudConnected").hidden = true;
-        $("cloudUserEmail").textContent = "";
         showStatus(
           "Sesión cerrada. Tus datos siguen guardados en este navegador.",
         );
@@ -809,14 +911,14 @@
       if (document.visibilityState === "visible") wakeCloud();
     });
     window.addEventListener("storage", (event) => {
+      if (event.key === BlossomLab.cloudApi.EMAIL_RETRY_KEY)
+        updateLoginControls();
       if (event.key === BlossomLab.cloudApi.AUTH_KEY) {
         // Do not keep syncing in another tab after the user signs out.
         if (!localStore.read(BlossomLab.cloudApi.AUTH_KEY)?.access_token) {
           cloudSync.disconnect();
-          connectedUser = null;
+          renderAccount(null);
           callback = location.href;
-          $("cloudSignIn").hidden = false;
-          $("cloudConnected").hidden = true;
           showStatus(
             "Sesión cerrada. Tus datos siguen guardados en este navegador.",
           );
