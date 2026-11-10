@@ -771,9 +771,53 @@
     }
   }
   function setTab(tab) {
-    document
-      .querySelectorAll(".tabs button")
-      .forEach((el) => el.classList.toggle("active", el.dataset.tab === tab));
+    const sections = {
+      recipe: [
+        "01 / EL LABORATORIO",
+        "Diseña tu ",
+        "preparación.",
+        "Tu próxima taza, una variable a la vez.",
+      ],
+      preparation: [
+        "02 / PREPARACIÓN GUIADA",
+        "De la receta ",
+        "a tu taza.",
+        "Sigue los vertidos y conserva el resultado de cada preparación.",
+      ],
+      extraction: [
+        "03 / EXTRACCIÓN",
+        "Entiende tu ",
+        "extracción.",
+        "Calcula con los valores que has medido y evalúa la taza.",
+      ],
+      journal: [
+        "04 / BITÁCORA",
+        "Cada taza, ",
+        "un descubrimiento.",
+        "Registra lo que encuentras y vuelve a tus mejores pruebas.",
+      ],
+      waterLab: [
+        "05 / FORMULACIÓN DE AGUA",
+        "Diseña tu ",
+        "agua.",
+        "Ajusta la dureza y la alcalinidad de tu próxima mezcla.",
+      ],
+    };
+    if (!sections[tab]) return;
+    const [index, title, accent, description] = sections[tab];
+    $("workspaceIndex").textContent = index;
+    const emphasis = document.createElement("em");
+    emphasis.textContent = accent;
+    $("workspaceTitle").replaceChildren(
+      document.createTextNode(title),
+      emphasis,
+    );
+    $("workspaceDescription").textContent = description;
+    document.querySelectorAll(".tabs button").forEach((el) => {
+      const active = el.dataset.tab === tab;
+      el.classList.toggle("active", active);
+      el.setAttribute("aria-pressed", String(active));
+    });
     document
       .querySelectorAll(".panel")
       .forEach((el) => el.classList.toggle("active", el.id === tab));
@@ -791,11 +835,16 @@
     }
     if (!api) return;
     $("cloudAccount").hidden = false;
+    $("accountShortcut").hidden = false;
     $("storageNote").textContent =
       "Los registros se conservan en este navegador. Al entrar con tu cuenta, se sincronizan con tus otros dispositivos. El respaldo JSON sigue disponible para conservar otra copia.";
     const showStatus = (message, error = false) => {
       $("cloudStatus").textContent = message;
       $("cloudStatus").classList.toggle("error", error);
+      if (error) {
+        $("headerSync").textContent = "Revisar cuenta";
+        $("headerSync").dataset.phase = "error";
+      }
     };
     const readData = () => ({
       recipes: localStore.read(STORAGE_R),
@@ -828,7 +877,18 @@
       writeState: (state) => localStore.write(BlossomLab.sync.STATE_KEY, state),
       exchange: (changes) => api.exchange(changes),
       canApply: () => !recipeDirty && !editor.isOpen && !deletionTarget,
-      onStatus: ({ phase, message }) => showStatus(message, phase === "error"),
+      onStatus: ({ phase, message }) => {
+        showStatus(message, phase === "error");
+        const labels = {
+          synced: "Sincronizado",
+          syncing: "Sincronizando…",
+          pending: "Cambios pendientes",
+          waiting: "Cambios pendientes",
+          error: "Revisar cuenta",
+        };
+        $("headerSync").textContent = labels[phase] ?? "Conectando…";
+        $("headerSync").dataset.phase = phase;
+      },
       onConflict: (conflicts) => {
         const copied = conflicts.some(
           (conflict) => conflict.action === "copied",
@@ -872,6 +932,10 @@
     };
     const renderAccount = (user) => {
       connectedUser = user;
+      $("cloudAccount").classList.toggle("is-connected", !!user);
+      $("accountShortcutLabel").textContent = user ? "Tu cuenta" : "Entrar";
+      $("headerSync").textContent = user ? "Conectando…" : "Acceso opcional";
+      $("headerSync").dataset.phase = user ? "syncing" : "signed-out";
       $("cloudSignIn").hidden = !!user;
       $("cloudPasswordSignIn").hidden = !!user;
       $("cloudConnected").hidden = !user;
@@ -1110,6 +1174,13 @@
       .forEach((el) =>
         el.addEventListener("click", () => setTab(el.dataset.tab)),
       );
+    document.querySelectorAll("[data-open-tab]").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        setTab(link.dataset.openTab);
+        $("laboratorio").scrollIntoView({ block: "start" });
+      });
+    });
     $("preset").addEventListener("change", () => {
       if (
         (recipeDirty || editor.isDirty) &&
@@ -1259,7 +1330,10 @@
     );
     loadRecipe(lastRecipe ?? defaults[0]);
     renderSessions();
-    if (preparationGuide.hasDraft) setTab("preparation");
+    if (preparationGuide.hasDraft) {
+      setTab("preparation");
+      $("preparationTitle").scrollIntoView({ block: "start" });
+    }
     initCloud();
   }
   init();

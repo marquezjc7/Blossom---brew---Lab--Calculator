@@ -1505,6 +1505,61 @@ class BrowserTests(unittest.TestCase):
                 if width <= 730:
                     self.assertGreaterEqual(self.page.locator("#dose").evaluate("el => parseFloat(getComputedStyle(el).fontSize)"), 16)
 
+    def test_editorial_recipe_summary_is_compact_and_does_not_follow_scrolling(self):
+        self.page.evaluate("document.fonts.ready")
+        self.page.click(".hero-cta")
+        card = self.page.locator(".recipe-metrics")
+        initial = card.bounding_box()
+        self.assertLessEqual(initial["width"], 340)
+        self.assertLessEqual(initial["height"], 440)
+        self.assertEqual(card.evaluate("el => getComputedStyle(el).position"), "static")
+        self.assertEqual(self.page.locator(".recipe-results").evaluate("el => getComputedStyle(el).position"), "static")
+        self.page.fill("#temp2", "85")
+        self.assertLessEqual(card.bounding_box()["height"], 470)
+        self.page.evaluate("window.scrollBy(0, 350)")
+        self.assertLess(card.bounding_box()["y"], initial["y"] - 200)
+
+    def test_editorial_header_links_activate_real_sections_and_preserve_edits(self):
+        self.page.fill("#dose", "18")
+        self.page.click('.header-nav [data-open-tab="waterLab"]')
+        expect(self.page.locator("#waterLab")).to_be_visible()
+        expect(self.page.locator("#workspaceTitle")).to_have_text("Diseña tu agua.")
+        expect(self.page.locator('[data-tab="waterLab"]')).to_have_attribute("aria-pressed", "true")
+        self.page.click(".hero-cta")
+        expect(self.page.locator("#recipe")).to_be_visible()
+        expect(self.page.locator("#workspaceTitle")).to_have_text("Diseña tu preparación.")
+        expect(self.page.locator("#dose")).to_have_value("18")
+        expect(self.page.locator('[data-tab="waterLab"]')).to_have_attribute("aria-pressed", "false")
+
+    def test_editorial_all_five_sections_fit_mobile_and_keep_existing_records(self):
+        self.seed_legacy_data()
+        for width in [320, 375, 768, 1440]:
+            with self.subTest(width=width):
+                self.page.set_viewport_size({"width": width, "height": 900})
+                self.page.evaluate("document.fonts.ready")
+                for tab in ["recipe", "preparation", "extraction", "journal", "waterLab"]:
+                    self.tab(tab)
+                    self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, tab))
+                self.assertEqual(self.stored(RECIPE_KEY), [LEGACY_RECIPE])
+                self.assertEqual(self.stored(SESSION_KEY), [LEGACY_SESSION])
+        self.page.set_viewport_size({"width": 375, "height": 812})
+        self.tab("recipe")
+        self.assertGreaterEqual(self.page.locator("#dose").evaluate("el => parseFloat(getComputedStyle(el).fontSize)"), 16)
+
+    def test_editorial_header_reports_actual_sync_and_signout_state(self):
+        backend = self.enable_cloud()
+        expect(self.page.locator("#accountShortcut")).to_be_visible()
+        expect(self.page.locator("#headerSync")).to_have_text("Sincronizado")
+        backend.offline = True
+        self.page.evaluate("window.dispatchEvent(new Event('focus'))")
+        expect(self.page.locator("#headerSync")).to_have_text("Revisar cuenta")
+        backend.offline = False
+        self.page.evaluate("window.dispatchEvent(new Event('focus'))")
+        expect(self.page.locator("#headerSync")).to_have_text("Sincronizado")
+        self.page.click("#cloudSignOut")
+        expect(self.page.locator("#accountShortcutLabel")).to_have_text("Entrar")
+        expect(self.page.locator("#headerSync")).to_have_text("Acceso opcional")
+
     def enable_cloud(self, backend=None):
         backend = backend or MockCloud()
         backend.attach(self.context)

@@ -118,6 +118,16 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Conservar el JPG original y sus proporciones, con una presentación blanca sobre la cabecera oscura.
 - [x] Mantener la tipografía de título y descripción elegida en V1.7.2.
 
+## V1.8.0 — diseño editorial de la aplicación
+
+- [x] Recibir la aprobación del propietario de la maqueta inspirada en La Cabra y Onyx at The Preserve.
+- [x] Aplicar la portada, tipografías locales, paleta y divisiones del diseño aprobado a las cinco secciones.
+- [x] Reducir el ancho y la altura del resumen de receta y evitar que siga el desplazamiento, conforme a la revisión del propietario.
+- [x] Mantener el logo original, las recetas y sesiones, la preparación guiada, los perfiles de agua y la sincronización.
+- [x] Añadir accesos de cabecera a las secciones reales y mostrar el estado de sincronización de la cuenta.
+- [x] Comprobar las cinco secciones a distintos anchos, la conservación de datos y el comportamiento del resumen.
+- [ ] Revisar la nueva presentación en la computadora y el teléfono del propietario después de publicar.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.
@@ -132,7 +142,7 @@ La publicación y la sincronización ya están activas y confirmadas por el prop
 ## Mejoras posteriores
 
 - [x] Preparar una propuesta visual independiente de portada y Recetas, inspirada en las capturas de La Cabra y Onyx at The Preserve y adaptada a computadora y teléfono.
-- [ ] Recibir la revisión del propietario de la propuesta antes de extender el diseño a las demás secciones.
+- [x] Recibir la revisión del propietario de la propuesta antes de extender el diseño a las demás secciones.
 
 - Comparaciones A/B y gráficas sensoriales.
 - Catálogos editables de molinos, métodos, agua y origen del café.

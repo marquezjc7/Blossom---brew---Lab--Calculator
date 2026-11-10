@@ -3,32 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#171813" />
+    <meta name="theme-color" content="#f5f1e9" />
     <title>Blossom Brew Lab · Calculadora de recetas</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.7.3" />
+    <link
+      rel="preload"
+      href="assets/fonts/manrope.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.8.0" />
   </head>
   <body>
-    <header class="hero">
-      <div class="wrap">
-        <div class="mast">
+    <a class="skip-link" href="#laboratorio">Ir al laboratorio</a>
+    <div class="announcement" id="inicio">
+      <span>CAFÉ · CURIOSIDAD · PRECISIÓN</span>
+      <span class="version">BREW LAB · V1.8.0</span>
+    </div>
+    <div class="header-shell">
+      <header class="site-header wrap">
+        <a
+          class="brand-link"
+          href="#inicio"
+          aria-label="Blossom Specialty Coffee · Inicio"
+        >
           <img
             class="brand-logo"
-            src="assets/images/blossom-specialty-coffee.jpg?v=1.7.3"
+            src="assets/images/blossom-specialty-coffee.jpg?v=1.8.0"
             alt="Blossom Specialty Coffee"
             width="1920"
             height="1920"
             decoding="async"
           />
-          <div class="version">BREW LAB · V1.7.3</div>
-        </div>
-        <h1>Precisión que florece en cada taza.</h1>
-        <p>
+        </a>
+        <nav class="header-nav" aria-label="Accesos al laboratorio">
+          <a href="#laboratorio" data-open-tab="recipe">Recetas</a>
+          <a href="#laboratorio" data-open-tab="waterLab">Agua</a>
+          <a href="#laboratorio" data-open-tab="journal">Bitácora</a>
+        </nav>
+        <a
+          class="account-shortcut"
+          id="accountShortcut"
+          href="#cloudAccount"
+          hidden
+        >
+          <span id="accountShortcutLabel">Tu cuenta</span>
+          <span class="header-sync" id="headerSync">Acceso opcional</span>
+        </a>
+      </header>
+    </div>
+    <section class="hero" aria-labelledby="heroTitle">
+      <img
+        class="hero-photo"
+        src="assets/images/coffee-blossoms.png?v=1.8.0"
+        alt="Flores y cerezas de café bajo una luz cálida; composición generada con IA para Blossom."
+        width="1942"
+        height="809"
+        fetchpriority="high"
+      />
+      <div class="hero-shade"></div>
+      <div class="hero-copy wrap">
+        <p class="hero-eyebrow">
+          BLOSSOM SPECIALTY COFFEE <span>BREW LAB</span>
+        </p>
+        <h1 id="heroTitle" aria-label="Precisión que florece en cada taza.">
+          <span>Precisión</span><span>que florece</span><em>en cada taza.</em>
+        </h1>
+        <p class="hero-description">
           Calculadora de recetas, rendimiento de extracción y bitácora sensorial
           para tu laboratorio de café.
         </p>
+        <a class="hero-cta" href="#laboratorio" data-open-tab="recipe"
+          >Diseña tu preparación
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4 12 12 4M4 4h8v8" /></svg
+        ></a>
       </div>
-    </header>
-    <main class="wrap shell">
+      <div class="hero-caption wrap">
+        <span>DEL ORIGEN A TU TAZA</span><span>OBSERVA · AJUSTA · REPITE</span>
+      </div>
+    </section>
+    <div class="intro-strip wrap">
+      <p>El detalle hace la diferencia.</p>
+      <span>UN ESPACIO PARA EXPLORAR EL CAFÉ.</span>
+    </div>
+    <main class="wrap shell" id="laboratorio">
       <section
         class="card cloud-account"
         id="cloudAccount"
@@ -36,7 +95,7 @@
         hidden
       >
         <h2 id="cloudTitle">Tus recetas, en tus dispositivos</h2>
-        <p class="note">
+        <p class="note account-intro">
           Entra con el mismo correo en la computadora y el teléfono para
           sincronizar tus recetas y bitácora automáticamente.
         </p>
@@ -141,18 +200,52 @@
         </p>
       </section>
       <nav class="tabs" aria-label="Secciones">
-        <button class="active" data-tab="recipe">01 · Recetas</button
-        ><button data-tab="preparation">02 · Preparación</button
-        ><button data-tab="extraction">03 · Extracción</button
-        ><button data-tab="journal">04 · Bitácora</button
-        ><button data-tab="waterLab">05 · Agua</button>
+        <button
+          class="active"
+          data-tab="recipe"
+          aria-controls="recipe"
+          aria-pressed="true"
+        >
+          01 · Recetas</button
+        ><button
+          data-tab="preparation"
+          aria-controls="preparation"
+          aria-pressed="false"
+        >
+          02 · Preparación</button
+        ><button
+          data-tab="extraction"
+          aria-controls="extraction"
+          aria-pressed="false"
+        >
+          03 · Extracción</button
+        ><button
+          data-tab="journal"
+          aria-controls="journal"
+          aria-pressed="false"
+        >
+          04 · Bitácora</button
+        ><button
+          data-tab="waterLab"
+          aria-controls="waterLab"
+          aria-pressed="false"
+        >
+          05 · Agua
+        </button>
       </nav>
+      <div class="workspace-heading" id="workspaceHeading">
+        <div>
+          <p class="kicker" id="workspaceIndex">01 / EL LABORATORIO</p>
+          <h2 id="workspaceTitle">Diseña tu <em>preparación.</em></h2>
+        </div>
+        <p id="workspaceDescription">Tu próxima taza, una variable a la vez.</p>
+      </div>
       <section id="recipe" class="panel active">
         <div class="layout">
           <div class="stack">
             <div class="card">
               <p class="kicker">Configuración</p>
-              <h2>Diseña tu preparación</h2>
+              <h2>Tu punto de partida</h2>
               <p class="sub">
                 Selecciona una receta de referencia o introduce tus propios
                 parámetros.
@@ -172,7 +265,7 @@
                     autocomplete="off"
                   />
                 </div>
-                <div class="field">
+                <div class="field mobile-wide">
                   <label for="method">Método</label
                   ><select id="method">
                     <option>V60 Neo</option>
@@ -189,7 +282,7 @@
                     <option>Otros</option>
                   </select>
                 </div>
-                <div class="field">
+                <div class="field mobile-wide">
                   <label for="grinder">Molino</label>
                   <select id="grinder">
                     <option value="">Sin especificar</option>
@@ -207,7 +300,7 @@
                     placeholder="Marca y modelo"
                   />
                 </div>
-                <div class="field">
+                <div class="field mobile-wide">
                   <label for="grindSize">Grosor de molienda</label>
                   <select id="grindSize" aria-describedby="grindSizeHint">
                     <option value="">Sin especificar</option>
@@ -219,7 +312,7 @@
                     <option>Extra gruesa</option>
                   </select>
                 </div>
-                <div class="field">
+                <div class="field mobile-wide">
                   <label for="grind" id="grindLabel"
                     >Ajuste del molino (opcional)</label
                   >
@@ -505,13 +598,15 @@
               </form>
             </div>
           </div>
-          <div class="stack">
-            <div class="card">
+          <div
+            class="stack recipe-results"
+            role="complementary"
+            aria-label="Resumen de la receta"
+          >
+            <div class="card recipe-metrics">
               <p class="kicker">Cálculos en vivo</p>
-              <h2>Tu receta en números</h2>
-              <p class="sub">
-                Los resultados cambian automáticamente con los parámetros.
-              </p>
+              <h2>Tu receta, en cifras.</h2>
+              <p class="sub">Se actualiza al cambiar tus parámetros.</p>
               <div class="metrics">
                 <div class="metric">
                   <div class="lbl">Ratio real</div>
@@ -547,26 +642,25 @@
                 Receta equilibrada respecto al ratio objetivo.
               </div>
             </div>
-            <div class="callout">
-              <h3>Precisión y límites</h3>
+            <details class="reference-details">
+              <summary>Precisión y límites</summary>
               <p>
                 El tiempo, la temperatura y el ratio describen la receta, pero
                 <strong
                   >no permiten deducir el porcentaje real de extracción</strong
-                >. Para eso, utiliza la segunda pestaña con el TDS de bebida y
-                su peso final.
+                >. En «Extracción», utiliza el TDS medido y el peso final de la
+                bebida.
               </p>
-            </div>
-            <div class="card">
-              <p class="kicker">Referencia</p>
-              <h2>Notas del lote</h2>
+            </details>
+            <details class="reference-details">
+              <summary>Notas del lote</summary>
               <p class="sub" id="referenceNotes">
                 Perfil y contexto de tu receta.
               </p>
               <div class="noline" id="referenceLabel">
                 Datos de referencia: no son mediciones de rendimiento.
               </div>
-            </div>
+            </details>
           </div>
         </div>
       </section>
@@ -1192,25 +1286,32 @@
           </div>
         </div>
       </section>
-      <div class="footer">
-        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.7.3 · Herramienta experimental
-        para preparación y análisis sensorial
-      </div>
+      <footer class="footer">
+        <div>
+          <strong>BLOSSOM SPECIALTY COFFEE</strong
+          ><span>BREW LAB · V1.8.0</span>
+        </div>
+        <p>Café, curiosidad y precisión.</p>
+        <p class="image-credit">
+          Imagen de portada generada con IA para Blossom.
+        </p>
+        <a href="#inicio">Volver al inicio</a>
+      </footer>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.7.3" defer></script>
-    <script src="src/plans.js?v=1.7.3" defer></script>
-    <script src="src/recipes.js?v=1.7.3" defer></script>
-    <script src="src/storage.js?v=1.7.3" defer></script>
-    <script src="src/preparation.js?v=1.7.3" defer></script>
-    <script src="src/water.js?v=1.7.3" defer></script>
-    <script src="src/transfers.js?v=1.7.3" defer></script>
-    <script src="src/pour-editor.js?v=1.7.3" defer></script>
-    <script src="src/preparation-ui.js?v=1.7.3" defer></script>
-    <script src="src/water-ui.js?v=1.7.3" defer></script>
-    <script src="src/cloud-config.js?v=1.7.3" defer></script>
-    <script src="src/sync.js?v=1.7.3" defer></script>
-    <script src="src/cloud-api.js?v=1.7.3" defer></script>
-    <script src="src/app.js?v=1.7.3" defer></script>
+    <script src="src/calculations.js?v=1.8.0" defer></script>
+    <script src="src/plans.js?v=1.8.0" defer></script>
+    <script src="src/recipes.js?v=1.8.0" defer></script>
+    <script src="src/storage.js?v=1.8.0" defer></script>
+    <script src="src/preparation.js?v=1.8.0" defer></script>
+    <script src="src/water.js?v=1.8.0" defer></script>
+    <script src="src/transfers.js?v=1.8.0" defer></script>
+    <script src="src/pour-editor.js?v=1.8.0" defer></script>
+    <script src="src/preparation-ui.js?v=1.8.0" defer></script>
+    <script src="src/water-ui.js?v=1.8.0" defer></script>
+    <script src="src/cloud-config.js?v=1.8.0" defer></script>
+    <script src="src/sync.js?v=1.8.0" defer></script>
+    <script src="src/cloud-api.js?v=1.8.0" defer></script>
+    <script src="src/app.js?v=1.8.0" defer></script>
   </body>
 </html>

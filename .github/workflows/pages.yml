@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Leer la versión que se va a publicar
         id: version
         run: |
@@ -102,13 +102,15 @@ jobs:
                       preview = response.read().decode()
                   if 'data-design-preview="blossom-editorial"' not in preview:
                       raise ValueError('La propuesta visual todavía no está disponible')
-                  for asset, signature in [('concepto/assets/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
+                  for asset, signature in [('assets/images/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
+                                           ('assets/fonts/manrope.woff2', b'wOF2'),
+                                           ('concepto/assets/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
                                            ('concepto/assets/fonts/manrope.woff2', b'wOF2')]:
                       with urlopen(urljoin(site, asset) + '?verify=' + stamp, timeout=20) as response:
                           if response.read(len(signature)) != signature:
-                              raise ValueError('Un recurso de la propuesta visual no está disponible')
+                              raise ValueError('Un recurso visual no está disponible')
                   print(f'Versión {version} publicada y configuración de Supabase verificada.')
-                  print('Propuesta visual, fotografía y tipografía publicadas y verificadas.')
+                  print('Aplicación y propuesta visual: fotografía y tipografía publicadas y verificadas.')
                   break
               except Exception as error:
                   if attempt == 11:
