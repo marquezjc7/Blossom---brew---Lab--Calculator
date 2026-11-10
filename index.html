@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171813" />
     <title>Blossom Brew Lab · Calculadora de recetas</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.6.0" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.7.0" />
   </head>
   <body>
     <header class="hero">
@@ -17,7 +17,7 @@
             </div>
             <div class="tag">SPECIALTY COFFEE</div>
           </div>
-          <div class="version">BREW LAB · V1.6.0</div>
+          <div class="version">BREW LAB · V1.7.0</div>
         </div>
         <h1>Precisión que florece en cada taza.</h1>
         <p>
@@ -142,7 +142,8 @@
         <button class="active" data-tab="recipe">01 · Recetas</button
         ><button data-tab="preparation">02 · Preparación</button
         ><button data-tab="extraction">03 · Extracción</button
-        ><button data-tab="journal">04 · Bitácora</button>
+        ><button data-tab="journal">04 · Bitácora</button
+        ><button data-tab="waterLab">05 · Agua</button>
       </nav>
       <section id="recipe" class="panel active">
         <div class="layout">
@@ -358,6 +359,23 @@
                     maxlength="120"
                     value="Bourbon Lavado"
                   />
+                </div>
+              </div>
+              <div class="callout recipe-water">
+                <h3>Agua de esta receta</h3>
+                <p id="recipeWaterSummary">Sin perfil de agua registrado.</p>
+                <div class="buttonbar">
+                  <button class="btn" type="button" id="editRecipeWater">
+                    Elegir o editar agua
+                  </button>
+                  <button
+                    class="btn"
+                    type="button"
+                    id="removeRecipeWater"
+                    hidden
+                  >
+                    Quitar perfil de esta receta
+                  </button>
                 </div>
               </div>
               <div class="buttonbar">
@@ -587,6 +605,7 @@
               <p class="kicker">Tu preparación</p>
               <h2 id="brewName"></h2>
               <p class="sub" id="brewRecipeSummary"></p>
+              <p class="note" id="brewWaterProfile" hidden></p>
               <p class="note" id="brewTarget"></p>
               <p class="note" id="brewTemperaturesNote"></p>
               <div id="brewLive" hidden>
@@ -950,23 +969,243 @@
           </div>
         </div>
       </section>
+      <section id="waterLab" class="panel" aria-labelledby="waterTitle">
+        <div class="layout">
+          <div class="stack">
+            <div class="card water-lab">
+              <p class="kicker">Blossom · Water Formulation Lab</p>
+              <h2 id="waterTitle">Diseña tu agua</h2>
+              <p class="sub">
+                Sistema de dos concentrados. Ajusta GH y alcalinidad para
+                calcular una mezcla aproximada con agua destilada.
+              </p>
+              <div class="fields">
+                <div class="field wide">
+                  <label for="waterPreset"
+                    >Receta de referencia o perfil guardado</label
+                  ><select id="waterPreset"></select>
+                </div>
+                <div class="field wide">
+                  <label for="waterName">Nombre de tu perfil de agua</label
+                  ><input
+                    id="waterName"
+                    maxlength="100"
+                    placeholder="Mi agua para filtrados"
+                  />
+                </div>
+                <div class="field wide">
+                  <label for="waterLiters">Volumen final aproximado (L)</label
+                  ><input
+                    id="waterLiters"
+                    type="number"
+                    min="0.1"
+                    max="100"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="1"
+                  />
+                </div>
+              </div>
+              <div
+                id="waterVolumes"
+                class="water-volumes"
+                role="group"
+                aria-label="Volúmenes habituales"
+              >
+                <button class="btn" type="button" data-water-volume="0.5">
+                  0.5 L
+                </button>
+                <button class="btn" type="button" data-water-volume="1">
+                  1 L
+                </button>
+                <button class="btn" type="button" data-water-volume="2">
+                  2 L
+                </button>
+                <button class="btn" type="button" data-water-volume="4.5">
+                  4.5 L
+                </button>
+              </div>
+              <div class="water-target">
+                <div class="field">
+                  <label for="waterGH"
+                    >GH · Dureza total objetivo (ppm como CaCO₃)</label
+                  ><input
+                    id="waterGH"
+                    type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                    inputmode="decimal"
+                  />
+                </div>
+                <label class="hint" for="waterGHRange"
+                  >Ajustar GH con el deslizador</label
+                ><input
+                  id="waterGHRange"
+                  type="range"
+                  min="0"
+                  max="250"
+                  step="0.1"
+                />
+              </div>
+              <div class="water-target">
+                <div class="field">
+                  <label for="waterAlkalinity"
+                    >Alcalinidad objetivo · KH aprox. (ppm como CaCO₃)</label
+                  ><input
+                    id="waterAlkalinity"
+                    type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                    inputmode="decimal"
+                  />
+                </div>
+                <label class="hint" for="waterAlkalinityRange"
+                  >Ajustar alcalinidad con el deslizador</label
+                ><input
+                  id="waterAlkalinityRange"
+                  type="range"
+                  min="0"
+                  max="150"
+                  step="0.1"
+                />
+              </div>
+              <p class="note">
+                GH y alcalinidad se expresan por separado como CaCO₃. No son TDS
+                ni concentraciones de calcio o magnesio; este sistema aporta
+                dureza mediante magnesio.
+              </p>
+              <p
+                id="waterFeedback"
+                class="status"
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
+            </div>
+            <details class="card water-instructions">
+              <summary>Cómo preparar los dos concentrados</summary>
+              <ol>
+                <li>
+                  <strong>Buffer:</strong> disuelve 1.68 g de bicarbonato de
+                  sodio (NaHCO₃) y completa por separado hasta 1 L de solución
+                  con agua destilada.
+                </li>
+                <li>
+                  <strong>Dureza:</strong> disuelve 2.45 g de sulfato de
+                  magnesio heptahidratado (MgSO₄·7H₂O) y completa hasta 1 L de
+                  solución con agua destilada.
+                </li>
+                <li>
+                  Identifica cada recipiente con el compuesto, concentración y
+                  fecha. Usa sales aptas para consumo y recipientes limpios.
+                </li>
+                <li>
+                  Para tu mezcla final, pesa las cantidades de
+                  <strong>solución ya preparada</strong> que indica la
+                  calculadora y añade el agua destilada restante.
+                </li>
+              </ol>
+              <p class="note">
+                La calculadora usa exclusivamente esas dos concentraciones. No
+                intercambies 2.45 por 2.55 g/L, ni MgSO₄·7H₂O por otra forma de
+                hidratación.
+              </p>
+            </details>
+          </div>
+          <div class="stack">
+            <div class="card water-results">
+              <p class="kicker">Cantidades para pesar</p>
+              <h2>Tu mezcla de agua</h2>
+              <p class="sub">
+                Gramos de las soluciones preparadas, más agua destilada. Las
+                cantidades se ajustan a 0.1 g para conservar la suma total.
+              </p>
+              <div class="metrics">
+                <div class="metric">
+                  <div class="lbl">Concentrado buffer</div>
+                  <div class="num" id="waterAmount_buffer">—</div>
+                  <div class="unit">NaHCO₃ · 1.68 g/L</div>
+                </div>
+                <div class="metric">
+                  <div class="lbl">Concentrado de dureza</div>
+                  <div class="num" id="waterAmount_hardness">—</div>
+                  <div class="unit">MgSO₄·7H₂O · 2.45 g/L</div>
+                </div>
+                <div class="metric">
+                  <div class="lbl">Agua destilada</div>
+                  <div class="num" id="waterAmount_distilled">—</div>
+                  <div class="unit">
+                    Agua base con minerales prácticamente cero
+                  </div>
+                </div>
+                <div class="metric">
+                  <div class="lbl">Masa final aproximada</div>
+                  <div class="num" id="waterAmount_total">—</div>
+                  <div class="unit">Suma de los tres componentes</div>
+                </div>
+              </div>
+              <div class="buttonbar">
+                <button class="btn primary" type="button" id="waterApply">
+                  Usar esta agua en mi receta
+                </button>
+                <button class="btn" type="button" id="waterCopy">
+                  Copiar receta
+                </button>
+                <button class="btn" type="button" id="waterDownload">
+                  Descargar receta TXT
+                </button>
+              </div>
+              <textarea
+                id="waterCopyText"
+                aria-label="Receta de agua para copiar"
+                readonly
+                hidden
+              ></textarea>
+              <p class="note">
+                Al aplicarla, vuelve a «Recetas» y guarda o actualiza tu receta
+                de café. El perfil de agua se sincronizará con esa receta y se
+                conservará en las sesiones que registres.
+              </p>
+            </div>
+            <div class="callout">
+              <h3>Alcance de esta aproximación</h3>
+              <p>
+                Parte de agua destilada con GH y alcalinidad prácticamente cero
+                y aproxima 1 g de solución a 1 mL. Los objetivos son
+                estimaciones; comprueba el agua final con un kit adecuado.
+              </p>
+              <p>
+                Las referencias son formulaciones orientativas del material
+                compartido. No son mediciones del agua de ciudades. «SCA (BH
+                2019)» es un nombre histórico de receta; no certifica una
+                especificación SCA ni la compatibilidad del agua con una máquina
+                de espresso.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
       <div class="footer">
-        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.6.0 · Herramienta experimental
+        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.7.0 · Herramienta experimental
         para preparación y análisis sensorial
       </div>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.6.0" defer></script>
-    <script src="src/plans.js?v=1.6.0" defer></script>
-    <script src="src/recipes.js?v=1.6.0" defer></script>
-    <script src="src/storage.js?v=1.6.0" defer></script>
-    <script src="src/preparation.js?v=1.6.0" defer></script>
-    <script src="src/transfers.js?v=1.6.0" defer></script>
-    <script src="src/pour-editor.js?v=1.6.0" defer></script>
-    <script src="src/preparation-ui.js?v=1.6.0" defer></script>
-    <script src="src/cloud-config.js?v=1.6.0" defer></script>
-    <script src="src/sync.js?v=1.6.0" defer></script>
-    <script src="src/cloud-api.js?v=1.6.0" defer></script>
-    <script src="src/app.js?v=1.6.0" defer></script>
+    <script src="src/calculations.js?v=1.7.0" defer></script>
+    <script src="src/plans.js?v=1.7.0" defer></script>
+    <script src="src/recipes.js?v=1.7.0" defer></script>
+    <script src="src/storage.js?v=1.7.0" defer></script>
+    <script src="src/preparation.js?v=1.7.0" defer></script>
+    <script src="src/water.js?v=1.7.0" defer></script>
+    <script src="src/transfers.js?v=1.7.0" defer></script>
+    <script src="src/pour-editor.js?v=1.7.0" defer></script>
+    <script src="src/preparation-ui.js?v=1.7.0" defer></script>
+    <script src="src/water-ui.js?v=1.7.0" defer></script>
+    <script src="src/cloud-config.js?v=1.7.0" defer></script>
+    <script src="src/sync.js?v=1.7.0" defer></script>
+    <script src="src/cloud-api.js?v=1.7.0" defer></script>
+    <script src="src/app.js?v=1.7.0" defer></script>
   </body>
 </html>

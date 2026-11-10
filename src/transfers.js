@@ -10,6 +10,10 @@
     typeof module !== "undefined" && module.exports
       ? require("./preparation.js")
       : root.BlossomLab.preparation;
+  const { validateProfile } =
+    typeof module !== "undefined" && module.exports
+      ? require("./water.js")
+      : root.BlossomLab.water;
 
   function createBackup(
     recipes,
@@ -31,6 +35,10 @@
     }
     // V1 files without optional timing fields remain valid and unchanged.
     for (const item of [...data.recipes, ...data.sessions]) {
+      if (item?.waterProfile != null) {
+        const error = validateProfile(item.waterProfile);
+        if (error) throw new Error(error);
+      }
       if (item?.preparation != null) {
         const error = validateRecord(item.preparation, item);
         if (error) throw new Error(error);
@@ -102,6 +110,11 @@
       "tiempo_real_s",
       "inicios_reales_s",
       "temperaturas_vertidos_C",
+      "agua_perfil",
+      "agua_GH_ppm_CaCO3",
+      "agua_alcalinidad_ppm_CaCO3",
+      "agua_lote_L",
+      "agua_sistema",
     ];
     const rows = sessions.map((session) => [
       session.date,
@@ -128,6 +141,11 @@
       session.preparation?.durationSeconds ?? "",
       session.preparation?.actualStarts?.join(" / ") ?? "",
       session.preparation?.temperatures?.join(" / ") ?? "",
+      session.waterProfile?.name ?? "",
+      session.waterProfile?.gh ?? "",
+      session.waterProfile?.alkalinity ?? "",
+      session.waterProfile?.liters ?? "",
+      session.waterProfile?.system ?? "",
     ]);
     return (
       "\uFEFF" +

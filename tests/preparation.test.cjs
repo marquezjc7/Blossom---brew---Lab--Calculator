@@ -120,11 +120,13 @@ test("el resultado conserva tiempos reales y temperaturas en JSON y CSV sin alte
   assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
   const csv = sessionsToCsv([session]).split("\r\n");
   assert.ok(
-    csv[0].endsWith(
+    csv[0].split(",").slice(21, 24).join(",") ===
       '"tiempo_real_s","inicios_reales_s","temperaturas_vertidos_C"',
-    ),
   );
-  assert.ok(csv[1].endsWith('"167","0 / 45 / 90","93 / 93 / 93"'));
+  assert.equal(
+    csv[1].split(",").slice(21, 24).join(","),
+    '"167","0 / 45 / 90","93 / 93 / 93"',
+  );
   assert.deepEqual(
     parseBackup(JSON.stringify(createBackup([], [recipe]))).sessions[0],
     recipe,

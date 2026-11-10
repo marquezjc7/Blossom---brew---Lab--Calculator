@@ -93,6 +93,16 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Mantener respaldos V1 y columnas CSV anteriores; ofrecer un respaldo del resultado si falla el guardado.
 - [ ] Confirmar una preparación real con el propietario después de publicar.
 
+## V1.7.0 — formulación de agua
+
+- [x] Incorporar ocho referencias del material compartido y objetivos independientes de GH y alcalinidad.
+- [x] Calcular masas para dos concentrados fijos (NaHCO₃ 1.68 g/L y MgSO₄·7H₂O 2.45 g/L), con agua destilada y conservación del total al redondear.
+- [x] Ofrecer volumen personalizado, deslizadores, copia con alternativa y descarga TXT.
+- [x] Asociar un perfil a una receta de café, recuperarlo y quitarlo conservando la historia de las sesiones.
+- [x] Sincronizar el perfil con su receta y sesión sin migrar el esquema de nube.
+- [x] Conservar el formato JSON V1 y las primeras 24 columnas CSV; añadir cinco columnas de agua.
+- [ ] Confirmar una mezcla y un guardado reales con el propietario después de publicar.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

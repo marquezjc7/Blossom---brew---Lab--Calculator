@@ -1,10 +1,10 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.6.0)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.7.0)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
-La V1.6.0 añade preparación guiada: cronómetro recuperable, avance manual de vertidos, temperaturas por etapa y registro del resultado. Conserva el acceso con contraseña, la sincronización y los datos anteriores. La conexión del servicio y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
+La V1.7.0 añade una calculadora de agua de dos concentrados: objetivos GH y alcalinidad, escalado de lotes, texto para pesar y perfiles asociados a recetas y sesiones. Conserva la preparación guiada de V1.6.0. Conserva el acceso con contraseña, la sincronización y los datos anteriores. La conexión del servicio y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
 
 ## Desarrollo local
 
@@ -24,6 +24,8 @@ El servidor solo entrega archivos locales. Sin configuración de nube, usa el mi
 | `assets/css/styles.css` | Diseño y adaptación a pantallas pequeñas                         |
 | `src/calculations.js`   | Ratio, agua objetivo, extracción y escalado de vertidos          |
 | `src/plans.js`          | Validación, tiempos y copia del plan según el agua total         |
+| `src/water.js`          | Referencias, masas de agua y validación de perfiles              |
+| `src/water-ui.js`       | Controles de agua, copia, descarga y aplicación a una receta     |
 | `src/preparation.js`    | Estado del cronómetro, copia del plan y validación del resultado |
 | `src/preparation-ui.js` | Guía de vertidos, recuperación del progreso y evaluación         |
 | `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio              |
@@ -106,7 +108,7 @@ El guardado verifica que el navegador haya almacenado la receta y muestra una co
 
 Abrir **Editar vertidos** sin cambiar nada no impide guardar. Si editas los pesos o tiempos, **Revisar vertidos pendientes** te lleva a **Aplicar plan** y **Cancelar**. Un intento de guardado también muestra esas acciones: aplica para conservar los cambios o cancela para descartar solo esa edición; después guarda la receta. El nombre, las temperaturas y los demás parámetros se conservan al cancelar el editor.
 
-Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 21 columnas, incluida `grosor_molienda_um`, y añade `tiempo_real_s`, `inicios_reales_s` y `temperaturas_vertidos_C`; usa JSON para transferir planes y tiempos completos.
+Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 24 columnas, incluidas las tres de preparación guiada, y añade cinco columnas del perfil de agua; usa JSON para transferir planes y tiempos completos.
 
 ## Preparación guiada (V1.6.0)
 
@@ -123,11 +125,29 @@ La guía utiliza una copia de los parámetros al cargarla. Cambiar la receta o r
 
 Las puntuaciones vacías y la extracción no medida quedan sin registrar. EY solo se calcula cuando se introducen bebida obtenida y TDS válidos, usando la dosis capturada. Si falla el guardado, el resultado permanece visible y **Descargar respaldo pendiente** conserva una copia JSON. Reintentar una misma preparación no duplica su identificador de sesión.
 
+## Calculadora de agua (V1.7.0)
+
+1. Abre **05 · Agua** y selecciona una de las ocho referencias o un perfil conservado en tus recetas o bitácora.
+2. Indica el volumen del lote, con accesos de 0.5, 1, 2 y 4.5 L o un valor propio entre 0.1 y 100 L.
+3. Ajusta GH y alcalinidad por separado, mediante números o deslizadores, y da un nombre a tu perfil. Todos los objetivos se expresan en ppm como CaCO₃.
+4. Pesa las cantidades de concentrado buffer, concentrado de dureza y agua destilada. **Copiar receta** incluye sus concentraciones y unidades. **Descargar receta TXT** funciona también si el navegador no permite copiar.
+5. Para conservar un perfil en la cuenta, pulsa **Usar esta agua en mi receta** y guarda una receta nueva o actualiza la receta de café seleccionada. El perfil se guarda y sincroniza como parte de esa receta; las sesiones conservan su propia copia. Una referencia o cálculo suelto no crea un perfil independiente en la nube.
+
+El sistema está limitado a agua destilada con GH y alcalinidad prácticamente cero y dos soluciones separadas: NaHCO₃ a **1.68 g/L** y MgSO₄·7H₂O a **2.45 g/L**. No permite sustituir la hidratación, la concentración ni el agua base. No calcula TDS, pH, calcio, sodio o cumplimiento de una norma de agua.
+
+Se usa la aproximación práctica del material compartido: por cada 1000 g de mezcla final, 1 g de cada concentrado aporta aproximadamente 1 ppm de su parámetro. Para un lote de `L` litros: `buffer = alcalinidad × L`, `dureza = GH × L`, `destilada = 1000 × L − buffer − dureza`. Se aproxima 1 g de solución a 1 mL. Se redondean los concentrados a 0.1 g y se calcula el agua restante después, conservando la masa final. En casos límite de redondeo se limita la dureza al peso disponible para evitar una cantidad negativa de agua.
+
+Las ocho referencias se transcribieron del texto y captura aportados por el propietario: WOC Budapest usa 51.2 GH y 40.1 de alcalinidad de la captura; las otras siete conservan los valores redondeados de su tabla. No se verificaron independientemente contra la publicación original de Barista Hustle. «SCA (BH 2019)» conserva el nombre histórico y no se presenta como una especificación SCA vigente ni como dureza cálcica.
+
+El ejemplo WOC de 4.5 L muestra **180.5 g de buffer + 230.4 g de dureza + 4089.1 g de destilada = 4500.0 g**. El agua destilada difiere 0.1 g de la captura porque esta redondeaba por separado los tres componentes y sumaba 4500.1 g.
+
+El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, litros del lote, GH y alcalinidad, sin sobrescribir el agua vertida del café. Se incluye en los respaldos V1 y viaja mediante la sincronización existente de recetas/sesiones; no requiere cambiar el esquema de Supabase. Las cinco columnas CSV añadidas son `agua_perfil`, `agua_GH_ppm_CaCO3`, `agua_alcalinidad_ppm_CaCO3`, `agua_lote_L` y `agua_sistema`. Los archivos antiguos siguen sin un perfil de agua atribuido.
+
 ## Dos temperaturas
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.6.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.7.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

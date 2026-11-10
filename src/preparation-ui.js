@@ -105,6 +105,10 @@
       $("brewName").textContent = draft.name;
       $("brewRecipeSummary").textContent =
         `${recipe.coffee} · ${recipe.method} · ${number(recipe.dose)} g de café · ${number(recipe.water)} g de agua`;
+      $("brewWaterProfile").hidden = !recipe.waterProfile;
+      $("brewWaterProfile").textContent = recipe.waterProfile
+        ? `Agua: ${recipe.waterProfile.name} · GH ≈ ${number(recipe.waterProfile.gh)} · Alcalinidad ≈ ${number(recipe.waterProfile.alkalinity)} ppm como CaCO₃`
+        : "";
       $("brewTarget").textContent = recipe.time
         ? `Tiempo objetivo: ${recipe.time}`
         : "Tiempo objetivo sin registrar";

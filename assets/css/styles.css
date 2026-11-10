@@ -453,6 +453,56 @@ hr {
 .brew-heading {
   margin-bottom: 18px;
 }
+.recipe-water {
+  margin-top: 18px;
+}
+.recipe-water .buttonbar {
+  margin-top: 10px;
+}
+.water-volumes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 22px;
+}
+.water-volumes .btn {
+  flex: 1 1 60px;
+}
+.water-target {
+  margin-top: 22px;
+}
+.water-target .hint {
+  display: block;
+  margin-top: 10px;
+}
+.water-target input[type="range"] {
+  width: 100%;
+  min-height: 36px;
+  accent-color: var(--gold);
+}
+.water-instructions summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.water-instructions li {
+  margin-bottom: 10px;
+}
+.water-results .metric .num {
+  font-size: clamp(21px, 3vw, 30px);
+  overflow-wrap: anywhere;
+}
+#waterCopyText {
+  margin-top: 16px;
+  min-height: 220px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+#waterFeedback.error {
+  color: #7b3028;
+  border-color: #8d352c;
+}
 #brewName,
 #brewRecipeSummary {
   overflow-wrap: anywhere;
@@ -673,6 +723,9 @@ hr {
   .tabs button {
     padding: 10px 5px;
     font-size: 11px;
+  }
+  .tabs button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
   .fields {
     gap: 12px;

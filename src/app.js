@@ -24,6 +24,7 @@
   const localStore = createStore();
   let cloudSync = null;
   let preparationGuide = null;
+  let waterLab = null;
   const store = {
     read: (key) => localStore.read(key),
     write(key, value) {
@@ -62,7 +63,8 @@
     planReference = defaults[0],
     recipeDirty = false,
     pendingRecipeBackup = null,
-    deletionTarget = null;
+    deletionTarget = null,
+    activeWaterProfile = null;
   const editor = BlossomLab.createPourEditor({
     getRecipe: current,
     onDraftChange() {
@@ -219,6 +221,9 @@
         $("grindMicrons").value === "" && !$("grindMicrons").validity.badInput
           ? null
           : $("grindMicrons").valueAsNumber,
+      ...(activeWaterProfile
+        ? { waterProfile: { ...activeWaterProfile } }
+        : {}),
     };
   }
   function updateGrindingFields() {
@@ -253,12 +258,14 @@
       )
       .join("");
     $("preset").value = keep;
+    waterLab?.refreshProfiles();
   }
   function loadRecipe(r) {
     clearDeleteConfirmation();
     clearRecipeFeedback();
     selected = r;
     planReference = r;
+    activeWaterProfile = r.waterProfile ?? null;
     recipeDirty = false;
     editor.close(false);
     for (const id of [
@@ -326,6 +333,12 @@
       (knownCount === null
         ? "Sin incluir el bloom. Deja vacío si no conoces el número; los pesos restantes se definen en «Editar vertidos»."
         : `Sin incluir el bloom. El plan actual tiene ${knownCount} ${knownCount === 1 ? "vertido posterior" : "vertidos posteriores"}. Al aplicar un plan, este número se actualiza.`);
+    $("recipeWaterSummary").textContent = !activeWaterProfile
+      ? "Sin perfil de agua registrado."
+      : BlossomLab.water.validateProfile(activeWaterProfile)
+        ? "Perfil de agua incompatible. Abre «Elegir o editar agua» para revisarlo."
+        : `${activeWaterProfile.name} · GH ≈ ${nf(activeWaterProfile.gh)} · Alcalinidad ≈ ${nf(activeWaterProfile.alkalinity)} ppm como CaCO₃ · Lote de agua ${nf(activeWaterProfile.liters, 2)} L`;
+    $("removeRecipeWater").hidden = !activeWaterProfile;
     calcEy();
   }
   function renderPours(r) {
@@ -454,6 +467,10 @@
       if (invalid) return recipeError(message, field);
     }
     const plan = currentPlan();
+    if (r.waterProfile) {
+      const waterError = BlossomLab.water.validateProfile(r.waterProfile);
+      if (waterError) return recipeError(waterError, "editRecipeWater");
+    }
     const candidate = {
       ...r,
       ...plan,
@@ -504,6 +521,7 @@
     }
     // Replace only the selected custom recipe. Old sessions hold their own plan.
     const updated = { ...selected, ...r, name };
+    if (!activeWaterProfile) delete updated.waterProfile;
     delete updated.bloomWater;
     delete updated.pourTimes;
     Object.assign(updated, currentPlan());
@@ -658,6 +676,7 @@
     $("preparationTitle").scrollIntoView({ block: "start" });
   }
   function renderSessions() {
+    waterLab?.refreshProfiles();
     const holder = $("sessions");
     $("count").textContent =
       `${sessions.length} ${sessions.length === 1 ? "sesión" : "sesiones"}`;
@@ -677,13 +696,17 @@
         const guided = s.preparation
           ? `<div class="logmeta guided-summary">Preparación guiada · Tiempo real ${formatTime(s.preparation.durationSeconds) || "sin registrar"} (pausas excluidas) · Objetivo ${escapeHtml(s.time || "sin registrar")}</div>`
           : "";
+        const water =
+          s.waterProfile && !BlossomLab.water.validateProfile(s.waterProfile)
+            ? `<div class="logmeta water-summary">Agua: ${escapeHtml(s.waterProfile.name)} · GH ≈ ${nf(s.waterProfile.gh)} · Alcalinidad ≈ ${nf(s.waterProfile.alkalinity)} ppm como CaCO₃</div>`
+            : "";
         const microns =
           Number.isFinite(s.grindMicrons) && s.grindMicrons > 0
             ? ` · Grosor: ${s.grindMicrons.toLocaleString("es-ES", { maximumSignificantDigits: 15 })} µm`
             : "";
         const grinding = `<div class="logmeta grinding-summary">Molino: ${escapeHtml(s.grinder || "sin especificar")} · Molienda: ${escapeHtml(s.grindSize || "sin especificar")}${s.grind ? ` · Ajuste: ${escapeHtml(s.grind)}` : ""}${microns}</div>`;
         const count = `<div class="logmeta pour-count-summary">Vertidos después del bloom: ${getPourCount(s) ?? "sin especificar"}</div>`;
-        return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · T1 ${nf(Number(s.temp))} °C${s.temp2 == null ? "" : ` · T2 ${nf(Number(s.temp2))} °C`} · ${escapeHtml(s.time)}</div>${guided}${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
+        return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · T1 ${nf(Number(s.temp))} °C${s.temp2 == null ? "" : ` · T2 ${nf(Number(s.temp2))} °C`} · ${escapeHtml(s.time)}</div>${water}${guided}${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
       })
       .join("");
   }
@@ -1041,6 +1064,25 @@
     sessions = Array.isArray(storedS)
       ? storedS.filter((s) => s && typeof s.coffee === "string")
       : [];
+    waterLab = BlossomLab.createWaterLab({
+      store: localStore,
+      getProfiles: () =>
+        [...customRecipes, ...sessions]
+          .map((item) => item.waterProfile)
+          .filter(Boolean),
+      onApply(profile) {
+        activeWaterProfile = { ...profile };
+        markRecipeDirty();
+        render();
+        setTab("recipe");
+        recipeFeedback(
+          `Agua «${profile.name}» aplicada. Guarda una receta nueva o actualiza la receta guardada para conservarla y sincronizarla.`,
+        );
+        $("recipeWaterSummary").scrollIntoView({ block: "center" });
+      },
+      onDownload: (text) =>
+        exportFile(text, "blossom_receta_agua.txt", "text/plain;charset=utf-8"),
+    });
     preparationGuide = BlossomLab.createPreparationGuide({
       store: localStore,
       ownerId: () =>
@@ -1143,6 +1185,19 @@
       flash("Agua recalculada al ratio objetivo.");
     });
     $("saveRecipe").addEventListener("click", saveNewRecipe);
+    $("editRecipeWater").addEventListener("click", () => {
+      if (activeWaterProfile) waterLab.load(activeWaterProfile);
+      setTab("waterLab");
+      $("waterTitle").scrollIntoView({ block: "start" });
+    });
+    $("removeRecipeWater").addEventListener("click", () => {
+      activeWaterProfile = null;
+      markRecipeDirty();
+      render();
+      recipeFeedback(
+        "Perfil de agua retirado de esta preparación. Guarda los cambios para conservarlo; las sesiones anteriores mantienen su perfil.",
+      );
+    });
     $("prepareRecipe").addEventListener("click", loadPreparation);
     $("downloadPendingRecipe").addEventListener("click", () => {
       if (!pendingRecipeBackup) return;
