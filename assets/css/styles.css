@@ -58,20 +58,18 @@ textarea:focus-visible {
 .mast {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   margin-bottom: 32px;
 }
-.brand {
-  font-family: Georgia, serif;
-  font-size: 26px;
-  letter-spacing: -1px;
-}
-.tag {
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: #d6bd93;
-  font-weight: 700;
+.brand-logo {
+  display: block;
+  width: 200px;
+  max-width: 45vw;
+  height: auto;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 5px 18px #00000014;
 }
 .version {
   font-family: var(--font-interface);

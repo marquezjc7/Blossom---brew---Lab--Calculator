@@ -110,7 +110,13 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 ## V1.7.2 — tipografía de la cabecera
 
 - [x] Aplicar al título y a la descripción de la cabecera la familia de letra y el espaciado del indicador BREW LAB, con tamaños adaptados.
-- [ ] Incorporar el PNG oficial de Blossom cuando esté disponible como archivo descargable; la imagen de referencia se recibió en la conversación.
+- [x] Recibir el archivo original del logo oficial en un ZIP e incorporarlo en V1.7.3.
+
+## V1.7.3 — logo oficial
+
+- [x] Sustituir el nombre escrito de la cabecera por el logo oficial en color recibido del propietario.
+- [x] Conservar el JPG original y sus proporciones, con una presentación blanca sobre la cabecera oscura.
+- [x] Mantener la tipografía de título y descripción elegida en V1.7.2.
 
 ## Etapa 3: acceso desde el teléfono
 
