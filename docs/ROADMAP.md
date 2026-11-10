@@ -107,6 +107,11 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 
 - [x] Añadir el acceso rápido de 5 L a la calculadora de agua para escalar cualquier referencia o perfil personalizado.
 
+## V1.7.2 — tipografía de la cabecera
+
+- [x] Aplicar al título y a la descripción de la cabecera la familia de letra y el espaciado del indicador BREW LAB, con tamaños adaptados.
+- [ ] Incorporar el PNG oficial de Blossom cuando esté disponible como archivo descargable; la imagen de referencia se recibió en la conversación.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

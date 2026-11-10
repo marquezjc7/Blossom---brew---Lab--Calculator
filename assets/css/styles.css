@@ -9,6 +9,8 @@
   --soft: #eee7db;
   --ok: #2c6b50;
   --warn: #9f7134;
+  --font-interface:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 * {
   box-sizing: border-box;
@@ -17,8 +19,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--cream);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--font-interface);
   font-size: 15px;
   line-height: 1.5;
 }
@@ -73,6 +74,7 @@ textarea:focus-visible {
   font-weight: 700;
 }
 .version {
+  font-family: var(--font-interface);
   color: #c4b69d;
   font-size: 11px;
   letter-spacing: 1px;
@@ -81,17 +83,21 @@ textarea:focus-visible {
   border-radius: 40px;
 }
 .hero h1 {
-  font-family: Georgia, serif;
-  letter-spacing: -1px;
+  font-family: var(--font-interface);
+  letter-spacing: 1px;
   font-weight: 400;
-  font-size: clamp(30px, 5vw, 46px);
+  font-size: clamp(27px, 4.4vw, 40px);
+  line-height: 1.25;
   margin: 0 0 6px;
 }
 .hero p {
+  font-family: var(--font-interface);
+  letter-spacing: 1px;
+  line-height: 1.65;
   color: #d2c5b1;
   margin: 0;
   font-size: 14px;
-  max-width: 650px;
+  max-width: 760px;
 }
 .shell {
   margin: 22px auto 60px;

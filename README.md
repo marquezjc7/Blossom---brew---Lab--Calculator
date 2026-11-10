@@ -1,4 +1,4 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.7.1)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.7.2)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
@@ -147,7 +147,7 @@ El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, 
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.7.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.7.2` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 
