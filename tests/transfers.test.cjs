@@ -40,20 +40,20 @@ test("rechaza JSON ilegible, formatos ajenos y colecciones ausentes", () => {
   }
 });
 
-test("el CSV conserva las columnas anteriores y agrega los micrones al final", () => {
+test("el CSV conserva las columnas anteriores y agrega el resultado guiado al final", () => {
   const csv = sessionsToCsv([]);
   assert.ok(csv.startsWith('\uFEFF"fecha","cafe"'));
-  assert.equal(csv.slice(1).split(",").length, 21);
+  assert.equal(csv.slice(1).split(",").length, 24);
   assert.ok(
     csv.endsWith(
-      '"notas","molino","grosor_molienda","vertidos_despues_bloom","temperatura_2_C","grosor_molienda_um"',
+      '"notas","molino","grosor_molienda","vertidos_despues_bloom","temperatura_2_C","grosor_molienda_um","tiempo_real_s","inicios_reales_s","temperaturas_vertidos_C"',
     ),
   );
   const cells = sessionsToCsv([{ grind: "116" }])
     .split("\r\n")[1]
     .split(",");
   assert.equal(cells[7], '"116"');
-  assert.deepEqual(cells.slice(16), ['""', '""', '""', '""', '""']);
+  assert.deepEqual(cells.slice(16), Array(8).fill('""'));
 });
 
 test("JSON conserva molino, grosor y ajuste en recetas y sesiones", () => {
@@ -69,7 +69,7 @@ test("JSON conserva molino, grosor y ajuste en recetas y sesiones", () => {
   assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
   assert.ok(
     sessionsToCsv([grinding]).endsWith(
-      ',"Mazzer Philos I200D","Media fina","","",""',
+      ',"Mazzer Philos I200D","Media fina","","","","","",""',
     ),
   );
 });

@@ -450,6 +450,97 @@ hr {
   color: #8b8a7f;
   margin-top: 34px;
 }
+.brew-heading {
+  margin-bottom: 18px;
+}
+#brewName,
+#brewRecipeSummary {
+  overflow-wrap: anywhere;
+}
+.brew-timer {
+  text-align: center;
+  padding: 18px 0;
+}
+#brewClock {
+  font-size: clamp(60px, 12vw, 88px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  letter-spacing: -3px;
+}
+.brew-current {
+  background: var(--soft);
+  border-radius: 12px;
+  padding: 20px;
+}
+.brew-current h3 {
+  font-size: 28px;
+  margin: 4px 0;
+}
+.brew-current p {
+  margin: 5px 0;
+}
+#brewTemperature {
+  color: var(--ok);
+  font-weight: 700;
+}
+.brew-controls .btn {
+  min-height: 48px;
+  flex: 1 1 140px;
+}
+.brew-help summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.brew-plan-card {
+  align-self: start;
+}
+.brew-plan {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.brew-plan-step {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 8px;
+}
+.brew-plan-step.current {
+  background: var(--soft);
+  box-shadow: inset 3px 0 var(--gold);
+}
+.brew-plan-step strong,
+.brew-plan-step span {
+  display: block;
+}
+.brew-plan-step span {
+  font-size: 12px;
+  color: #626559;
+  margin-top: 4px;
+}
+.brew-step-temperature {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  max-width: 100%;
+}
+.brew-step-temperature select {
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  max-width: 100%;
+}
+#brewFeedback.error {
+  color: #7b3028;
+  border-color: #8d352c;
+}
 .noline {
   font-size: 11px;
   background: #f2ede2;
@@ -577,7 +668,7 @@ hr {
   .tabs {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .tabs button {
     padding: 10px 5px;

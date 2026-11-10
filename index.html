@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#171813" />
     <title>Blossom Brew Lab · Calculadora de recetas</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.5.1" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.6.0" />
   </head>
   <body>
     <header class="hero">
@@ -17,7 +17,7 @@
             </div>
             <div class="tag">SPECIALTY COFFEE</div>
           </div>
-          <div class="version">BREW LAB · V1.5.1</div>
+          <div class="version">BREW LAB · V1.6.0</div>
         </div>
         <h1>Precisión que florece en cada taza.</h1>
         <p>
@@ -140,8 +140,9 @@
       </section>
       <nav class="tabs" aria-label="Secciones">
         <button class="active" data-tab="recipe">01 · Recetas</button
-        ><button data-tab="extraction">02 · Extracción</button
-        ><button data-tab="journal">03 · Bitácora</button>
+        ><button data-tab="preparation">02 · Preparación</button
+        ><button data-tab="extraction">03 · Extracción</button
+        ><button data-tab="journal">04 · Bitácora</button>
       </nav>
       <section id="recipe" class="panel active">
         <div class="layout">
@@ -446,6 +447,9 @@
                 >
                   Editar vertidos
                 </button>
+                <button class="btn primary" id="prepareRecipe" type="button">
+                  Preparar esta receta
+                </button>
               </div>
               <form
                 id="pourEditor"
@@ -543,6 +547,230 @@
                 Datos de referencia: no son mediciones de rendimiento.
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+      <section
+        id="preparation"
+        class="panel"
+        aria-labelledby="preparationTitle"
+      >
+        <div class="card brew-heading">
+          <p class="kicker">Preparación guiada</p>
+          <h2 id="preparationTitle">De la receta a la taza</h2>
+          <p class="sub">
+            Carga tu receta, prepara la balanza en cero e inicia el cronómetro
+            al comenzar el bloom.
+          </p>
+          <div id="brewEmpty" class="callout">
+            <p>
+              Elige una receta en «Recetas» y pulsa «Preparar esta receta», o
+              carga los parámetros que tienes ahora.
+            </p>
+          </div>
+          <div class="buttonbar">
+            <button class="btn" id="brewLoad" type="button">
+              Cargar receta actual
+            </button>
+          </div>
+          <p
+            id="brewFeedback"
+            class="status"
+            role="status"
+            tabindex="-1"
+            hidden
+          ></p>
+        </div>
+        <div id="brewContent" class="layout" hidden>
+          <div class="stack">
+            <div class="card">
+              <p class="kicker">Tu preparación</p>
+              <h2 id="brewName"></h2>
+              <p class="sub" id="brewRecipeSummary"></p>
+              <p class="note" id="brewTarget"></p>
+              <p class="note" id="brewTemperaturesNote"></p>
+              <div id="brewLive" hidden>
+                <div class="brew-timer">
+                  <p id="brewClockState" class="kicker">Tiempo transcurrido</p>
+                  <div
+                    id="brewClock"
+                    role="timer"
+                    aria-live="off"
+                    aria-label="Tiempo de preparación"
+                  >
+                    0:00
+                  </div>
+                </div>
+                <div id="brewCurrent" class="brew-current">
+                  <p class="kicker" id="brewCurrentLabel"></p>
+                  <h3 id="brewAmount"></h3>
+                  <p id="brewCumulative"></p>
+                  <p id="brewTemperature"></p>
+                  <p id="brewBloom" class="note"></p>
+                </div>
+                <p
+                  id="brewCue"
+                  class="status"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+                <p id="brewCountdown" class="note" aria-live="off"></p>
+              </div>
+              <div class="buttonbar brew-controls">
+                <button class="btn primary" id="brewStart" type="button">
+                  Iniciar preparación
+                </button>
+                <button class="btn" id="brewPause" type="button" hidden>
+                  Pausar
+                </button>
+                <button class="btn primary" id="brewNext" type="button" hidden>
+                  Comenzar vertido 1
+                </button>
+                <button
+                  class="btn primary"
+                  id="brewFinish"
+                  type="button"
+                  hidden
+                >
+                  Finalizar preparación
+                </button>
+              </div>
+              <p class="note">
+                Confirma cada vertido cuando lo comiences. El cronómetro
+                orienta; los pasos avanzan cuando tú lo indicas. Pausar detiene
+                el registro del tiempo; el café sigue extrayéndose.
+              </p>
+              <details class="brew-help">
+                <summary>Sobre el progreso guardado</summary>
+                <p class="note">
+                  La preparación en curso se conserva en este navegador. Si
+                  cambias de pestaña o cierras y vuelves a abrir la página, el
+                  cronómetro continúa contando mientras no esté pausado. Al
+                  guardar el resultado en la bitácora, la sesión se sincroniza
+                  con tu cuenta.
+                </p>
+              </details>
+              <div class="buttonbar">
+                <button class="btn danger" id="brewDiscard" type="button">
+                  Descartar preparación
+                </button>
+              </div>
+              <div id="brewDiscardPanel" class="delete-confirmation" hidden>
+                <p>
+                  ¿Descartar esta preparación y su evaluación pendiente? Tus
+                  recetas y las sesiones guardadas se conservan.
+                </p>
+                <div class="buttonbar">
+                  <button class="btn" id="brewKeep" type="button">
+                    Seguir preparando
+                  </button>
+                  <button
+                    class="btn danger"
+                    id="brewConfirmDiscard"
+                    type="button"
+                  >
+                    Descartar esta preparación
+                  </button>
+                </div>
+              </div>
+            </div>
+            <form id="brewResult" class="card" hidden>
+              <p class="kicker">Resultado</p>
+              <h2 id="brewResultTitle" tabindex="-1">¿Cómo quedó tu taza?</h2>
+              <p class="sub" id="brewResultSummary"></p>
+              <p class="note">
+                La evaluación y los datos medidos son opcionales. Deja vacíos
+                los que no hayas evaluado.
+              </p>
+              <div class="fields">
+                <div class="field">
+                  <label for="brewResult_sweet">Dulzura (0–10)</label
+                  ><input
+                    id="brewResult_sweet"
+                    data-brew-result="sweet"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="1"
+                    inputmode="numeric"
+                  />
+                </div>
+                <div class="field">
+                  <label for="brewResult_acid">Acidez (0–10)</label
+                  ><input
+                    id="brewResult_acid"
+                    data-brew-result="acid"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="1"
+                    inputmode="numeric"
+                  />
+                </div>
+                <div class="field">
+                  <label for="brewResult_body">Cuerpo (0–10)</label
+                  ><input
+                    id="brewResult_body"
+                    data-brew-result="body"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="1"
+                    inputmode="numeric"
+                  />
+                </div>
+                <div class="field">
+                  <label for="brewResult_cup">Bebida obtenida (g)</label
+                  ><input
+                    id="brewResult_cup"
+                    data-brew-result="cup"
+                    type="number"
+                    min="0.01"
+                    step="any"
+                    inputmode="decimal"
+                  />
+                </div>
+                <div class="field">
+                  <label for="brewResult_tds">TDS medido (%)</label
+                  ><input
+                    id="brewResult_tds"
+                    data-brew-result="tds"
+                    type="number"
+                    min="0.0001"
+                    max="30"
+                    step="any"
+                    inputmode="decimal"
+                  />
+                </div>
+                <div class="field wide">
+                  <label for="brewResult_notes"
+                    >Notas de la taza y ajustes para la próxima vez</label
+                  ><textarea
+                    id="brewResult_notes"
+                    data-brew-result="notes"
+                    maxlength="2000"
+                    placeholder="Ej. más dulce que la prueba anterior; repetir esta molienda."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="buttonbar">
+                <button class="btn primary" type="submit" id="brewSave">
+                  Guardar resultado en bitácora
+                </button>
+                <button class="btn" type="button" id="brewPendingBackup" hidden>
+                  Descargar respaldo pendiente
+                </button>
+              </div>
+            </form>
+          </div>
+          <div class="card brew-plan-card">
+            <p class="kicker">Balanza y temperaturas</p>
+            <h2>Tu plan, paso a paso</h2>
+            <p class="sub">
+              “Añade” es el agua de ese vertido. “Hasta” es el peso acumulado
+              que debe mostrar la balanza.
+            </p>
+            <ol id="brewPlan" class="brew-plan"></ol>
           </div>
         </div>
       </section>
@@ -723,20 +951,22 @@
         </div>
       </section>
       <div class="footer">
-        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.5.1 · Herramienta experimental
+        BLOSSOM SPECIALTY COFFEE · BREW LAB V1.6.0 · Herramienta experimental
         para preparación y análisis sensorial
       </div>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.5.1" defer></script>
-    <script src="src/plans.js?v=1.5.1" defer></script>
-    <script src="src/recipes.js?v=1.5.1" defer></script>
-    <script src="src/storage.js?v=1.5.1" defer></script>
-    <script src="src/transfers.js?v=1.5.1" defer></script>
-    <script src="src/pour-editor.js?v=1.5.1" defer></script>
-    <script src="src/cloud-config.js?v=1.5.1" defer></script>
-    <script src="src/sync.js?v=1.5.1" defer></script>
-    <script src="src/cloud-api.js?v=1.5.1" defer></script>
-    <script src="src/app.js?v=1.5.1" defer></script>
+    <script src="src/calculations.js?v=1.6.0" defer></script>
+    <script src="src/plans.js?v=1.6.0" defer></script>
+    <script src="src/recipes.js?v=1.6.0" defer></script>
+    <script src="src/storage.js?v=1.6.0" defer></script>
+    <script src="src/preparation.js?v=1.6.0" defer></script>
+    <script src="src/transfers.js?v=1.6.0" defer></script>
+    <script src="src/pour-editor.js?v=1.6.0" defer></script>
+    <script src="src/preparation-ui.js?v=1.6.0" defer></script>
+    <script src="src/cloud-config.js?v=1.6.0" defer></script>
+    <script src="src/sync.js?v=1.6.0" defer></script>
+    <script src="src/cloud-api.js?v=1.6.0" defer></script>
+    <script src="src/app.js?v=1.6.0" defer></script>
   </body>
 </html>

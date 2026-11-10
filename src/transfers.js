@@ -6,6 +6,10 @@
     typeof module !== "undefined" && module.exports
       ? require("./plans.js")
       : root.BlossomLab.plans;
+  const { validateRecord } =
+    typeof module !== "undefined" && module.exports
+      ? require("./preparation.js")
+      : root.BlossomLab.preparation;
 
   function createBackup(
     recipes,
@@ -27,6 +31,10 @@
     }
     // V1 files without optional timing fields remain valid and unchanged.
     for (const item of [...data.recipes, ...data.sessions]) {
+      if (item?.preparation != null) {
+        const error = validateRecord(item.preparation, item);
+        if (error) throw new Error(error);
+      }
       if (
         item &&
         item.grindMicrons != null &&
@@ -91,6 +99,9 @@
       "vertidos_despues_bloom",
       "temperatura_2_C",
       "grosor_molienda_um",
+      "tiempo_real_s",
+      "inicios_reales_s",
+      "temperaturas_vertidos_C",
     ];
     const rows = sessions.map((session) => [
       session.date,
@@ -114,6 +125,9 @@
       getPourCount(session) ?? "",
       session.temp2 ?? "",
       session.grindMicrons ?? "",
+      session.preparation?.durationSeconds ?? "",
+      session.preparation?.actualStarts?.join(" / ") ?? "",
+      session.preparation?.temperatures?.join(" / ") ?? "",
     ]);
     return (
       "\uFEFF" +

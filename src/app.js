@@ -23,6 +23,7 @@
   } = BlossomLab.storage;
   const localStore = createStore();
   let cloudSync = null;
+  let preparationGuide = null;
   const store = {
     read: (key) => localStore.read(key),
     write(key, value) {
@@ -585,6 +586,77 @@
     renderSessions();
     flash("Sesión guardada en el historial.");
   }
+  function guidedSession(draft) {
+    const r = draft.recipe;
+    const preparation = BlossomLab.preparation.record(draft);
+    const error = BlossomLab.preparation.validateRecord(preparation, r);
+    if (error) throw new Error(error);
+    const result = draft.result;
+    const score = {};
+    for (const key of ["sweet", "acid", "body"]) {
+      score[key] = result[key] === "" ? null : Number(result[key]);
+      if (
+        score[key] !== null &&
+        (!Number.isInteger(score[key]) || score[key] < 0 || score[key] > 10)
+      )
+        throw new Error(
+          "La evaluación debe estar entre 0 y 10, o quedar vacía.",
+        );
+    }
+    const cup = result.cup === "" ? null : Number(result.cup);
+    const tds = result.tds === "" ? null : Number(result.tds);
+    if (
+      (cup !== null && !valid(cup)) ||
+      (tds !== null && (!valid(tds) || tds > 30))
+    )
+      throw new Error(
+        "Revisa los datos medidos: bebida mayor que 0 y TDS entre 0 y 30 %.",
+      );
+    const extraction =
+      cup !== null && tds !== null
+        ? calculateExtraction(r.dose, cup, tds)
+        : null;
+    return {
+      ...r,
+      id: draft.id,
+      date: draft.startedAt,
+      realRatio: r.water / r.dose,
+      cup,
+      tds,
+      extraction: extraction?.yieldPercent ?? null,
+      score,
+      notes: result.notes.trim().slice(0, 2000),
+      preparation,
+    };
+  }
+  function saveGuidedSession(draft) {
+    const session = guidedSession(draft);
+    const stored = localStore.read(STORAGE_S);
+    const previous = Array.isArray(stored) ? stored : sessions;
+    const next = previous.some((s) => s.id === session.id)
+      ? previous
+      : [session, ...previous];
+    if (!store.write(STORAGE_S, next))
+      throw new Error(
+        "No se pudo guardar la sesión. Tu resultado sigue aquí: vuelve a intentarlo o descarga el respaldo pendiente.",
+      );
+    sessions = next;
+    renderSessions();
+  }
+  function loadPreparation() {
+    if (preparationGuide.hasDraft) {
+      setTab("preparation");
+      return;
+    }
+    const recipe = recipeForSaving();
+    if (!recipe) return;
+    setTab("preparation");
+    preparationGuide.prepare(
+      recipe,
+      $("recipeName").value.trim() || selected.name,
+    );
+    $("preparationTitle").scrollIntoView({ block: "start" });
+  }
   function renderSessions() {
     const holder = $("sessions");
     $("count").textContent =
@@ -600,15 +672,18 @@
         const date = new Date(s.date);
         const plan =
           Array.isArray(s.pours) && s.pours.length
-            ? `<details class="session-plan"><summary>Ver vertidos registrados</summary><ol>${s.pours.map((weight, index) => `<li>${nf(Number(weight), 2)} g acumulados · ${formatTime(s.pourTimes?.[index]) ? `inicio ${formatTime(s.pourTimes[index])}` : "inicio sin registrar"}</li>`).join("")}</ol></details>`
+            ? `<details class="session-plan"><summary>Ver vertidos registrados</summary><ol>${s.pours.map((weight, index) => `<li>${nf(Number(weight), 2)} g acumulados · ${formatTime(s.pourTimes?.[index]) ? `inicio ${formatTime(s.pourTimes[index])}` : "inicio sin registrar"}${s.preparation ? ` · inicio real ${formatTime(s.preparation.actualStarts?.[index]) || "sin registrar"} · ${nf(s.preparation.temperatures?.[index])} °C` : ""}</li>`).join("")}</ol></details>`
             : "";
+        const guided = s.preparation
+          ? `<div class="logmeta guided-summary">Preparación guiada · Tiempo real ${formatTime(s.preparation.durationSeconds) || "sin registrar"} (pausas excluidas) · Objetivo ${escapeHtml(s.time || "sin registrar")}</div>`
+          : "";
         const microns =
           Number.isFinite(s.grindMicrons) && s.grindMicrons > 0
             ? ` · Grosor: ${s.grindMicrons.toLocaleString("es-ES", { maximumSignificantDigits: 15 })} µm`
             : "";
         const grinding = `<div class="logmeta grinding-summary">Molino: ${escapeHtml(s.grinder || "sin especificar")} · Molienda: ${escapeHtml(s.grindSize || "sin especificar")}${s.grind ? ` · Ajuste: ${escapeHtml(s.grind)}` : ""}${microns}</div>`;
         const count = `<div class="logmeta pour-count-summary">Vertidos después del bloom: ${getPourCount(s) ?? "sin especificar"}</div>`;
-        return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · T1 ${nf(Number(s.temp))} °C${s.temp2 == null ? "" : ` · T2 ${nf(Number(s.temp2))} °C`} · ${escapeHtml(s.time)}</div>${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
+        return `<article class="logitem"><div class="headrow"><div class="logtitle">${escapeHtml(s.coffee)}</div><span class="pill">${escapeHtml(s.method)}</span></div><div class="logmeta">${isNaN(date.getTime()) ? "Fecha no disponible" : date.toLocaleString("es-ES")} · ${nf(Number(s.dose))} g / ${nf(Number(s.water))} g · 1:${nf(Number(s.realRatio), 2)} · T1 ${nf(Number(s.temp))} °C${s.temp2 == null ? "" : ` · T2 ${nf(Number(s.temp2))} °C`} · ${escapeHtml(s.time)}</div>${guided}${grinding}${count}<div class="logmeta">Dulzura ${escapeHtml(s.score?.sweet ?? "—")}/10 · Acidez ${escapeHtml(s.score?.acid ?? "—")}/10 · Cuerpo ${escapeHtml(s.score?.body ?? "—")}/10 · EY ${s.extraction == null ? "no medido" : nf(Number(s.extraction), 2) + "%"}</div>${s.notes ? `<div class="lognotes">${escapeHtml(s.notes)}</div>` : ""}${plan}</article>`;
       })
       .join("");
   }
@@ -966,6 +1041,28 @@
     sessions = Array.isArray(storedS)
       ? storedS.filter((s) => s && typeof s.coffee === "string")
       : [];
+    preparationGuide = BlossomLab.createPreparationGuide({
+      store: localStore,
+      ownerId: () =>
+        localStore.read(BlossomLab.cloudApi.AUTH_KEY)?.user?.id ?? null,
+      onLoad: loadPreparation,
+      onSave: saveGuidedSession,
+      onBackup(draft) {
+        const pending = guidedSession(draft);
+        const backup = createBackup(customRecipes, [
+          pending,
+          ...sessions.filter((s) => s.id !== pending.id),
+        ]);
+        exportFile(
+          JSON.stringify(backup, null, 2),
+          "blossom_preparacion_pendiente.json",
+          "application/json",
+        );
+      },
+      onChange: () => {
+        if (!preparationGuide?.hasDraft) cloudSync?.notify();
+      },
+    });
     document
       .querySelectorAll(".tabs button")
       .forEach((el) =>
@@ -1025,7 +1122,11 @@
       editor.open(currentPlan());
     });
     window.addEventListener("beforeunload", (event) => {
-      if (recipeDirty || editor.isDirty) {
+      if (
+        recipeDirty ||
+        editor.isDirty ||
+        preparationGuide.needsUnloadWarning
+      ) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -1042,6 +1143,7 @@
       flash("Agua recalculada al ratio objetivo.");
     });
     $("saveRecipe").addEventListener("click", saveNewRecipe);
+    $("prepareRecipe").addEventListener("click", loadPreparation);
     $("downloadPendingRecipe").addEventListener("click", () => {
       if (!pendingRecipeBackup) return;
       exportFile(
@@ -1102,6 +1204,7 @@
     );
     loadRecipe(lastRecipe ?? defaults[0]);
     renderSessions();
+    if (preparationGuide.hasDraft) setTab("preparation");
     initCloud();
   }
   init();

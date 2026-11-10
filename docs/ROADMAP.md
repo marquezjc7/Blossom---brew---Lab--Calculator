@@ -67,7 +67,7 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Mantener Bourbon Lavado como referencia y recuperar una selección válida si estaba seleccionada alguna de las retiradas.
 - [x] Conservar las recetas personales, las sesiones y las pruebas de recetas con planes incompletos.
 
-## V1.5 — sincronización preparada
+## V1.5 — sincronización entre dispositivos
 
 - [x] Preparar acceso por enlace de correo y sincronización privada de recetas y bitácora.
 - [x] Incorporar las recetas locales al conectar la cuenta y conservar cambios pendientes sin conexión.
@@ -75,13 +75,23 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Probar permisos entre cuentas y acceso anónimo mediante PostgreSQL embebido, además del contrato de dos navegadores.
 - [x] Conectar el proyecto de Supabase del propietario, aplicar el esquema y configurar el correo y la URL pública.
 - [x] Publicar la configuración y confirmar el acceso y el mensaje de sincronización en la computadora del propietario.
-- [ ] Confirmar el acceso y la recuperación de recetas en el teléfono del propietario.
+- [x] Confirmar el acceso y la recuperación de recetas en el teléfono del propietario; también confirmó la sincronización entre ambos dispositivos.
 
 ## V1.5.1 — acceso entre dispositivos
 
 - [x] Distinguir las cuotas de correo y las solicitudes frecuentes, conservar las esperas y evitar reenvíos durante el bloqueo.
 - [x] Configurar una contraseña desde una sesión verificada y entrar con ella desde otro dispositivo sin solicitar otro correo.
 - [x] Conservar las recetas ante credenciales inválidas y comprobar que las contraseñas no se almacenen con los datos del navegador.
+
+## V1.6.0 — preparación guiada
+
+- [x] Cargar una copia del plan actual y mostrar cantidades incrementales y acumuladas.
+- [x] Iniciar, pausar y reanudar un cronómetro recuperable al recargar, sin avance automático de vertidos.
+- [x] Registrar inicios reales y asignar explícitamente una de las dos temperaturas a cada paso cuando corresponda.
+- [x] Conservar el progreso y la evaluación pendiente en el navegador; sincronizar la sesión final con la cuenta existente.
+- [x] Guardar tiempo real, temperaturas y evaluación sin modificar los objetivos de la receta ni inventar mediciones.
+- [x] Mantener respaldos V1 y columnas CSV anteriores; ofrecer un respaldo del resultado si falla el guardado.
+- [ ] Confirmar una preparación real con el propietario después de publicar.
 
 ## Etapa 3: acceso desde el teléfono
 
@@ -92,10 +102,10 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [ ] Comprobar guardado, recarga y traslado de respaldos JSON entre los dispositivos del propietario.
 - [ ] Evaluar instalación como PWA y uso sin conexión después de la primera visita.
 
-Publicar una web y sincronizar datos son tareas distintas. La sincronización requiere definir cuentas, almacenamiento compartido y privacidad antes de implementarla.
+La publicación y la sincronización ya están activas y confirmadas por el propietario. La instalación como PWA y la apertura completa sin conexión siguen pendientes.
 
 ## Mejoras posteriores
 
 - Comparaciones A/B y gráficas sensoriales.
 - Catálogos editables de molinos, métodos, agua y origen del café.
-- Sincronización, si el uso del laboratorio la requiere.
+- Compartir recetas concretas mediante enlaces o QR, conservando la bitácora privada.
