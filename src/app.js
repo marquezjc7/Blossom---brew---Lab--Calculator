@@ -9,6 +9,7 @@
   } = BlossomLab.calculations;
   const { createBackup, parseBackup, sessionsToCsv } = BlossomLab.transfers;
   const {
+    parseTime,
     formatTime,
     validatePlan,
     snapshotPlan,
@@ -291,6 +292,7 @@
       grinder && !builtInGrinders.includes(grinder) ? grinder : "";
     $("grindSize").value = r.grindSize ?? "";
     $("grindingAdvanced").open = r.grindMicrons != null;
+    $("recipeWater").open = !!activeWaterProfile;
     $("pourCount").value = getPourCount(r) ?? "";
     updateGrindingFields();
     $("targetRatio").value = r.ratio ?? r.water / r.dose;
@@ -333,21 +335,96 @@
       (knownCount === null
         ? "Sin incluir el bloom. Deja vacío si no conoces el número; los pesos restantes se definen en «Editar vertidos»."
         : `Sin incluir el bloom. El plan actual tiene ${knownCount} ${knownCount === 1 ? "vertido posterior" : "vertidos posteriores"}. Al aplicar un plan, este número se actualiza.`);
-    $("recipeWaterSummary").textContent = !activeWaterProfile
-      ? "Sin perfil de agua registrado."
-      : BlossomLab.water.validateProfile(activeWaterProfile)
-        ? "Perfil de agua incompatible. Abre «Elegir o editar agua» para revisarlo."
-        : `${activeWaterProfile.name} · GH ≈ ${nf(activeWaterProfile.gh)} · Alcalinidad ≈ ${nf(activeWaterProfile.alkalinity)} ppm como CaCO₃ · Lote de agua ${nf(activeWaterProfile.liters, 2)} L`;
-    $("removeRecipeWater").hidden = !activeWaterProfile;
+    renderRecipeCard(r);
     calcEy();
+  }
+  function renderRecipeCard(r) {
+    $("recipeCardName").textContent =
+      $("recipeName").value.trim() || selected?.name || "Tu preparación.";
+    const finalTime = parseTime(r.time);
+    $("recipeCardMeta").textContent = [
+      r.method,
+      Number.isFinite(r.bloom) && r.bloom >= 0
+        ? `Bloom ${nf(r.bloom, 0)} s`
+        : "",
+      Number.isInteger(finalTime) && finalTime > 0
+        ? `Final ${formatTime(finalTime)}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const grinding = [
+      r.grinder || (r.grind ? "Molino sin especificar" : ""),
+      r.grind ? `Ajuste ${r.grind}` : "",
+      r.grindSize,
+      valid(r.grindMicrons) ? `${nf(r.grindMicrons, 2)} µm` : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    $("recipeCardGrinding").textContent = grinding;
+    $("recipeCardGrinding").hidden = !grinding;
+    const profile = activeWaterProfile;
+    const compatible = profile && !BlossomLab.water.validateProfile(profile);
+    $("recipeWaterSummary").textContent = !profile
+      ? "Sin perfil de agua registrado."
+      : !compatible
+        ? "Perfil de agua incompatible. Abre «Elegir o editar agua» para revisarlo."
+        : `${profile.name} · GH ≈ ${nf(profile.gh)} · Alcalinidad ≈ ${nf(profile.alkalinity)} ppm como CaCO₃ · Lote de agua ${nf(profile.liters, 3)} L`;
+    $("recipeWaterDetails").hidden = !compatible;
+    const amounts = compatible ? BlossomLab.water.calculate(profile) : null;
+    for (const key of ["buffer", "hardness", "distilled", "total"])
+      $("recipeWater" + key[0].toUpperCase() + key.slice(1)).textContent =
+        amounts ? `${nf(amounts[key])} g` : "";
+    $("removeRecipeWater").hidden = !profile;
+    $("recipeCardWaterName").textContent = !profile
+      ? "Sin perfil registrado."
+      : compatible
+        ? profile.name
+        : "Perfil incompatible; revísalo en «Receta de agua».";
+    $("recipeCardWaterProfile").hidden = !compatible;
+    $("recipeCardWaterProfile").textContent = compatible
+      ? `GH ≈ ${nf(profile.gh)} · Alcalinidad ≈ ${nf(profile.alkalinity)} ppm como CaCO₃`
+      : "";
   }
   function renderPours(r) {
     const base = planReference,
       pours = base?.pours;
     const holder = $("pours");
     holder.innerHTML = "";
+    const card = $("recipeCardPours");
+    card.replaceChildren();
+    $("recipeCardPourScroll").hidden = true;
+    $("recipeCardPourNote").hidden = true;
+    $("recipeCardPourNote").textContent = "";
+    $("recipeCardWaterTotal").textContent = valid(r.water)
+      ? `${nf(r.water, 2)} g total`
+      : "";
+    const note = (text) => {
+      $("recipeCardPourNote").textContent = text;
+      $("recipeCardPourNote").hidden = false;
+    };
+    const step = (label, incremental, cumulative, start = "") => {
+      const row = document.createElement("tr");
+      const heading = document.createElement("th");
+      heading.scope = "row";
+      heading.textContent = label;
+      if (start) {
+        const time = document.createElement("small");
+        time.textContent = `Inicio ${start}`;
+        heading.append(time);
+      }
+      const add = document.createElement("td");
+      add.textContent = `+${nf(incremental, 2)} g`;
+      const total = document.createElement("td");
+      total.textContent = `${nf(cumulative, 2)} g`;
+      row.append(heading, add, total);
+      card.append(row);
+      $("recipeCardPourScroll").hidden = false;
+    };
     if (!valid(r.water) || !valid(base?.water)) {
       holder.textContent = "Introduzca un peso de agua válido.";
+      $("pourNote").textContent = "";
+      note("Introduce un peso de agua válido para ver los vertidos.");
       return;
     }
     const k = r.water / base.water;
@@ -355,6 +432,7 @@
       const arr = scalePours(pours, base.water, r.water).map(
         ({ cumulative: cum, incremental: inc }, i) => {
           const start = formatTime(base.pourTimes?.[i]);
+          step(i === 0 ? "Bloom" : `Vertido ${i}`, inc, cum, start);
           return `<div class="step"><span>${i === 0 ? "Bloom" : `Vertido ${i}`} · <span class="mini">+${nf(inc, 2)} g</span>${start ? `<span class="pour-time">Inicio ${start}</span>` : ""}</span><strong>${nf(cum, 2)} g acumulados</strong></div>`;
         },
       );
@@ -363,12 +441,19 @@
         `Bloom: ${nf(r.bloom, 0)} s. Los pesos se escalan proporcionalmente con el agua. Los tiempos de inicio registrados se conservan; los campos vacíos siguen sin registrar.`;
     } else if (valid(base?.bloomWater)) {
       let first = base.bloomWater * k;
+      step("Bloom", first, first);
+      note(
+        `Solo bloom documentado. Agua restante: ${nf(r.water - first, 2)} g, sin distribuir.`,
+      );
       holder.innerHTML = `<div class="step"><span>Bloom · <span class="mini">${nf(r.bloom, 0)} s</span></span><strong>${nf(first)} g</strong></div><div class="step"><span>Agua restante · <span class="mini">sin plan detallado</span></span><strong>${nf(r.water - first)} g</strong></div>`;
       $("pourNote").textContent =
         "Solo se conoce el peso del bloom. No inventamos número ni secuencia de vertidos posteriores.";
     } else {
       holder.textContent =
         "No hay un plan documentado de vertidos para esta receta.";
+      note(
+        "Sin plan de vertidos documentado. Puedes añadirlo en «Editar vertidos».",
+      );
       $("pourNote").textContent =
         "Puedes definir los vertidos conocidos con «Editar vertidos». Los tiempos de inicio son opcionales.";
     }
@@ -1136,6 +1221,7 @@
           .filter(Boolean),
       onApply(profile) {
         activeWaterProfile = { ...profile };
+        $("recipeWater").open = true;
         markRecipeDirty();
         render();
         setTab("recipe");
@@ -1220,7 +1306,10 @@
       markRecipeDirty();
       render();
     });
-    $("recipeName").addEventListener("input", markRecipeDirty);
+    $("recipeName").addEventListener("input", () => {
+      markRecipeDirty();
+      renderRecipeCard(current());
+    });
     $("reviewPours")?.addEventListener("click", () => {
       if (!editor.isOpen) return;
       setTab("recipe");

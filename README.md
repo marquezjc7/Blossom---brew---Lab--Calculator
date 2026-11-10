@@ -1,4 +1,4 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.8.0)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.8.1)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
@@ -6,7 +6,7 @@
 
 **Maqueta original:** [Portada y calculadora de recetas](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/concepto/). Se conserva como propuesta independiente; el diseño aprobado ya se aplica a la aplicación completa. [Su alcance y fuentes](docs/DESIGN_PREVIEW.md) están documentados.
 
-La V1.8.0 aplica el diseño editorial aprobado a Recetas, Preparación, Extracción, Bitácora y Agua. Incorpora una portada fotográfica, fuentes locales y un resumen de receta más estrecho y bajo, que permanece en su posición al desplazarse por la página. Conserva la calculadora de agua de dos concentrados, la preparación guiada, las recetas y sesiones existentes, el acceso con contraseña y la sincronización. La conexión del servicio y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
+La V1.8.1 completa el resumen compacto de receta con el bloom, los vertidos y el perfil de agua utilizado. Las cantidades incrementales y acumuladas se actualizan al modificar el agua; los tiempos registrados se conservan. «Receta de agua», debajo de «Avanzado (opcional)», muestra también las cantidades de concentrados y agua destilada para preparar el lote asociado. Las pestañas comparten el fondo de la franja superior. Conserva el diseño editorial de las cinco secciones, la preparación guiada, las recetas y sesiones existentes, el acceso con contraseña y la sincronización. La conexión del servicio y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
 
 El logo oficial de la cabecera es el JPG en color proporcionado por el propietario, conservado sin modificar en `assets/images/blossom-specialty-coffee.jpg`. Se presenta sobre su fondo blanco original y se adapta al ancho de pantalla.
 
@@ -153,7 +153,7 @@ El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, 
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.8.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.8.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

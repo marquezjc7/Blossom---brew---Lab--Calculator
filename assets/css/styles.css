@@ -22,6 +22,7 @@
 :root {
   --ink: #302b25;
   --dark: #30231c;
+  --strip: #332d23;
   --cream: #f5f1e9;
   --paper: #fcfaf5;
   --muted: #6f675b;
@@ -102,7 +103,7 @@ button:disabled {
   gap: 20px;
   min-height: 34px;
   padding: 8px 56px;
-  background: #332d23;
+  background: var(--strip);
   color: #e7dfd0;
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -305,8 +306,8 @@ button:disabled {
   width: 100%;
   margin: 0 0 34px;
   padding: 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  background: var(--strip);
+  border: 0;
 }
 .tabs button {
   min-height: 54px;
@@ -314,23 +315,29 @@ button:disabled {
   border-bottom: 2px solid transparent;
   background: none;
   padding: 17px 20px 15px;
-  color: #7a705f;
+  color: #dfd5c3;
   font-size: 11px;
   font-weight: 550;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  margin-bottom: -1px;
+  margin: 0;
 }
 .tabs button:first-child {
-  padding-left: 4px;
+  padding-left: 20px;
 }
 .tabs button.active {
-  border-bottom-color: var(--ink);
-  color: var(--ink);
+  border-bottom-color: #d7b77f;
+  background: #ffffff0d;
+  color: #fff9ec;
   font-weight: 750;
 }
 .tabs button:hover {
-  color: var(--ink);
+  background: #ffffff12;
+  color: #fff9ec;
+}
+.tabs button:focus-visible {
+  outline-color: #e1c492;
+  outline-offset: -5px;
 }
 .workspace-heading {
   display: flex;
@@ -602,12 +609,20 @@ label {
 .recipe-metrics h2 {
   font-size: 28px;
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
 }
 .recipe-metrics > .sub {
   font-size: 11px;
   line-height: 1.65;
   color: #c5b8a2;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+}
+.recipe-card-grinding {
+  margin: 0 0 10px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #c5b8a2;
+  overflow-wrap: anywhere;
 }
 .metrics {
   display: grid;
@@ -659,18 +674,115 @@ label {
   font-size: 10px;
 }
 .recipe-metrics .status {
-  margin-top: 14px !important;
-  padding: 10px 11px;
+  margin-top: 12px !important;
+  padding: 8px 10px;
   background: #ffffff08;
   border-color: #b89c6f;
   color: #dfd2bc;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.7;
 }
 .temperature-values {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+.recipe-metrics .temperature-values {
+  gap: 8px;
+}
+.recipe-metrics .temperature-values > div {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.recipe-metrics .temperature-values .num {
+  font-size: 24px;
+  margin: 5px 0 0;
+}
+.recipe-card-section {
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid #89765766;
+}
+.recipe-card-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.recipe-card-section h3 {
+  font: 650 10px/1.6 var(--font-interface);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #d9c8a9;
+  margin: 0;
+}
+#recipeCardWaterTotal {
+  font-size: 10px;
+  color: #c5b8a2;
+  white-space: nowrap;
+}
+.recipe-card-pour-scroll {
+  max-height: 210px;
+  overflow-y: auto;
+  margin-top: 5px;
+  scrollbar-color: #9c835e #30231c;
+  scrollbar-width: thin;
+}
+.recipe-card-pour-scroll:focus-visible {
+  outline: 2px solid #d7b77f;
+  outline-offset: 3px;
+}
+.recipe-card-pours {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 11px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.recipe-card-pours th,
+.recipe-card-pours td {
+  text-align: right;
+  padding: 6px 0 6px 6px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.recipe-card-pours thead th {
+  color: #c5b8a2;
+  font-size: 9px;
+  font-weight: 500;
+}
+.recipe-card-pours th:first-child {
+  text-align: left;
+  padding-left: 0;
+}
+.recipe-card-pours tbody th {
+  font-weight: 500;
+}
+.recipe-card-pours tbody tr + tr {
+  border-top: 1px solid #89765733;
+}
+.recipe-card-pours small {
+  display: block;
+  color: #c5b8a2;
+  font-size: 9px;
+}
+.recipe-card-pours td:last-child {
+  font-weight: 700;
+}
+.recipe-card-note {
+  font-size: 10px;
+  line-height: 1.65;
+  color: #c5b8a2;
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+}
+.recipe-card-water-name {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
 }
 .reference-details {
   border-bottom: 1px solid var(--line);
@@ -817,7 +929,48 @@ label {
   margin: 5px 0 0;
 }
 .recipe-water {
-  margin-top: 24px;
+  grid-column: 1/-1;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: #f0eadf;
+  min-width: 0;
+}
+.recipe-water summary {
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 24px;
+}
+.recipe-water summary span {
+  font-weight: 400;
+  color: var(--muted);
+}
+.recipe-water-body > p {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.water-recipe-amounts {
+  margin: 16px 0 12px;
+  font-size: 12px;
+}
+.water-recipe-amounts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.water-recipe-amounts dt small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.water-recipe-amounts dd {
+  margin: 0;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .recipe-water .buttonbar {
   margin-top: 14px;

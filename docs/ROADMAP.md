@@ -128,6 +128,15 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Comprobar las cinco secciones a distintos anchos, la conservación de datos y el comportamiento del resumen.
 - [ ] Revisar la nueva presentación en la computadora y el teléfono del propietario después de publicar.
 
+## V1.8.1 — ficha de receta y agua visible
+
+- [x] Mostrar el nombre y los parámetros de la receta, el bloom y los vertidos dentro de «Cálculos en vivo», conservando su ancho compacto y su posición sin seguimiento al desplazarse.
+- [x] Distinguir cantidades añadidas, pesos acumulados y agua total actual; conservar los tiempos registrados al escalar y dejar explícitos los planes incompletos.
+- [x] Limitar la altura de las listas largas con desplazamiento interno accesible, manteniendo todos los vertidos consultables.
+- [x] Aplicar a las cinco pestañas el mismo fondo de la franja superior, con texto claro y sección seleccionada visible.
+- [x] Colocar «Receta de agua» debajo de «Avanzado (opcional)», con el perfil, el volumen del lote y las cantidades de soluciones concentradas y agua destilada.
+- [x] Incluir un resumen del perfil de agua en la ficha y conservar el guardado, los respaldos y la sincronización existentes.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

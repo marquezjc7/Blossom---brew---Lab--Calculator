@@ -12,13 +12,13 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.8.0" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.8.1" />
   </head>
   <body>
     <a class="skip-link" href="#laboratorio">Ir al laboratorio</a>
     <div class="announcement" id="inicio">
       <span>CAFÉ · CURIOSIDAD · PRECISIÓN</span>
-      <span class="version">BREW LAB · V1.8.0</span>
+      <span class="version">BREW LAB · V1.8.1</span>
     </div>
     <div class="header-shell">
       <header class="site-header wrap">
@@ -29,7 +29,7 @@
         >
           <img
             class="brand-logo"
-            src="assets/images/blossom-specialty-coffee.jpg?v=1.8.0"
+            src="assets/images/blossom-specialty-coffee.jpg?v=1.8.1"
             alt="Blossom Specialty Coffee"
             width="1920"
             height="1920"
@@ -55,7 +55,7 @@
     <section class="hero" aria-labelledby="heroTitle">
       <img
         class="hero-photo"
-        src="assets/images/coffee-blossoms.png?v=1.8.0"
+        src="assets/images/coffee-blossoms.png?v=1.8.1"
         alt="Flores y cerezas de café bajo una luz cálida; composición generada con IA para Blossom."
         width="1942"
         height="809"
@@ -344,6 +344,64 @@
                     </p>
                   </div>
                 </details>
+                <details class="recipe-water" id="recipeWater">
+                  <summary>Receta de agua <span>(opcional)</span></summary>
+                  <div class="recipe-water-body">
+                    <p id="recipeWaterSummary">
+                      Sin perfil de agua registrado.
+                    </p>
+                    <div id="recipeWaterDetails" hidden>
+                      <dl class="water-recipe-amounts">
+                        <div>
+                          <dt>
+                            Concentrado buffer <small>NaHCO₃ · 1.68 g/L</small>
+                          </dt>
+                          <dd id="recipeWaterBuffer"></dd>
+                        </div>
+                        <div>
+                          <dt>
+                            Concentrado de dureza
+                            <small>MgSO₄·7H₂O · 2.45 g/L</small>
+                          </dt>
+                          <dd id="recipeWaterHardness"></dd>
+                        </div>
+                        <div>
+                          <dt>Agua destilada</dt>
+                          <dd id="recipeWaterDistilled"></dd>
+                        </div>
+                        <div>
+                          <dt>Masa final aproximada</dt>
+                          <dd id="recipeWaterTotal"></dd>
+                        </div>
+                      </dl>
+                      <p class="hint">
+                        Pesa las soluciones ya preparadas y el agua destilada;
+                        después mezcla. Las cantidades corresponden al lote de
+                        agua indicado, no a gramos de sal seca ni al agua de un
+                        solo vertido. GH y alcalinidad son objetivos aproximados
+                        como CaCO₃; comprueba el agua final con un kit adecuado.
+                      </p>
+                    </div>
+                    <div class="buttonbar">
+                      <button class="btn" type="button" id="editRecipeWater">
+                        Elegir o editar agua
+                      </button>
+                      <button
+                        class="btn"
+                        type="button"
+                        id="removeRecipeWater"
+                        hidden
+                      >
+                        Quitar perfil de esta receta
+                      </button>
+                    </div>
+                    <p class="hint">
+                      Elige tu perfil en la calculadora de Agua y pulsa «Usar
+                      esta agua en mi receta». Guarda o actualiza la receta de
+                      café para conservarlo y sincronizarlo.
+                    </p>
+                  </div>
+                </details>
                 <div class="field wide grinding-help">
                   <p class="hint" id="grindSizeHint">
                     El grosor describe la molienda para compartir la receta.
@@ -454,23 +512,6 @@
                     maxlength="120"
                     value="Bourbon Lavado"
                   />
-                </div>
-              </div>
-              <div class="callout recipe-water">
-                <h3>Agua de esta receta</h3>
-                <p id="recipeWaterSummary">Sin perfil de agua registrado.</p>
-                <div class="buttonbar">
-                  <button class="btn" type="button" id="editRecipeWater">
-                    Elegir o editar agua
-                  </button>
-                  <button
-                    class="btn"
-                    type="button"
-                    id="removeRecipeWater"
-                    hidden
-                  >
-                    Quitar perfil de esta receta
-                  </button>
                 </div>
               </div>
               <div class="buttonbar">
@@ -605,8 +646,13 @@
           >
             <div class="card recipe-metrics">
               <p class="kicker">Cálculos en vivo</p>
-              <h2>Tu receta, en cifras.</h2>
-              <p class="sub">Se actualiza al cambiar tus parámetros.</p>
+              <h2 id="recipeCardName">Tu preparación.</h2>
+              <p class="sub" id="recipeCardMeta"></p>
+              <p
+                class="recipe-card-grinding"
+                id="recipeCardGrinding"
+                hidden
+              ></p>
               <div class="metrics">
                 <div class="metric">
                   <div class="lbl">Ratio real</div>
@@ -638,6 +684,49 @@
                   <div class="unit">Celsius</div>
                 </div>
               </div>
+              <section
+                class="recipe-card-section"
+                aria-labelledby="recipeCardPoursTitle"
+              >
+                <div class="recipe-card-section-heading">
+                  <h3 id="recipeCardPoursTitle">Bloom y vertidos</h3>
+                  <span id="recipeCardWaterTotal"></span>
+                </div>
+                <div
+                  class="recipe-card-pour-scroll"
+                  id="recipeCardPourScroll"
+                  role="region"
+                  aria-labelledby="recipeCardPoursTitle"
+                  tabindex="0"
+                  hidden
+                >
+                  <table class="recipe-card-pours">
+                    <thead>
+                      <tr>
+                        <th scope="col">Paso</th>
+                        <th scope="col">Añade</th>
+                        <th scope="col">Acumulado</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recipeCardPours"></tbody>
+                  </table>
+                </div>
+                <p class="recipe-card-note" id="recipeCardPourNote" hidden></p>
+              </section>
+              <section
+                class="recipe-card-section"
+                aria-labelledby="recipeCardWaterTitle"
+              >
+                <h3 id="recipeCardWaterTitle">Agua de la receta</h3>
+                <p class="recipe-card-water-name" id="recipeCardWaterName">
+                  Sin perfil registrado.
+                </p>
+                <p
+                  class="recipe-card-note"
+                  id="recipeCardWaterProfile"
+                  hidden
+                ></p>
+              </section>
               <div class="status" style="margin-top: 17px" id="ratioStatus">
                 Receta equilibrada respecto al ratio objetivo.
               </div>
@@ -1289,7 +1378,7 @@
       <footer class="footer">
         <div>
           <strong>BLOSSOM SPECIALTY COFFEE</strong
-          ><span>BREW LAB · V1.8.0</span>
+          ><span>BREW LAB · V1.8.1</span>
         </div>
         <p>Café, curiosidad y precisión.</p>
         <p class="image-credit">
@@ -1299,19 +1388,19 @@
       </footer>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.8.0" defer></script>
-    <script src="src/plans.js?v=1.8.0" defer></script>
-    <script src="src/recipes.js?v=1.8.0" defer></script>
-    <script src="src/storage.js?v=1.8.0" defer></script>
-    <script src="src/preparation.js?v=1.8.0" defer></script>
-    <script src="src/water.js?v=1.8.0" defer></script>
-    <script src="src/transfers.js?v=1.8.0" defer></script>
-    <script src="src/pour-editor.js?v=1.8.0" defer></script>
-    <script src="src/preparation-ui.js?v=1.8.0" defer></script>
-    <script src="src/water-ui.js?v=1.8.0" defer></script>
-    <script src="src/cloud-config.js?v=1.8.0" defer></script>
-    <script src="src/sync.js?v=1.8.0" defer></script>
-    <script src="src/cloud-api.js?v=1.8.0" defer></script>
-    <script src="src/app.js?v=1.8.0" defer></script>
+    <script src="src/calculations.js?v=1.8.1" defer></script>
+    <script src="src/plans.js?v=1.8.1" defer></script>
+    <script src="src/recipes.js?v=1.8.1" defer></script>
+    <script src="src/storage.js?v=1.8.1" defer></script>
+    <script src="src/preparation.js?v=1.8.1" defer></script>
+    <script src="src/water.js?v=1.8.1" defer></script>
+    <script src="src/transfers.js?v=1.8.1" defer></script>
+    <script src="src/pour-editor.js?v=1.8.1" defer></script>
+    <script src="src/preparation-ui.js?v=1.8.1" defer></script>
+    <script src="src/water-ui.js?v=1.8.1" defer></script>
+    <script src="src/cloud-config.js?v=1.8.1" defer></script>
+    <script src="src/sync.js?v=1.8.1" defer></script>
+    <script src="src/cloud-api.js?v=1.8.1" defer></script>
+    <script src="src/app.js?v=1.8.1" defer></script>
   </body>
 </html>
