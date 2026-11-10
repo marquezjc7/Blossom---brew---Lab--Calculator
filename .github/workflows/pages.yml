@@ -98,7 +98,17 @@ jobs:
                       config = response.read().decode()
                   if expected_url not in config or expected_key not in config:
                       raise ValueError('La configuración pública todavía no coincide con el proyecto')
+                  with urlopen(urljoin(site, 'concepto/') + '?verify=' + stamp, timeout=20) as response:
+                      preview = response.read().decode()
+                  if 'data-design-preview="blossom-editorial"' not in preview:
+                      raise ValueError('La propuesta visual todavía no está disponible')
+                  for asset, signature in [('concepto/assets/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
+                                           ('concepto/assets/fonts/manrope.woff2', b'wOF2')]:
+                      with urlopen(urljoin(site, asset) + '?verify=' + stamp, timeout=20) as response:
+                          if response.read(len(signature)) != signature:
+                              raise ValueError('Un recurso de la propuesta visual no está disponible')
                   print(f'Versión {version} publicada y configuración de Supabase verificada.')
+                  print('Propuesta visual, fotografía y tipografía publicadas y verificadas.')
                   break
               except Exception as error:
                   if attempt == 11:

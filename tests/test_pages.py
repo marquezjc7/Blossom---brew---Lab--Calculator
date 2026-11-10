@@ -50,6 +50,8 @@ class PagesTests(unittest.TestCase):
             (root / "index.html").write_text("<!doctype html><title>Blossom</title>")
             (root / "src").mkdir()
             (root / "assets").mkdir()
+            (root / "concepto").mkdir()
+            (root / "concepto/index.html").write_text("<!doctype html><title>Propuesta visual</title>")
             original = "// Local mode\n"
             (root / "src/cloud-config.js").write_text(original)
             with patch.object(pages, "ROOT", root), patch.object(pages, "OUTPUT", root / "_site"), patch.dict(os.environ, {
@@ -57,6 +59,8 @@ class PagesTests(unittest.TestCase):
                 "BLOSSOM_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_test",
             }, clear=True):
                 pages.main()
+                self.assertEqual((root / "_site/index.html").read_text(), "<!doctype html><title>Blossom</title>")
+                self.assertIn("Propuesta visual", (root / "_site/concepto/index.html").read_text())
                 self.assertIn('"publishableKey": "sb_publishable_test"', (root / "_site/src/cloud-config.js").read_text())
                 self.assertEqual((root / "src/cloud-config.js").read_text(), original)
                 pages.main()

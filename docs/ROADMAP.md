@@ -131,6 +131,9 @@ La publicación y la sincronización ya están activas y confirmadas por el prop
 
 ## Mejoras posteriores
 
+- [x] Preparar una propuesta visual independiente de portada y Recetas, inspirada en las capturas de La Cabra y Onyx at The Preserve y adaptada a computadora y teléfono.
+- [ ] Recibir la revisión del propietario de la propuesta antes de extender el diseño a las demás secciones.
+
 - Comparaciones A/B y gráficas sensoriales.
 - Catálogos editables de molinos, métodos, agua y origen del café.
 - Compartir recetas concretas mediante enlaces o QR, conservando la bitácora privada.

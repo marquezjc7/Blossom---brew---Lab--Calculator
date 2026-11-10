@@ -50,6 +50,9 @@ def main():
         shutil.copy2(ROOT / "index.html", staging / "index.html")
         for directory in ["assets", "src"]:
             shutil.copytree(ROOT / directory, staging / directory)
+        # A separate visual proposal can be reviewed without replacing the application.
+        if (ROOT / "concepto").is_dir():
+            shutil.copytree(ROOT / "concepto", staging / "concepto")
         if config:
             (staging / "src" / "cloud-config.js").write_text(
                 'globalThis.BlossomLab ??= {};\n'

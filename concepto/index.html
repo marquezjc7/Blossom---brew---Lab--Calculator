@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f5f1e9" />
+    <title>Blossom · Una nueva forma de florecer</title>
+    <meta
+      name="description"
+      content="Explora la propuesta visual de Blossom Brew Lab: café, curiosidad y precisión."
+    />
+    <link
+      rel="preload"
+      href="assets/fonts/manrope.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles.css?v=concepto-1" />
+    <script src="../src/calculations.js?v=1.7.3" defer></script>
+    <script src="../src/recipes.js?v=1.7.3" defer></script>
+    <script src="concepto.js?v=concepto-1" defer></script>
+  </head>
+  <body data-design-preview="blossom-editorial">
+    <a class="skip-link" href="#laboratorio">Ir a la calculadora</a>
+    <div class="announcement">
+      <span>CAFÉ · CURIOSIDAD · PRECISIÓN</span>
+      <a href="../"
+        >Vista previa de diseño <span aria-hidden="true">/</span> Volver a mi
+        aplicación
+        <svg class="arrow-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M4 12 12 4M4 4h8v8" /></svg
+      ></a>
+    </div>
+    <div class="header-shell">
+      <header class="site-header frame">
+        <a
+          class="brand"
+          href="#inicio"
+          aria-label="Blossom Specialty Coffee · Inicio"
+        >
+          <img
+            src="../assets/images/blossom-specialty-coffee.jpg?v=1.7.3"
+            alt="Blossom Specialty Coffee"
+            width="1920"
+            height="1920"
+          />
+        </a>
+        <nav class="main-nav" aria-label="Navegación principal">
+          <a href="#laboratorio">El laboratorio</a>
+          <a href="#filosofia">Nuestra esencia</a>
+        </nav>
+        <a class="account-link" href="../"
+          >Mi laboratorio
+          <span aria-hidden="true"
+            ><svg class="arrow-icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4 12 12 4M4 4h8v8" /></svg></span
+        ></a>
+      </header>
+    </div>
+
+    <main id="inicio">
+      <section class="hero" aria-labelledby="heroTitle">
+        <img
+          class="hero-photo"
+          src="assets/coffee-blossoms.png"
+          width="1942"
+          height="809"
+          alt="Flores blancas, hojas y cerezas de café bajo una luz cálida; composición generada con IA."
+          fetchpriority="high"
+        />
+        <div class="hero-shade"></div>
+        <div class="hero-copy frame">
+          <p class="eyebrow hero-eyebrow">
+            BLOSSOM SPECIALTY COFFEE <span>BREW LAB</span>
+          </p>
+          <h1 id="heroTitle">
+            PRECISIÓN<br />QUE FLORECE<span>en cada taza.</span>
+          </h1>
+          <p class="hero-description">
+            Un espacio para explorar el café.<br />Una forma más tuya de
+            prepararlo.
+          </p>
+          <a class="hero-cta" href="#laboratorio"
+            >Diseña tu preparación
+            <span aria-hidden="true"
+              ><svg class="arrow-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M4 12 12 4M4 4h8v8" /></svg></span
+          ></a>
+        </div>
+        <div class="hero-caption">
+          <span>DEL ORIGEN A TU TAZA</span
+          ><span aria-hidden="true">01 — 03</span>
+        </div>
+      </section>
+
+      <div class="intro-strip frame">
+        <p>El detalle hace la diferencia.</p>
+        <span>EXPLORA. AJUSTA. VUELVE A PREPARAR.</span>
+      </div>
+
+      <section
+        id="laboratorio"
+        class="laboratory frame"
+        aria-labelledby="labTitle"
+      >
+        <div class="section-intro">
+          <div>
+            <p class="eyebrow">01 / EL LABORATORIO</p>
+            <h2 id="labTitle">Diseña tu <em>preparación.</em></h2>
+          </div>
+          <p>
+            Una buena taza comienza con una intención.<br />Dale forma, una
+            variable a la vez.
+          </p>
+        </div>
+        <div class="workspace-heading">
+          <span class="workspace-tab">RECETAS</span>
+          <span class="preview-label"
+            ><i aria-hidden="true"></i> VISTA PREVIA · DATOS DE REFERENCIA</span
+          >
+        </div>
+
+        <div class="workspace">
+          <form id="recipeForm" class="recipe-form" novalidate>
+            <div class="form-section">
+              <div class="section-label">
+                <span>01</span>
+                <h3>Tu punto de partida</h3>
+              </div>
+              <div class="field">
+                <label for="reference">RECETA DE REFERENCIA</label
+                ><select id="reference">
+                  <option value="baseline">Bourbon Lavado · Baseline</option>
+                  <option value="custom">Mi preparación</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="coffee">CAFÉ / LOTE</label
+                ><input id="coffee" value="Bourbon Lavado" maxlength="120" />
+              </div>
+              <div class="two-columns">
+                <div class="field">
+                  <label for="method">MÉTODO</label
+                  ><select id="method">
+                    <option>V60 Neo</option>
+                    <option>V60</option>
+                    <option>Origami</option>
+                    <option>Kalita Wave</option>
+                    <option>Orea</option>
+                    <option>Solo Spin</option>
+                    <option>Paragon</option>
+                    <option>V60 Switch</option>
+                    <option>AeroPress</option>
+                    <option>French Press</option>
+                    <option>Otros</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="grinder">MOLINO</label
+                  ><select id="grinder">
+                    <option value="">Sin especificar</option>
+                    <option>Comandante C40</option>
+                    <option>Mazzer Philos I200D</option>
+                    <option>Otro molino</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-label">
+                <span>02</span>
+                <h3>Encuentra el equilibrio</h3>
+              </div>
+              <div class="two-columns primary-fields">
+                <div class="field">
+                  <label for="dose">CAFÉ MOLIDO</label>
+                  <div class="input-unit">
+                    <input
+                      id="dose"
+                      type="number"
+                      min="0.1"
+                      max="1000"
+                      step="0.1"
+                      inputmode="decimal"
+                      value="15"
+                    /><span>g</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="water">AGUA TOTAL</label>
+                  <div class="input-unit">
+                    <input
+                      id="water"
+                      type="number"
+                      min="0.1"
+                      max="20000"
+                      step="0.1"
+                      inputmode="decimal"
+                      value="240"
+                    /><span>g</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="ratio">RATIO · 1:X</label>
+                  <div class="input-unit">
+                    <input
+                      id="ratio"
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="0.1"
+                      inputmode="decimal"
+                      value="16"
+                    /><span>1:X</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="temperature">TEMPERATURA 1</label>
+                  <div class="input-unit">
+                    <input
+                      id="temperature"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      inputmode="decimal"
+                      value="93"
+                    /><span>°C</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-note">
+                La dosis y el ratio ajustan el agua. Si editas el agua, el ratio
+                se actualiza.
+              </p>
+              <details class="optional-temperature">
+                <summary>
+                  Una segunda temperatura <span>Opcional +</span>
+                </summary>
+                <div class="field">
+                  <label for="temperature2">TEMPERATURA 2</label>
+                  <div class="input-unit">
+                    <input
+                      id="temperature2"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      inputmode="decimal"
+                      placeholder="Sin registrar"
+                    /><span>°C</span>
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <div class="form-section">
+              <div class="section-label">
+                <span>03</span>
+                <h3>Afina los detalles</h3>
+              </div>
+              <div class="two-columns">
+                <div class="field">
+                  <label for="grindSize">GROSOR DE MOLIENDA</label
+                  ><select id="grindSize">
+                    <option value="">Sin especificar</option>
+                    <option>Fina</option>
+                    <option>Media fina</option>
+                    <option>Media</option>
+                    <option>Media gruesa</option>
+                    <option>Gruesa</option>
+                    <option>Extra gruesa</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="grind">AJUSTE DEL MOLINO</label
+                  ><input
+                    id="grind"
+                    maxlength="80"
+                    placeholder="Clics o posición del dial"
+                    value="116"
+                  />
+                </div>
+                <div class="field">
+                  <label for="bloom">BLOOM</label>
+                  <div class="input-unit">
+                    <input
+                      id="bloom"
+                      type="number"
+                      min="0"
+                      max="900"
+                      step="1"
+                      inputmode="numeric"
+                      value="45"
+                    /><span>s</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="endTime">TIEMPO OBJETIVO</label
+                  ><input
+                    id="endTime"
+                    value="2:47"
+                    placeholder="mm:ss"
+                    inputmode="text"
+                    pattern="[0-9]{1,3}:[0-5][0-9]"
+                  />
+                </div>
+              </div>
+              <p class="field-note">
+                Identifica el molino para dar contexto a su ajuste. Los números
+                no equivalen entre modelos.
+              </p>
+            </div>
+            <p class="form-feedback" id="feedback" role="status" hidden></p>
+            <div class="form-actions">
+              <button class="button button-dark" id="copyRecipe" type="submit">
+                Copiar preparación
+                <span aria-hidden="true"
+                  ><svg
+                    class="arrow-icon"
+                    viewBox="0 0 16 16"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 12 12 4M4 4h8v8" /></svg
+                ></span></button
+              ><button class="reset-link" id="resetRecipe" type="button">
+                Restablecer referencia
+              </button>
+            </div>
+            <textarea
+              id="copyFallback"
+              aria-label="Preparación para copiar"
+              readonly
+              hidden
+            ></textarea>
+            <p class="prototype-note">
+              Esta maqueta usa datos de referencia.
+              <a href="../">Abre tu aplicación</a> para trabajar con tus recetas
+              guardadas y tu cuenta.
+            </p>
+          </form>
+
+          <aside class="results-column" aria-labelledby="resultsTitle">
+            <div class="results-card">
+              <p class="eyebrow">TU RECETA EN NÚMEROS</p>
+              <h3 id="resultsTitle">
+                El equilibrio,<br /><em>en tu taza.</em>
+              </h3>
+              <div class="main-result">
+                <span class="result-label">RATIO REAL · CAFÉ : AGUA</span>
+                <div id="ratioResult">1:16</div>
+              </div>
+              <div class="water-result">
+                <span class="result-label">AGUA PARA TU PREPARACIÓN</span>
+                <div><strong id="waterResult">240</strong><span>g</span></div>
+              </div>
+              <div class="mini-results">
+                <div>
+                  <span>CAFÉ</span><strong id="doseResult">15 g</strong>
+                </div>
+                <div>
+                  <span>TEMPERATURA</span><strong id="tempResult">93 °C</strong>
+                </div>
+              </div>
+              <div
+                class="second-temp-result"
+                id="secondTempResult"
+                hidden
+              ></div>
+              <div class="pour-header">
+                <h4>EL RITMO DE TU RECETA</h4>
+                <span>02 VERTIDOS + BLOOM</span>
+              </div>
+              <ol id="pourPlan" class="pour-plan"></ol>
+              <p class="result-note">
+                “Añade” indica el agua de ese paso.<br />“Hasta” es el peso
+                acumulado en la balanza.<br />Plan de la referencia, escalado al
+                agua actual.
+              </p>
+              <div class="results-footer">
+                <span id="recipeSummary">V60 NEO · BOURBON LAVADO</span
+                ><span aria-hidden="true">*</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section
+        id="filosofia"
+        class="philosophy"
+        aria-labelledby="philosophyTitle"
+      >
+        <div class="frame philosophy-inner">
+          <p class="eyebrow">LA ESENCIA DE BLOSSOM</p>
+          <h2 id="philosophyTitle">
+            La curiosidad abre el camino.<br /><em>Tu paladar lo descubre.</em>
+          </h2>
+          <div class="philosophy-bottom">
+            <p>
+              Observa lo que cambia. Anota lo que encuentras.<br />Vuelve a esa
+              taza que te hizo detenerte.
+            </p>
+            <a class="text-link" href="../"
+              >Entrar a mi laboratorio
+              <span aria-hidden="true"
+                ><svg class="arrow-icon" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M4 12 12 4M4 4h8v8" /></svg></span
+            ></a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer frame">
+      <span>BLOSSOM SPECIALTY COFFEE</span>
+      <p>Portada y Recetas · Propuesta visual 01</p>
+      <p class="image-credit">
+        Imagen de portada generada con IA para esta propuesta.
+      </p>
+      <a href="../"
+        >Aplicación actual
+        <svg class="arrow-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M4 12 12 4M4 4h8v8" /></svg
+      ></a>
+    </footer>
+  </body>
+</html>

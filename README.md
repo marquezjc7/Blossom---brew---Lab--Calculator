@@ -4,6 +4,8 @@
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
+**Propuesta visual:** [Portada y calculadora de recetas](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/concepto/). Es una maqueta interactiva independiente, con fotografía generada con IA y valores de referencia; [su alcance y fuentes](docs/DESIGN_PREVIEW.md) están documentados.
+
 La V1.7.0 añade una calculadora de agua de dos concentrados: objetivos GH y alcalinidad, escalado de lotes, texto para pesar y perfiles asociados a recetas y sesiones. Conserva la preparación guiada de V1.6.0. Conserva el acceso con contraseña, la sincronización y los datos anteriores. La conexión del servicio y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
 
 El logo oficial de la cabecera es el JPG en color proporcionado por el propietario, conservado sin modificar en `assets/images/blossom-specialty-coffee.jpg`. Se presenta sobre su fondo blanco original y se adapta al ancho de pantalla.

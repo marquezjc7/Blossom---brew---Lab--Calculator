@@ -1460,6 +1460,51 @@ class BrowserTests(unittest.TestCase):
         self.page.wait_for_function("JSON.parse(localStorage.getItem('blossom-brew-recipes-v1'))[0].waterProfile.alkalinity === 60")
         self.assertEqual(self.stored(SESSION_KEY)[0]["waterProfile"]["alkalinity"], 40)
 
+    def test_design_preview_scales_recipe_and_pours_without_changing_saved_data(self):
+        self.seed_legacy_data()
+        before = self.page.evaluate("Object.fromEntries(Object.entries(localStorage))")
+        self.page.goto(self.base_url + "concepto/")
+        self.page.fill("#dose", "18")
+        expect(self.page.locator("#water")).to_have_value("288")
+        expect(self.page.locator("#ratioResult")).to_have_text("1:16")
+        expect(self.page.locator(".pour-total")).to_have_text(["Hasta 54 g", "Hasta 174 g", "Hasta 288 g"])
+        self.page.fill("#water", "300")
+        expect(self.page.locator("#ratioResult")).to_have_text("1:16,67")
+        self.page.fill("#dose", "0")
+        expect(self.page.locator("#copyRecipe")).to_be_disabled()
+        expect(self.page.locator("#ratioResult")).to_have_text("—")
+        self.page.click("#resetRecipe")
+        expect(self.page.locator("#water")).to_have_value("240")
+        self.assertEqual(self.page.evaluate("Object.fromEntries(Object.entries(localStorage))"), before)
+
+    def test_design_preview_copy_fallback_preserves_two_temperatures_and_units(self):
+        self.page.goto(self.base_url + "concepto/")
+        self.page.locator(".optional-temperature summary").click()
+        self.page.fill("#temperature2", "85")
+        expect(self.page.locator("#secondTempResult")).to_contain_text("85 °C")
+        self.page.evaluate("""Object.defineProperty(navigator, 'clipboard', {
+            configurable: true, value: {writeText: async () => {throw new Error('Denied in test')}}
+        })""")
+        self.page.click("#copyRecipe")
+        expect(self.page.locator("#copyFallback")).to_be_visible()
+        text = self.page.locator("#copyFallback").input_value()
+        self.assertIn("Temperatura 2: 85 °C", text)
+        self.assertIn("hasta 240 g acumulados", text)
+        self.assertIn("Molino: sin especificar", text)
+        self.assertEqual(self.page.locator(".account-link").get_attribute("href"), "../")
+
+    def test_design_preview_loads_fonts_and_photo_on_desktop_and_mobile(self):
+        for width in [320, 375, 768, 1440]:
+            with self.subTest(width=width):
+                self.page.set_viewport_size({"width": width, "height": 900})
+                self.page.goto(self.base_url + "concepto/")
+                self.page.evaluate("document.fonts.ready")
+                self.page.wait_for_function("document.querySelector('.hero-photo').complete && document.querySelector('.hero-photo').naturalWidth > 0")
+                self.assertTrue(self.page.evaluate("document.fonts.check('14px Manrope') && document.fonts.check('italic 40px Cormorant')"))
+                self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+                if width <= 730:
+                    self.assertGreaterEqual(self.page.locator("#dose").evaluate("el => parseFloat(getComputedStyle(el).fontSize)"), 16)
+
     def enable_cloud(self, backend=None):
         backend = backend or MockCloud()
         backend.attach(self.context)
