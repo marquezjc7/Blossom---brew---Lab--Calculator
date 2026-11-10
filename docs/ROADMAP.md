@@ -103,6 +103,10 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Conservar el formato JSON V1 y las primeras 24 columnas CSV; añadir cinco columnas de agua.
 - [ ] Confirmar una mezcla y un guardado reales con el propietario después de publicar.
 
+## V1.7.1 — lote de cinco litros
+
+- [x] Añadir el acceso rápido de 5 L a la calculadora de agua para escalar cualquier referencia o perfil personalizado.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

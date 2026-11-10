@@ -1,4 +1,4 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.7.0)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.7.1)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
@@ -128,7 +128,7 @@ Las puntuaciones vacías y la extracción no medida quedan sin registrar. EY sol
 ## Calculadora de agua (V1.7.0)
 
 1. Abre **05 · Agua** y selecciona una de las ocho referencias o un perfil conservado en tus recetas o bitácora.
-2. Indica el volumen del lote, con accesos de 0.5, 1, 2 y 4.5 L o un valor propio entre 0.1 y 100 L.
+2. Indica el volumen del lote, con accesos de 0.5, 1, 2, 4.5 y 5 L o un valor propio entre 0.1 y 100 L.
 3. Ajusta GH y alcalinidad por separado, mediante números o deslizadores, y da un nombre a tu perfil. Todos los objetivos se expresan en ppm como CaCO₃.
 4. Pesa las cantidades de concentrado buffer, concentrado de dureza y agua destilada. **Copiar receta** incluye sus concentraciones y unidades. **Descargar receta TXT** funciona también si el navegador no permite copiar.
 5. Para conservar un perfil en la cuenta, pulsa **Usar esta agua en mi receta** y guarda una receta nueva o actualiza la receta de café seleccionada. El perfil se guarda y sincroniza como parte de esa receta; las sesiones conservan su propia copia. Una referencia o cálculo suelto no crea un perfil independiente en la nube.
@@ -147,7 +147,7 @@ El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, 
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.7.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.7.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 
