@@ -89,7 +89,7 @@ También prueba la apertura directa de archivos. Si una política del navegador 
 
 Para ese caso se bloquean las solicitudes HTTP/HTTPS, en lugar de usar la emulación de desconexión que también puede impedir la navegación `file://` de WebKit. Si el WebKit del runner no consigue abrir ni un archivo HTML mínimo independiente, se informa la limitación como omitida. Un fallo que solo ocurra con la aplicación sigue siendo un fallo. La apertura web, el uso sin conexión después de cargar y el guardado continúan comprobándose en ambos motores.
 
-El flujo `.github/workflows/tests.yml` ejecuta ambas suites en GitHub Actions al subir cambios o abrir una pull request. La instalación de Python, bibliotecas y navegadores se comprueba por etapas con límites de tiempo independientes; las descargas del navegador se conservan en caché. La publicación sigue exigiendo las pruebas completas en ambos motores.
+El flujo `.github/workflows/tests.yml` ejecuta ambas suites en GitHub Actions al subir cambios o abrir una pull request. Las pruebas usan la imagen oficial de Playwright para Python y Ubuntu Noble, fijada por versión y digest, con los navegadores y bibliotecas ya instalados. Su versión debe coincidir con `requirements-dev.txt`; esto evita reinstalar las bibliotecas del sistema en cada ejecución. La publicación sigue exigiendo las pruebas completas en ambos motores.
 
 ## Acceso web con GitHub Pages
 

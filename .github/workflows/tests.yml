@@ -37,12 +37,17 @@ jobs:
   tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    # Keep this image version aligned with requirements-dev.txt.
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.62.0-noble@sha256:51d31fdfacb0cff99a1a724152e34ae408d2bd4e7da310ff157450f49261cc59
+      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
         browser: [chromium, webkit]
     env:
       BLOSSOM_BROWSER: ${{ matrix.browser }}
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,25 +57,9 @@ jobs:
         run: |
           npm ci --ignore-scripts
           npm test
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
       - name: Instalar herramientas de prueba
         timeout-minutes: 4
         run: python -m pip install --disable-pip-version-check --timeout 30 --retries 2 -r requirements-dev.txt
-      - name: Conservar descargas de los navegadores de prueba
-        id: browser-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-${{ matrix.browser }}-playwright-${{ hashFiles('requirements-dev.txt') }}
-      - name: Instalar bibliotecas del navegador
-        timeout-minutes: 7
-        run: python -m playwright install-deps ${{ matrix.browser }}
-      - name: Descargar el navegador de prueba
-        if: steps.browser-cache.outputs.cache-hit != 'true'
-        timeout-minutes: 5
-        run: python -m playwright install ${{ matrix.browser }}
       - name: Probar la aplicación en el navegador seleccionado
         run: |
           python - <<'PY'
