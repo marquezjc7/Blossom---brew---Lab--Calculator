@@ -1814,7 +1814,12 @@ class BrowserTests(unittest.TestCase):
                 self.page.evaluate("document.fonts.ready")
                 for tab in ["recipes", "preparation", "extraction", "water"]:
                     self.page.locator('.tabs [data-public-tab="' + tab + '"]').click()
-                    self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, tab))
+                    fits = self.page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                    overflow = [] if fits else self.page.evaluate("""() => [...document.querySelectorAll('body *')]
+                        .filter(el => el.getBoundingClientRect().width && el.getBoundingClientRect().right > innerWidth + 0.5)
+                        .map(el => ({tag:el.tagName,id:el.id,class:el.className,width:el.clientWidth,
+                            right:el.getBoundingClientRect().right,text:el.textContent.trim().slice(0,80)})).slice(0,20)""")
+                    self.assertTrue(fits, (width, tab, overflow))
 
     def enable_cloud(self, backend=None):
         backend = backend or MockCloud()

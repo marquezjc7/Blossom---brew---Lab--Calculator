@@ -14,6 +14,9 @@
   grid-template-columns: minmax(0, 1fr) 330px;
   align-items: start;
 }
+body[data-public-catalogue] .field select {
+  max-width: 100%;
+}
 .public-facts {
   margin: 26px 0;
 }
