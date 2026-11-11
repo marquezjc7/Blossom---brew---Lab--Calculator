@@ -26,6 +26,7 @@
   let cloudSync = null;
   let preparationGuide = null;
   let waterLab = null;
+  let publishing = null;
   const store = {
     read: (key) => localStore.read(key),
     write(key, value) {
@@ -88,6 +89,7 @@
   }
   function updateRecipeStatus() {
     const custom = isCustomRecipe();
+    publishing?.render();
     $("updateRecipe").disabled = !custom || (!recipeDirty && !editor.isDirty);
     const deleteButton = $("deleteRecipe");
     if (deleteButton) deleteButton.disabled = !custom;
@@ -1017,6 +1019,7 @@
     };
     const renderAccount = (user) => {
       connectedUser = user;
+      if (!user) publishing?.disconnect();
       $("cloudAccount").classList.toggle("is-connected", !!user);
       $("accountShortcutLabel").textContent = user ? "Tu cuenta" : "Entrar";
       $("headerSync").textContent = user ? "Conectando…" : "Acceso opcional";
@@ -1036,6 +1039,7 @@
     const signedIn = async (user) => {
       renderAccount(user);
       await cloudSync.connect(user);
+      if (connectedUser?.id === user.id) await publishing?.connect(user, api);
     };
     updateLoginControls();
     $("cloudSignIn").addEventListener("submit", async (event) => {
@@ -1175,6 +1179,7 @@
             connectedUser.id
         ) {
           cloudSync.disconnect();
+          publishing?.disconnect();
           showStatus(
             "La cuenta cambió en otra pestaña. Recarga la aplicación antes de sincronizar.",
             true,
@@ -1213,6 +1218,11 @@
     sessions = Array.isArray(storedS)
       ? storedS.filter((s) => s && typeof s.coffee === "string")
       : [];
+    publishing = BlossomLab.createPublishingControls({
+      getRecipe: () => (isCustomRecipe() ? selected : null),
+      isDirty: () => recipeDirty || editor.isDirty,
+      sync: () => cloudSync?.run(),
+    });
     waterLab = BlossomLab.createWaterLab({
       store: localStore,
       getProfiles: () =>

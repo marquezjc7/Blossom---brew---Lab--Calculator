@@ -1,6 +1,7 @@
 """A local HTTP contract double; database permissions are tested against PostgreSQL separately."""
 import copy
 import json
+import uuid
 from urllib.parse import urlsplit
 
 AUTH_KEY = "blossom-brew-cloud-auth-v1"
@@ -14,6 +15,10 @@ class MockCloud:
         self.calls = []
         self.email_limit = None
         self.password = None
+        self.publisher = True
+        self.catalogue_ready = True
+        self.publications = {}
+        self.catalogue_calls = []
 
     def attach(self, context, authenticated=True):
         config = {"url": "https://cloud.example.test", "publishableKey": "sb_publishable_test"}
@@ -38,6 +43,9 @@ class MockCloud:
             route.fulfill(status=503, headers=headers, json={"message": "Offline test"})
             return
         path = urlsplit(request.url).path
+        if path in ["/rest/v1/rpc/" + action for action in ["blossom_public_catalogue", "blossom_catalogue_status", "blossom_publish_recipe", "blossom_withdraw_recipe"]]:
+            self.handle_catalogue(route, path, headers)
+            return
         if path == "/auth/v1/user":
             if request.method == "PUT":
                 self.password = request.post_data_json["password"]
@@ -79,6 +87,8 @@ class MockCloud:
                 if (not existing and change["base_version"] == 0) or (existing and existing["version"] == change["base_version"]):
                     self.records[key] = {"kind": key[0], "record_id": key[1], "payload": copy.deepcopy(body),
                                          "deleted": change["deleted"], "version": existing["version"] + 1 if existing else 1}
+                    if change["deleted"] and key[0] == "recipe" and self.publications.get(key[1], {}).get("published"):
+                        self.publications[key[1]].update(published=False, recipe=None, revision=self.publications[key[1]]["revision"] + 1)
                 elif not change["deleted"]:
                     identifier = "conflict-" + change["op_id"]
                     copied = {**body, "id": identifier}
@@ -92,3 +102,49 @@ class MockCloud:
             route.fulfill(headers=headers, json={"records": list(self.records.values()), "conflicts": conflicts})
         else:
             route.fulfill(status=404, headers=headers, json={})
+
+    def handle_catalogue(self, route, path, headers):
+        request = route.request
+        self.catalogue_calls.append({"path": path, "authorization": request.headers.get("authorization"), "body": request.post_data_json})
+        if not self.catalogue_ready:
+            route.fulfill(status=404, headers=headers, json={"code": "PGRST202"})
+            return
+        if path.endswith("blossom_public_catalogue"):
+            route.fulfill(headers=headers, json=[p["recipe"] for p in self.publications.values() if p["published"]])
+            return
+        if not request.headers.get("authorization"):
+            route.fulfill(status=403, headers=headers, json={"code": "42501"})
+            return
+        if path.endswith("blossom_catalogue_status"):
+            entries = [{k: p[k] for k in ["source_id", "public_id", "revision", "published"]} for p in self.publications.values()]
+            route.fulfill(headers=headers, json={"publisher": self.publisher, "entries": entries if self.publisher else []})
+            return
+        if not self.publisher:
+            route.fulfill(status=403, headers=headers, json={"code": "42501"})
+            return
+        body = request.post_data_json
+        identifier = body["recipe_id"]
+        existing = self.publications.get(identifier)
+        if body["expected_revision"] != (existing["revision"] if existing else 0):
+            route.fulfill(status=409, headers=headers, json={"code": "40001"})
+            return
+        if path.endswith("blossom_publish_recipe"):
+            source = self.records.get(("recipe", identifier))
+            if not source or source["deleted"] or source["payload"] != body["expected_recipe"]:
+                route.fulfill(status=409, headers=headers, json={"code": "40001"})
+                return
+            fields = ["name", "coffee", "method", "dose", "water", "ratio", "temp", "temp2", "bloom", "time", "grind", "grinder", "grindSize", "grindMicrons", "pours", "pourTimes", "pourCount", "bloomWater"]
+            projected = {key: copy.deepcopy(source["payload"][key]) for key in fields if key in source["payload"]}
+            profile = source["payload"].get("waterProfile")
+            if profile:
+                projected["waterProfile"] = {key: profile[key] for key in ["version", "system", "base", "name", "liters", "gh", "alkalinity"]}
+            public_id = existing["public_id"] if existing else str(uuid.uuid4())
+            projected["id"] = public_id
+            result = {"source_id": identifier, "public_id": public_id, "revision": (existing["revision"] if existing else 0) + 1, "published": True, "recipe": projected}
+        else:
+            if not existing:
+                route.fulfill(status=409, headers=headers, json={"code": "40001"})
+                return
+            result = {**existing, "published": False, "recipe": None, "revision": existing["revision"] + 1}
+        self.publications[identifier] = result
+        route.fulfill(headers=headers, json={k: result[k] for k in ["source_id", "public_id", "revision", "published"]})

@@ -1,0 +1,134 @@
+.public-cover {
+  min-height: 400px;
+}
+.public-cover h1 {
+  font-size: clamp(32px, 4.5vw, 62px);
+}
+.public-cover .hero-copy {
+  padding-block: 42px;
+}
+.public-catalogue-actions {
+  margin: -8px 0 32px;
+}
+.public-recipe-layout {
+  grid-template-columns: minmax(0, 1fr) 330px;
+  align-items: start;
+}
+.public-facts {
+  margin: 26px 0;
+}
+.public-facts > div {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.public-facts dt {
+  font-size: 11px;
+  color: var(--muted);
+}
+.public-facts dd {
+  font-size: 13px;
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.public-adapt {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+.public-adapt h3 {
+  font: 400 27px/1.2 var(--font-editorial);
+  margin: 0;
+}
+.public-adapt > .hint {
+  margin-bottom: 20px;
+}
+.public-recipe-card {
+  position: static;
+  align-self: start;
+}
+.public-temperature {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 16px;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.public-temperature span {
+  white-space: nowrap;
+}
+.public-water-details {
+  margin-top: 10px;
+}
+.public-water-details summary {
+  font-size: 11px;
+  cursor: pointer;
+  min-height: 32px;
+}
+.public-water-details pre,
+.public-water-text {
+  font: 12px/1.9 var(--font-interface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.public-water-details pre {
+  font-size: 10px;
+  color: #c5b8a2;
+}
+#guestBrewClock {
+  font-size: 66px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  margin: 25px 0;
+}
+#guestBrewAmount {
+  font-size: 28px;
+}
+#guestStepTemps .field {
+  margin-block: 14px;
+}
+.publication-panel {
+  margin-top: 20px;
+}
+.copy-field {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  padding: 12px;
+  background: #fffdfa;
+  color: var(--ink);
+  margin-top: 16px;
+  font: 13px/1.7 var(--font-interface);
+  border-radius: 0;
+}
+textarea.copy-field {
+  min-height: 180px;
+  resize: vertical;
+}
+@media (max-width: 850px) {
+  .public-recipe-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 730px) {
+  .public-cover {
+    min-height: 420px;
+  }
+  .public-cover .hero-copy {
+    padding-block: 36px;
+  }
+  .public-facts > div {
+    gap: 14px;
+  }
+  .public-recipe-card .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .copy-field {
+    font-size: 16px;
+  }
+}

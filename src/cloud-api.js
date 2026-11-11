@@ -319,6 +319,39 @@
           });
         }
       },
+      async catalogueRequest(action, body = {}) {
+        const paths = {
+          status: "blossom_catalogue_status",
+          publish: "blossom_publish_recipe",
+          withdraw: "blossom_withdraw_recipe",
+        };
+        if (!paths[action])
+          throw new Error("Acción de publicación desconocida.");
+        const perform = (active) =>
+          request("/rest/v1/rpc/" + paths[action], {
+            token: active.access_token,
+            body,
+          });
+        try {
+          try {
+            return await perform(await ensureSession());
+          } catch (error) {
+            if (error.status !== 401) throw error;
+            return await perform(await ensureSession(true));
+          }
+        } catch (error) {
+          if (error.code === "40001")
+            error.message =
+              "La receta o su publicación cambió. Comprueba la sincronización, actualiza el estado del recetario y vuelve a intentarlo.";
+          else if (error.status === 404)
+            error.message =
+              "El recetario público necesita activarse en Supabase una sola vez.";
+          else if (error.code === "42501")
+            error.message =
+              "Esta cuenta no tiene permiso para publicar en el recetario de Blossom.";
+          throw error;
+        }
+      },
       async signOut() {
         const current = session;
         // Clearing the local token first prevents automatic reconnection on reload.

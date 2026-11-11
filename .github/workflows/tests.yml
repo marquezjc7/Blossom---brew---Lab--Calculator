@@ -24,12 +24,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Comprobar Supabase y los permisos de acceso
         env:
           BLOSSOM_SUPABASE_URL: ${{ vars.BLOSSOM_SUPABASE_URL }}
           BLOSSOM_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BLOSSOM_SUPABASE_PUBLISHABLE_KEY }}
-        run: python scripts/check_cloud.py
+        run: |
+          python scripts/check_cloud.py
+          python scripts/check_public_catalogue.py
 
   tests:
     runs-on: ubuntu-24.04

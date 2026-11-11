@@ -12,13 +12,14 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.8.1" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.9.0" />
+    <link rel="stylesheet" href="assets/css/catalogue.css?v=1.9.0" />
   </head>
   <body>
     <a class="skip-link" href="#laboratorio">Ir al laboratorio</a>
     <div class="announcement" id="inicio">
       <span>CAFÉ · CURIOSIDAD · PRECISIÓN</span>
-      <span class="version">BREW LAB · V1.8.1</span>
+      <span class="version">BREW LAB · V1.9.0</span>
     </div>
     <div class="header-shell">
       <header class="site-header wrap">
@@ -29,7 +30,7 @@
         >
           <img
             class="brand-logo"
-            src="assets/images/blossom-specialty-coffee.jpg?v=1.8.1"
+            src="assets/images/blossom-specialty-coffee.jpg?v=1.9.0"
             alt="Blossom Specialty Coffee"
             width="1920"
             height="1920"
@@ -37,6 +38,7 @@
           />
         </a>
         <nav class="header-nav" aria-label="Accesos al laboratorio">
+          <a href="recetario/">Recetario público</a>
           <a href="#laboratorio" data-open-tab="recipe">Recetas</a>
           <a href="#laboratorio" data-open-tab="waterLab">Agua</a>
           <a href="#laboratorio" data-open-tab="journal">Bitácora</a>
@@ -55,7 +57,7 @@
     <section class="hero" aria-labelledby="heroTitle">
       <img
         class="hero-photo"
-        src="assets/images/coffee-blossoms.png?v=1.8.1"
+        src="assets/images/coffee-blossoms.png?v=1.9.0"
         alt="Flores y cerezas de café bajo una luz cálida; composición generada con IA para Blossom."
         width="1942"
         height="809"
@@ -83,22 +85,13 @@
         <span>DEL ORIGEN A TU TAZA</span><span>OBSERVA · AJUSTA · REPITE</span>
       </div>
     </section>
-    <div class="intro-strip wrap">
-      <p>El detalle hace la diferencia.</p>
-      <span>UN ESPACIO PARA EXPLORAR EL CAFÉ.</span>
-    </div>
     <main class="wrap shell" id="laboratorio">
       <section
         class="card cloud-account"
         id="cloudAccount"
-        aria-labelledby="cloudTitle"
+        aria-label="Acceso a tu cuenta"
         hidden
       >
-        <h2 id="cloudTitle">Tus recetas, en tus dispositivos</h2>
-        <p class="note account-intro">
-          Entra con el mismo correo en la computadora y el teléfono para
-          sincronizar tus recetas y bitácora automáticamente.
-        </p>
         <form id="cloudSignIn" class="cloud-sign-in">
           <div class="field">
             <label for="cloudEmail">Tu correo electrónico</label>
@@ -568,6 +561,79 @@
                 tabindex="-1"
                 hidden
               ></p>
+              <section
+                class="callout publication-panel"
+                id="publicationPanel"
+                aria-labelledby="publicationTitle"
+                hidden
+              >
+                <h3 id="publicationTitle">Comparte tu receta</h3>
+                <p id="publicationStatus" role="status" aria-live="polite"></p>
+                <p class="hint">
+                  Solo se publican los parámetros, vertidos y agua. Tu bitácora
+                  y notas personales permanecen privadas. Guardar cambios no
+                  actualiza automáticamente la publicación.
+                </p>
+                <div class="buttonbar">
+                  <button
+                    class="btn primary"
+                    type="button"
+                    id="publishRecipe"
+                    hidden
+                  >
+                    Publicar en el recetario
+                  </button>
+                  <button class="btn" type="button" id="withdrawRecipe" hidden>
+                    Retirar del recetario
+                  </button>
+                  <button class="btn" type="button" id="refreshPublication">
+                    Actualizar estado
+                  </button>
+                  <button
+                    class="btn"
+                    type="button"
+                    id="prepareCatalogueSql"
+                    hidden
+                  >
+                    Copiar configuración de Supabase
+                  </button>
+                </div>
+                <div class="buttonbar">
+                  <a
+                    class="btn"
+                    id="publicCatalogueLink"
+                    href="recetario/"
+                    target="_blank"
+                    rel="noopener"
+                    >Ver recetario público</a
+                  >
+                  <button class="btn" id="copyPublicCatalogue" type="button">
+                    Copiar enlace para Instagram
+                  </button>
+                </div>
+                <input
+                  id="publicCatalogueUrl"
+                  class="copy-field"
+                  type="url"
+                  readonly
+                  aria-label="Enlace del recetario público"
+                  hidden
+                />
+                <div id="catalogueActivation" hidden>
+                  <p class="note">
+                    Este paso se realiza una sola vez en SQL Editor de tu
+                    proyecto de Supabase. Configura la lectura pública y
+                    autoriza únicamente la cuenta con la que has entrado.
+                    Después pulsa «Actualizar estado».
+                  </p>
+                  <textarea
+                    id="catalogueSql"
+                    class="copy-field"
+                    readonly
+                    aria-label="Configuración de Supabase para activar el recetario"
+                  ></textarea>
+                </div>
+              </section>
               <button
                 class="btn"
                 id="downloadPendingRecipe"
@@ -1378,7 +1444,7 @@
       <footer class="footer">
         <div>
           <strong>BLOSSOM SPECIALTY COFFEE</strong
-          ><span>BREW LAB · V1.8.1</span>
+          ><span>BREW LAB · V1.9.0</span>
         </div>
         <p>Café, curiosidad y precisión.</p>
         <p class="image-credit">
@@ -1388,19 +1454,21 @@
       </footer>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.8.1" defer></script>
-    <script src="src/plans.js?v=1.8.1" defer></script>
-    <script src="src/recipes.js?v=1.8.1" defer></script>
-    <script src="src/storage.js?v=1.8.1" defer></script>
-    <script src="src/preparation.js?v=1.8.1" defer></script>
-    <script src="src/water.js?v=1.8.1" defer></script>
-    <script src="src/transfers.js?v=1.8.1" defer></script>
-    <script src="src/pour-editor.js?v=1.8.1" defer></script>
-    <script src="src/preparation-ui.js?v=1.8.1" defer></script>
-    <script src="src/water-ui.js?v=1.8.1" defer></script>
-    <script src="src/cloud-config.js?v=1.8.1" defer></script>
-    <script src="src/sync.js?v=1.8.1" defer></script>
-    <script src="src/cloud-api.js?v=1.8.1" defer></script>
-    <script src="src/app.js?v=1.8.1" defer></script>
+    <script src="src/calculations.js?v=1.9.0" defer></script>
+    <script src="src/plans.js?v=1.9.0" defer></script>
+    <script src="src/recipes.js?v=1.9.0" defer></script>
+    <script src="src/storage.js?v=1.9.0" defer></script>
+    <script src="src/preparation.js?v=1.9.0" defer></script>
+    <script src="src/water.js?v=1.9.0" defer></script>
+    <script src="src/transfers.js?v=1.9.0" defer></script>
+    <script src="src/pour-editor.js?v=1.9.0" defer></script>
+    <script src="src/preparation-ui.js?v=1.9.0" defer></script>
+    <script src="src/water-ui.js?v=1.9.0" defer></script>
+    <script src="src/cloud-config.js?v=1.9.0" defer></script>
+    <script src="src/sync.js?v=1.9.0" defer></script>
+    <script src="src/cloud-api.js?v=1.9.0" defer></script>
+    <script src="src/catalogue.js?v=1.9.0" defer></script>
+    <script src="src/publishing-ui.js?v=1.9.0" defer></script>
+    <script src="src/app.js?v=1.9.0" defer></script>
   </body>
 </html>

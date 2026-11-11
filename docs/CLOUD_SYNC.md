@@ -2,6 +2,8 @@
 
 El código está preparado para Supabase Auth y PostgreSQL. **No se activa hasta conectar un proyecto de Supabase y publicar su configuración.** GitHub Pages continúa entregando los archivos de la aplicación; las recetas privadas se guardan en el proyecto de datos, separadas por cuenta.
 
+La V1.9.0 añade una publicación opcional y separada de recetas. El [recetario público](PUBLIC_RECIPES.md) utiliza copias elegidas por una cuenta autorizada; no cambia los permisos de los registros privados ni expone la bitácora.
+
 ## Activación inicial del propietario
 
 1. Crear o elegir un proyecto de Supabase de la cuenta del propietario. No hace falta cambiar el alojamiento de GitHub Pages.

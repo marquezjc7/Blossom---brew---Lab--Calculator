@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f5f1e9" />
+    <meta
+      name="description"
+      content="El recetario abierto de Blossom Specialty Coffee. Consulta recetas, adapta tu dosis y explora la preparación, extracción y agua sin crear una cuenta."
+    />
+    <meta property="og:title" content="Blossom · Recetario de café" />
+    <meta
+      property="og:description"
+      content="Del laboratorio a tu taza. Recetas de café, vertidos y agua para explorar con Blossom."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/recetario/"
+    />
+    <meta
+      property="og:image"
+      content="https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/assets/images/coffee-blossoms.png"
+    />
+    <title>Recetario · Blossom Specialty Coffee</title>
+    <link
+      rel="preload"
+      href="../assets/fonts/manrope.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=1.9.0" />
+    <link rel="stylesheet" href="../assets/css/catalogue.css?v=1.9.0" />
+  </head>
+  <body data-public-catalogue="blossom">
+    <a class="skip-link" href="#recetario">Ir al recetario</a>
+    <div class="announcement" id="inicio">
+      <span>CAFÉ · CURIOSIDAD · PRECISIÓN</span
+      ><span class="version">RECETARIO · BLOSSOM</span>
+    </div>
+    <div class="header-shell">
+      <header class="site-header wrap">
+        <a
+          class="brand-link"
+          href="#inicio"
+          aria-label="Blossom Specialty Coffee · Inicio"
+          ><img
+            class="brand-logo"
+            src="../assets/images/blossom-specialty-coffee.jpg"
+            alt="Blossom Specialty Coffee"
+            width="1920"
+            height="1920"
+        /></a>
+        <nav class="header-nav" aria-label="Recetario y herramientas">
+          <a href="#recetario" data-public-tab="recipes">Recetas</a
+          ><a href="#recetario" data-public-tab="preparation">Preparación</a
+          ><a href="#recetario" data-public-tab="water">Agua</a>
+        </nav>
+        <a class="account-shortcut" href="../#cloudAccount"
+          >Acceso del propietario</a
+        >
+      </header>
+    </div>
+    <section class="hero public-cover" aria-labelledby="publicHeroTitle">
+      <img
+        class="hero-photo"
+        src="../assets/images/coffee-blossoms.png"
+        alt="Flores y cerezas de café; composición generada con IA para Blossom."
+        width="1942"
+        height="809"
+        fetchpriority="high"
+      />
+      <div class="hero-shade"></div>
+      <div class="hero-copy wrap">
+        <p class="hero-eyebrow">
+          BLOSSOM SPECIALTY COFFEE <span>RECETARIO ABIERTO</span>
+        </p>
+        <h1 id="publicHeroTitle">
+          <span>Del laboratorio</span><em>a tu taza.</em>
+        </h1>
+        <p class="hero-description">
+          Explora nuestras recetas, sigue los vertidos y encuentra tu próxima
+          taza. Puedes entrar y utilizarlas sin crear una cuenta.
+        </p>
+        <a class="hero-cta" href="#recetario"
+          >Explorar recetas
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4 12 12 4M4 4h8v8" /></svg
+        ></a>
+      </div>
+    </section>
+    <main class="wrap shell" id="recetario">
+      <nav class="tabs" aria-label="Secciones del recetario">
+        <button
+          class="active"
+          data-public-tab="recipes"
+          aria-controls="publicRecipes"
+          aria-pressed="true"
+        >
+          01 · Recetas
+        </button>
+        <button
+          data-public-tab="preparation"
+          aria-controls="publicPreparation"
+          aria-pressed="false"
+        >
+          02 · Preparación
+        </button>
+        <button
+          data-public-tab="extraction"
+          aria-controls="publicExtraction"
+          aria-pressed="false"
+        >
+          03 · Extracción
+        </button>
+        <button
+          data-public-tab="water"
+          aria-controls="publicWater"
+          aria-pressed="false"
+        >
+          04 · Agua
+        </button>
+      </nav>
+      <p class="status" id="catalogueStatus" role="status" aria-live="polite">
+        Cargando las recetas publicadas…
+      </p>
+      <div class="public-catalogue-actions">
+        <button class="btn" id="reloadCatalogue" type="button">
+          Actualizar recetario
+        </button>
+      </div>
+      <section
+        class="panel active"
+        id="publicRecipes"
+        aria-labelledby="publicRecipeTitle"
+      >
+        <div class="workspace-heading">
+          <div>
+            <p class="kicker">RECETAS DE BLOSSOM</p>
+            <h2 id="publicRecipeTitle">
+              Una receta, <em>tu próxima taza.</em>
+            </h2>
+          </div>
+          <p>
+            Consulta y adapta las cantidades para prepararla. Las recetas
+            publicadas se conservan tal como las comparte Blossom.
+          </p>
+        </div>
+        <div class="layout public-recipe-layout">
+          <article class="card">
+            <p class="kicker">ELIGE Y EXPLORA</p>
+            <h2 id="publicRecipeName">Tu preparación</h2>
+            <div class="field">
+              <label for="publicPreset">Receta de Blossom</label
+              ><select id="publicPreset"></select>
+            </div>
+            <dl class="public-facts" id="publicRecipeFacts"></dl>
+            <div class="public-adapt">
+              <h3>Adapta las cantidades para tu taza</h3>
+              <p class="hint">
+                Estos ajustes son temporales; puedes volver a las cantidades
+                originales.
+              </p>
+              <div class="fields">
+                <div class="field">
+                  <label for="publicDose">Café molido (g)</label
+                  ><input
+                    id="publicDose"
+                    type="number"
+                    min="0.1"
+                    max="1000"
+                    step="0.1"
+                  />
+                </div>
+                <div class="field">
+                  <label for="publicRatio">Ratio deseado (1:X)</label
+                  ><input
+                    id="publicRatio"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="0.1"
+                  />
+                </div>
+              </div>
+              <div class="buttonbar">
+                <button class="btn" id="restorePublicRecipe" type="button">
+                  Restablecer cantidades</button
+                ><button
+                  class="btn primary"
+                  id="openPublicPreparation"
+                  type="button"
+                >
+                  Preparar esta receta</button
+                ><button class="btn" id="copyPublicRecipe" type="button">
+                  Copiar preparación
+                </button>
+              </div>
+              <p
+                id="publicRecipeFeedback"
+                class="status"
+                role="status"
+                hidden
+              ></p>
+              <textarea
+                id="publicCopyText"
+                class="copy-field"
+                readonly
+                aria-label="Preparación para copiar"
+                hidden
+              ></textarea>
+            </div>
+          </article>
+          <aside
+            class="card recipe-metrics public-recipe-card"
+            aria-label="Ficha de la receta"
+          >
+            <p class="kicker">TU PREPARACIÓN, EN CIFRAS</p>
+            <h2 id="publicCardName"></h2>
+            <div class="metrics">
+              <div class="metric">
+                <div class="lbl">Dosis</div>
+                <div class="num" id="publicDoseOut">—</div>
+                <div class="unit">g de café</div>
+              </div>
+              <div class="metric">
+                <div class="lbl">Agua total</div>
+                <div class="num" id="publicWaterOut">—</div>
+                <div class="unit">g para preparar</div>
+              </div>
+              <div class="metric">
+                <div class="lbl">Ratio</div>
+                <div class="num" id="publicRatioOut">—</div>
+              </div>
+              <div class="metric">
+                <div class="lbl">Temperaturas</div>
+                <div class="public-temperature" id="publicTemperatures"></div>
+              </div>
+            </div>
+            <section class="recipe-card-section">
+              <h3>Bloom y vertidos</h3>
+              <div
+                class="recipe-card-pour-scroll"
+                tabindex="0"
+                role="region"
+                aria-label="Vertidos de la receta"
+              >
+                <table class="recipe-card-pours">
+                  <thead>
+                    <tr>
+                      <th scope="col">Paso</th>
+                      <th scope="col">Añade</th>
+                      <th scope="col">Acumulado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="publicPours"></tbody>
+                </table>
+              </div>
+              <p class="recipe-card-note" id="publicPourNote"></p>
+            </section>
+            <section class="recipe-card-section">
+              <h3>Agua de esta receta</h3>
+              <p id="publicWaterSummary" class="recipe-card-water-name"></p>
+              <details
+                class="public-water-details"
+                id="publicWaterDetails"
+                hidden
+              >
+                <summary>Ver receta de agua</summary>
+                <pre id="publicWaterRecipe"></pre>
+              </details>
+            </section>
+          </aside>
+        </div>
+      </section>
+      <section
+        class="panel"
+        id="publicPreparation"
+        aria-labelledby="publicPreparationTitle"
+      >
+        <div class="workspace-heading">
+          <div>
+            <p class="kicker">PREPARACIÓN GUIADA</p>
+            <h2 id="publicPreparationTitle">Sigue tu <em>preparación.</em></h2>
+          </div>
+          <p>
+            Inicia con la balanza en cero. Confirma cada vertido cuando lo
+            comiences.
+          </p>
+        </div>
+        <div class="layout">
+          <div class="card">
+            <p class="kicker" id="guestBrewName"></p>
+            <p class="note" id="guestBrewTarget"></p>
+            <p class="status" id="guestBrewMessage" role="status"></p>
+            <div id="guestStepTemps"></div>
+            <p
+              class="brew-clock"
+              id="guestBrewClock"
+              role="timer"
+              aria-live="off"
+            >
+              0:00
+            </p>
+            <div class="callout">
+              <h3 id="guestBrewAmount"></h3>
+              <p id="guestBrewCumulative"></p>
+              <p id="guestBrewTemperature"></p>
+            </div>
+            <div class="buttonbar">
+              <button class="btn primary" id="guestBrewStart" type="button">
+                Comenzar preparación</button
+              ><button class="btn" id="guestBrewPause" type="button" hidden>
+                Pausar</button
+              ><button
+                class="btn primary"
+                id="guestBrewResume"
+                type="button"
+                hidden
+              >
+                Reanudar</button
+              ><button
+                class="btn primary"
+                id="guestBrewNext"
+                type="button"
+                hidden
+              >
+                Comenzar siguiente vertido</button
+              ><button
+                class="btn primary"
+                id="guestBrewFinish"
+                type="button"
+                hidden
+              >
+                Finalizar</button
+              ><button class="btn" id="guestBrewReset" type="button">
+                Reiniciar preparación
+              </button>
+            </div>
+            <p class="hint">
+              El cronómetro orienta; los pasos avanzan cuando tú lo indicas. El
+              progreso dura mientras mantengas esta página abierta.
+            </p>
+          </div>
+          <div class="card">
+            <p class="kicker">TU PLAN</p>
+            <h2>Un vertido a la vez.</h2>
+            <div id="guestBrewPlan"></div>
+          </div>
+        </div>
+      </section>
+      <section
+        class="panel"
+        id="publicExtraction"
+        aria-labelledby="publicExtractionTitle"
+      >
+        <div class="workspace-heading">
+          <div>
+            <p class="kicker">MEDICIÓN</p>
+            <h2 id="publicExtractionTitle">Entiende tu <em>extracción.</em></h2>
+          </div>
+        </div>
+        <div class="layout">
+          <div class="card">
+            <h2>Rendimiento de extracción</h2>
+            <p class="sub">
+              Utiliza el peso de bebida obtenido y el TDS medido con un
+              refractómetro para café.
+            </p>
+            <div class="fields">
+              <div class="field">
+                <label for="guestEyDose">Dosis seca (g)</label
+                ><input id="guestEyDose" type="number" min="0.1" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="guestEyCup">Bebida obtenida (g)</label
+                ><input id="guestEyCup" type="number" min="0.1" step="0.1" />
+              </div>
+              <div class="field wide">
+                <label for="guestEyTds">TDS de bebida (%)</label
+                ><input
+                  id="guestEyTds"
+                  type="number"
+                  min="0"
+                  max="30"
+                  step="0.01"
+                  placeholder="Ej.: 1.40"
+                />
+              </div>
+            </div>
+            <p class="note">
+              Mide el líquido servido, no el agua vertida. El TDS mineral del
+              agua no sirve para calcular la extracción del café.
+            </p>
+          </div>
+          <div class="card">
+            <p class="kicker">EXTRACTION YIELD</p>
+            <h2 id="guestEyResult">— %</h2>
+            <p class="status" id="guestEyStatus" role="status">
+              Introduce tus mediciones.
+            </p>
+            <p class="note">
+              El porcentaje describe el rendimiento; el sabor se evalúa en la
+              taza.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section
+        class="panel"
+        id="publicWater"
+        aria-labelledby="publicWaterTitle"
+      >
+        <div class="workspace-heading">
+          <div>
+            <p class="kicker">FORMULACIÓN DE AGUA</p>
+            <h2 id="publicWaterTitle">Explora tu <em>agua.</em></h2>
+          </div>
+          <p>
+            Los cálculos son temporales y no cambian el agua de las recetas
+            publicadas.
+          </p>
+        </div>
+        <div class="layout">
+          <div class="card">
+            <h2>Dos concentrados, tu mezcla.</h2>
+            <p class="sub">
+              Para agua destilada y soluciones preparadas de NaHCO₃ a 1.68 g/L y
+              MgSO₄·7H₂O a 2.45 g/L.
+            </p>
+            <div class="fields">
+              <div class="field wide">
+                <label for="guestWaterPreset"
+                  >Receta de agua de referencia</label
+                ><select id="guestWaterPreset"></select>
+              </div>
+              <div class="field wide">
+                <label for="guestWaterLiters"
+                  >Volumen final aproximado (L)</label
+                ><input
+                  id="guestWaterLiters"
+                  type="number"
+                  min="0.1"
+                  max="100"
+                  step="0.1"
+                  value="1"
+                />
+              </div>
+              <div class="field">
+                <label for="guestWaterGh">GH objetivo (ppm como CaCO₃)</label
+                ><input
+                  id="guestWaterGh"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="0.1"
+                />
+              </div>
+              <div class="field">
+                <label for="guestWaterAlkalinity"
+                  >Alcalinidad objetivo (ppm como CaCO₃)</label
+                ><input
+                  id="guestWaterAlkalinity"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="0.1"
+                />
+              </div>
+            </div>
+            <p class="note">
+              Aproximación Barista Hustle: 1 g de solución ≈ 1 mL, con agua base
+              de minerales prácticamente cero. Comprueba el agua final con un
+              kit. No verifica todos los parámetros SCA ni la compatibilidad con
+              una máquina de espresso.
+            </p>
+          </div>
+          <div class="card">
+            <p class="kicker">CANTIDADES PARA PESAR</p>
+            <h2>Tu mezcla de agua</h2>
+            <pre class="public-water-text" id="guestWaterAmounts"></pre>
+            <p id="guestWaterStatus" class="status" role="status" hidden></p>
+          </div>
+        </div>
+      </section>
+      <footer class="footer">
+        <div>
+          <strong>BLOSSOM SPECIALTY COFFEE</strong
+          ><span>RECETARIO · V1.9.0</span>
+        </div>
+        <p>Imagen de portada generada con IA para Blossom.</p>
+        <a href="../#cloudAccount">Acceso del propietario</a>
+      </footer>
+    </main>
+    <script src="../src/calculations.js?v=1.9.0" defer></script>
+    <script src="../src/plans.js?v=1.9.0" defer></script>
+    <script src="../src/recipes.js?v=1.9.0" defer></script>
+    <script src="../src/water.js?v=1.9.0" defer></script>
+    <script src="../src/preparation.js?v=1.9.0" defer></script>
+    <script src="../src/cloud-config.js?v=1.9.0" defer></script>
+    <script src="../src/cloud-api.js?v=1.9.0" defer></script>
+    <script src="../src/catalogue.js?v=1.9.0" defer></script>
+    <script src="../src/catalogue-ui.js?v=1.9.0" defer></script>
+  </body>
+</html>

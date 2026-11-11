@@ -137,6 +137,17 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Colocar «Receta de agua» debajo de «Avanzado (opcional)», con el perfil, el volumen del lote y las cantidades de soluciones concentradas y agua destilada.
 - [x] Incluir un resumen del perfil de agua en la ficha y conservar el guardado, los respaldos y la sincronización existentes.
 
+## V1.9.0 — recetario público para Instagram
+
+- [x] Retirar los dos textos de introducción y el encabezado anterior de la cuenta, dejando el acceso después de la portada.
+- [x] Incorporar una dirección de recetario sin cuenta, con recetas elegidas, parámetros, vertidos y agua.
+- [x] Permitir ajustes temporales de dosis y ratio, preparación guiada, extracción y formulación de agua sin escribir en los datos privados.
+- [x] Añadir controles para publicar, actualizar y retirar copias desde una cuenta autorizada, más copia del enlace para Instagram.
+- [x] Incluir migración independiente, permisos de lectura y publicación, exclusión de datos privados y controles de concurrencia.
+- [x] Preparar la configuración de activación para la cuenta verificada, sin pedir ni publicar credenciales de administración.
+- [ ] Ejecutar la activación una sola vez desde el SQL Editor del proyecto de Supabase del propietario.
+- [ ] Confirmar una receta elegida por el propietario en la dirección pública sin login.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

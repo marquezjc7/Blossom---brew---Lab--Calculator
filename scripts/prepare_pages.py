@@ -53,6 +53,12 @@ def main():
         # A separate visual proposal can be reviewed without replacing the application.
         if (ROOT / "concepto").is_dir():
             shutil.copytree(ROOT / "concepto", staging / "concepto")
+        if (ROOT / "recetario").is_dir():
+            shutil.copytree(ROOT / "recetario", staging / "recetario")
+        migration = Path("supabase/migrations/202611110001_public_catalogue.sql")
+        if (ROOT / migration).is_file():
+            (staging / migration.parent).mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / migration, staging / migration)
         if config:
             (staging / "src" / "cloud-config.js").write_text(
                 'globalThis.BlossomLab ??= {};\n'

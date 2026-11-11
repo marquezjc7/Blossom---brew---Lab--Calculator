@@ -1,12 +1,14 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.8.1)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.9.0)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
 **Aplicación publicada:** [Abrir Blossom Brew Lab](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/).
 
+**Recetario para Instagram:** [Abrir el recetario público](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/recetario/). Permite consultar y preparar las recetas elegidas sin cuenta y sin opciones de guardado o edición. [Activación y uso](docs/PUBLIC_RECIPES.md).
+
 **Maqueta original:** [Portada y calculadora de recetas](https://marquezjc7.github.io/Blossom---brew---Lab--Calculator/concepto/). Se conserva como propuesta independiente; el diseño aprobado ya se aplica a la aplicación completa. [Su alcance y fuentes](docs/DESIGN_PREVIEW.md) están documentados.
 
-La V1.8.1 completa el resumen compacto de receta con el bloom, los vertidos y el perfil de agua utilizado. Las cantidades incrementales y acumuladas se actualizan al modificar el agua; los tiempos registrados se conservan. «Receta de agua», debajo de «Avanzado (opcional)», muestra también las cantidades de concentrados y agua destilada para preparar el lote asociado. Las pestañas comparten el fondo de la franja superior. Conserva el diseño editorial de las cinco secciones, la preparación guiada, las recetas y sesiones existentes, el acceso con contraseña y la sincronización. La conexión del servicio y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
+La V1.9.0 incorpora un recetario público de lectura y controles para publicar, actualizar y retirar copias de las recetas elegidas. La autorización para publicar se configura una sola vez en Supabase; guardar cambios privados no actualiza automáticamente una copia pública. Los visitantes pueden adaptar cantidades y usar preparación guiada, extracción y agua en memoria, sin acceder a las recetas personales ni a la bitácora. Conserva la ficha compacta, los vertidos y perfiles de agua, el acceso y la sincronización existentes. La conexión y los dos métodos de acceso se explican en [la guía de sincronización](docs/CLOUD_SYNC.md). Bourbon Lavado continúa como referencia inicial. El avance está en [el plan de trabajo](docs/ROADMAP.md).
 
 El logo oficial de la cabecera es el JPG en color proporcionado por el propietario, conservado sin modificar en `assets/images/blossom-specialty-coffee.jpg`. Se presenta sobre su fondo blanco original y se adapta al ancho de pantalla.
 
@@ -24,25 +26,28 @@ El servidor solo entrega archivos locales. Sin configuración de nube, usa el mi
 
 ## Organización del proyecto
 
-| Archivo                 | Responsabilidad                                                  |
-| ----------------------- | ---------------------------------------------------------------- |
-| `index.html`            | Estructura y contenido de la interfaz                            |
-| `assets/css/styles.css` | Diseño y adaptación a pantallas pequeñas                         |
-| `src/calculations.js`   | Ratio, agua objetivo, extracción y escalado de vertidos          |
-| `src/plans.js`          | Validación, tiempos y copia del plan según el agua total         |
-| `src/water.js`          | Referencias, masas de agua y validación de perfiles              |
-| `src/water-ui.js`       | Controles de agua, copia, descarga y aplicación a una receta     |
-| `src/preparation.js`    | Estado del cronómetro, copia del plan y validación del resultado |
-| `src/preparation-ui.js` | Guía de vertidos, recuperación del progreso y evaluación         |
-| `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio              |
-| `src/recipes.js`        | Catálogo de recetas de referencia                                |
-| `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1        |
-| `src/sync.js`           | Lotes persistentes, conciliación de cambios y sincronización     |
-| `src/cloud-api.js`      | Acceso por correo y conexión autenticada al servicio de datos    |
-| `src/cloud-config.js`   | Configuración pública; vacía mantiene el funcionamiento local    |
-| `src/transfers.js`      | Formato de respaldo JSON y generación de CSV                     |
-| `src/app.js`            | Interacciones, estado de la pantalla y renderizado               |
-| `tests/`                | Pruebas de lógica y recorridos completos en Chromium y WebKit    |
+| Archivo                 | Responsabilidad                                                     |
+| ----------------------- | ------------------------------------------------------------------- |
+| `index.html`            | Estructura y contenido de la interfaz                               |
+| `assets/css/styles.css` | Diseño y adaptación a pantallas pequeñas                            |
+| `src/calculations.js`   | Ratio, agua objetivo, extracción y escalado de vertidos             |
+| `src/plans.js`          | Validación, tiempos y copia del plan según el agua total            |
+| `src/water.js`          | Referencias, masas de agua y validación de perfiles                 |
+| `src/water-ui.js`       | Controles de agua, copia, descarga y aplicación a una receta        |
+| `src/preparation.js`    | Estado del cronómetro, copia del plan y validación del resultado    |
+| `src/preparation-ui.js` | Guía de vertidos, recuperación del progreso y evaluación            |
+| `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio                 |
+| `src/recipes.js`        | Catálogo de recetas de referencia                                   |
+| `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1           |
+| `src/sync.js`           | Lotes persistentes, conciliación de cambios y sincronización        |
+| `src/cloud-api.js`      | Acceso por correo y conexión autenticada al servicio de datos       |
+| `src/cloud-config.js`   | Configuración pública; vacía mantiene el funcionamiento local       |
+| `src/catalogue.js`      | Proyección de recetas, lector anónimo y configuración de activación |
+| `src/publishing-ui.js`  | Publicar, actualizar y retirar copias desde una cuenta autorizada   |
+| `recetario/`            | Interfaz pública sin cuentas ni acceso al almacenamiento privado    |
+| `src/transfers.js`      | Formato de respaldo JSON y generación de CSV                        |
+| `src/app.js`            | Interacciones, estado de la pantalla y renderizado                  |
+| `tests/`                | Pruebas de lógica y recorridos completos en Chromium y WebKit       |
 
 Los scripts son locales y se cargan en orden con `defer`. Se usa el espacio de nombres `BlossomLab` para compartir sus funciones. No se requieren módulos ESM, descargas de CDN, paquetes para ejecutar la aplicación ni un paso de compilación; esto conserva la apertura directa mediante `file://`.
 
@@ -153,7 +158,7 @@ El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, 
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.8.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.9.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

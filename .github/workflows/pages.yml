@@ -102,6 +102,14 @@ jobs:
                       preview = response.read().decode()
                   if 'data-design-preview="blossom-editorial"' not in preview:
                       raise ValueError('La propuesta visual todavía no está disponible')
+                  with urlopen(urljoin(site, 'recetario/') + '?verify=' + stamp, timeout=20) as response:
+                      catalogue = response.read().decode()
+                  if 'data-public-catalogue="blossom"' not in catalogue or f'src/catalogue-ui.js?v={version}' not in catalogue:
+                      raise ValueError('El recetario público todavía no muestra la nueva versión')
+                  with urlopen(urljoin(site, 'supabase/migrations/202611110001_public_catalogue.sql') + '?verify=' + stamp, timeout=20) as response:
+                      activation = response.read().decode()
+                  if 'create table if not exists public.blossom_publishers' not in activation:
+                      raise ValueError('La configuración de activación no está disponible')
                   for asset, signature in [('assets/images/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
                                            ('assets/fonts/manrope.woff2', b'wOF2'),
                                            ('concepto/assets/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
@@ -111,6 +119,7 @@ jobs:
                               raise ValueError('Un recurso visual no está disponible')
                   print(f'Versión {version} publicada y configuración de Supabase verificada.')
                   print('Aplicación y propuesta visual: fotografía y tipografía publicadas y verificadas.')
+                  print('Página del recetario público y configuración de activación publicadas y verificadas.')
                   break
               except Exception as error:
                   if attempt == 11:

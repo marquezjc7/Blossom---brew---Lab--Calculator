@@ -78,6 +78,61 @@ test("la configuración rechaza claves de servidor y direcciones inseguras", () 
   }
 });
 
+test("publicar utiliza una sesión verificada y conserva los errores de permiso y concurrencia", async () => {
+  const h = harness();
+  await assert.rejects(
+    h.api.catalogueRequest("publish", {}),
+    /Entra con tu correo/,
+  );
+  h.saved = token();
+  const body = {
+    recipe_id: "custom-1",
+    expected_revision: 0,
+    expected_recipe: { name: "Café" },
+  };
+  h.reply = () => ({ status: 200, data: { published: true, revision: 1 } });
+  await h.api.catalogueRequest("publish", body);
+  assert.ok(h.calls[0].url.endsWith("/blossom_publish_recipe"));
+  assert.equal(h.calls[0].headers.Authorization, "Bearer test-access");
+  assert.deepEqual(JSON.parse(h.calls[0].body), body);
+  for (const [status, code, text] of [
+    [403, "42501", "permiso"],
+    [409, "40001", "cambió"],
+    [404, "PGRST202", "activarse"],
+  ]) {
+    h.reply = () => ({ status, data: { code } });
+    await assert.rejects(
+      h.api.catalogueRequest("status"),
+      (error) => error.code === code && error.message.includes(text),
+    );
+  }
+  await assert.rejects(
+    h.api.catalogueRequest("untrusted-action"),
+    /desconocida/,
+  );
+});
+
+test("el acceso al recetario renueva una sesión rechazada antes de reintentar", async () => {
+  const h = harness();
+  h.saved = token();
+  h.reply = (url, options) => {
+    if (url.includes("grant_type=refresh_token"))
+      return {
+        status: 200,
+        data: token({
+          access_token: "new-access",
+          refresh_token: "new-refresh",
+        }),
+      };
+    if (url.endsWith("/auth/v1/user")) return { status: 200, data: user };
+    return options.headers.Authorization === "Bearer new-access"
+      ? { status: 200, data: { publisher: true, entries: [] } }
+      : { status: 401, data: {} };
+  };
+  assert.equal((await h.api.catalogueRequest("status")).publisher, true);
+  assert.equal(h.saved.access_token, "new-access");
+});
+
 test("el enlace se envía al correo y vuelve a la dirección pública de la aplicación", async () => {
   const h = harness();
   await h.api.sendLink(user.email, "https://example.com/app/");
