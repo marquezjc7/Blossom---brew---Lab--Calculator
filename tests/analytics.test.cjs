@@ -105,6 +105,18 @@ test("medición: fallos, configuración pendiente y almacenamiento bloqueado no 
   await fallback.tracker.track("section", "water");
   assert.equal(fallback.calls.length, 1);
 });
+test("medición: la exclusión se conserva aunque todavía no exista conexión configurada", async () => {
+  const s = setup({ config: { url: "", publishableKey: "" } });
+  s.tracker.setExcluded(true);
+  assert.equal(s.local.getItem(KEYS.excluded), "true");
+  assert.equal(
+    await createTracker({ ...s.options, config }).track("visit"),
+    false,
+  );
+  assert.equal(s.calls.length, 0);
+  s.tracker.setExcluded(false);
+  assert.equal(s.local.getItem(KEYS.excluded), "false");
+});
 test("medición: un envío fallido se puede reintentar sin crear otra visita", async () => {
   const s = setup();
   let failed = true;

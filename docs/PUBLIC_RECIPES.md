@@ -47,7 +47,7 @@ Una modificación privada guardada no altera la copia pública. **Actualizar pub
 
 ## Estadísticas privadas
 
-La V1.11.0 incorpora una sección de estadísticas del recetario, con [activación y detalles de medición](STATISTICS.md). «Copiar enlace para Instagram» añade etiquetas de origen y «Ver recetario público» abre una vista previa excluida. Las cifras requieren activar su configuración adicional en Supabase; no hay conteo retroactivo.
+La V1.11.1 incorpora una sección de estadísticas del recetario, con [activación y detalles de medición](STATISTICS.md). «Copiar enlace para Instagram» añade etiquetas de origen y «Ver recetario público» abre una vista previa excluida. Las cifras requieren activar su configuración adicional en Supabase; no hay conteo retroactivo.
 
 ## Verificación
 

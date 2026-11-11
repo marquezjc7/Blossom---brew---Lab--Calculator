@@ -1,6 +1,6 @@
 {
   "name": "blossom-brew-lab",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "private": true,
   "description": "Calculadora de recetas, extracción y bitácora de Blossom Specialty Coffee.",
   "scripts": {

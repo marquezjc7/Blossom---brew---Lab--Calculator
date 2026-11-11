@@ -85,7 +85,12 @@
       config = null;
     }
     if (!config || !fetch)
-      return { track: () => Promise.resolve(false), setExcluded: () => {} };
+      return {
+        track: () => Promise.resolve(false),
+        setExcluded(value) {
+          write(local, KEYS.excluded, String(!!value));
+        },
+      };
     let visit = null,
       visitor = null,
       chain = Promise.resolve(),
