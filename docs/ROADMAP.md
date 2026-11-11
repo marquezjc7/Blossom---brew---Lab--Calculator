@@ -163,6 +163,14 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Detectar el esquema anterior y ofrecer la actualización desde la aplicación antes de publicar indicaciones.
 - [ ] Ejecutar la ampliación de Supabase en el proyecto real y confirmar una receta con válvula e indicaciones en el teléfono del propietario.
 
+## V1.11.0 — estadísticas del recetario
+
+- [x] Añadir un panel privado con períodos de 7 y 30 días, visitas diarias, visitantes aproximados y clasificación de consultas, preparaciones y copias.
+- [x] Incorporar secciones y origen de las visitas, con enlace etiquetado para Instagram y vista previa excluida.
+- [x] Excluir por defecto el navegador administrador, respetar no seguimiento y ofrecer exclusión al visitante.
+- [x] Preparar permisos separados para agregados, entrada anónima validada, deduplicación y depuración de registros antiguos, sin datos privados de recetas ni cuentas.
+- [ ] Ejecutar la configuración en el proyecto real y confirmar las primeras visitas con el propietario.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

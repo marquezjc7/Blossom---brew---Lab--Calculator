@@ -45,6 +45,10 @@ Una modificación privada guardada no altera la copia pública. **Actualizar pub
 - Revocar una cuenta de `blossom_publishers` retira inmediatamente del servicio de lectura sus publicaciones.
 - El esquema privado, los respaldos V1 y los datos locales anteriores no cambian.
 
+## Estadísticas privadas
+
+La V1.11.0 incorpora una sección de estadísticas del recetario, con [activación y detalles de medición](STATISTICS.md). «Copiar enlace para Instagram» añade etiquetas de origen y «Ver recetario público» abre una vista previa excluida. Las cifras requieren activar su configuración adicional en Supabase; no hay conteo retroactivo.
+
 ## Verificación
 
 `npm test` verifica las reglas en PostgreSQL embebido, aislamiento entre cuentas, notas excluidas, revisión, retirada y borrado. Las pruebas de navegador cubren la publicación real contra el servicio simulado, el lector sin cuenta ni acceso al almacenamiento privado, los ajustes temporales, la preparación con dos temperaturas y la configuración de activación.

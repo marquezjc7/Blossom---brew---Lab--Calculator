@@ -1,4 +1,4 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.10.0)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.11.0)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
@@ -17,6 +17,8 @@ La fotografía de la portada es una composición generada con IA para Blossom; s
 La V1.9.1 añade al Agua del recetario público las instrucciones para preparar los dos concentrados y actualiza la referencia Bourbon Lavado · Baseline a Mazzer Philos I200D, ajuste de dial 116 y molienda media gruesa. Las recetas personales y sus copias públicas conservan sus parámetros guardados.
 
 La V1.10.0 incorpora «Válvula al comenzar» e indicaciones opcionales por paso, incluido el bloom. Se conservan al escalar, guardar, sincronizar y preparar; aparecen también en la ficha y en las publicaciones elegidas. Las recetas anteriores quedan sin una válvula atribuida. Compartir las nuevas indicaciones exige actualizar una sola vez la configuración de Supabase desde «Comparte tu receta»; [pasos para actualizar](docs/PUBLIC_RECIPES.md#actualización-de-válvulas-e-indicaciones-v1100).
+
+La V1.11.0 añade estadísticas privadas del recetario: visitas, visitantes aproximados, recetas consultadas, preparaciones, copias, secciones y origen, con filtros de 7 y 30 días. Excluye por defecto el navegador administrador y permite a los visitantes excluirse. Requiere una activación adicional en Supabase antes de recopilar datos; [activación, alcance y privacidad](docs/STATISTICS.md).
 
 ## Desarrollo local
 
@@ -165,7 +167,7 @@ El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, 
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.10.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.11.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

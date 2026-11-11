@@ -6,6 +6,43 @@
     Number.isFinite(value)
       ? value.toLocaleString("es-ES", { maximumFractionDigits: digits })
       : "—";
+  let usageLocal = null,
+    usageSession = null;
+  try {
+    usageLocal = window.localStorage;
+  } catch {}
+  try {
+    usageSession = window.sessionStorage;
+  } catch {}
+  const privacyPreference =
+    navigator.globalPrivacyControl === true || navigator.doNotTrack === "1";
+  const preview = new URL(location.href).searchParams.get("preview") === "1";
+  const tracker = BlossomLab.analytics.createTracker({
+    config: BlossomLab.cloudConfig,
+    url: location.href,
+    referrer: document.referrer,
+    local: usageLocal,
+    session: usageSession,
+    disabled: preview || privacyPreference,
+  });
+  $("publicUsageExclude").checked =
+    preview ||
+    privacyPreference ||
+    BlossomLab.analytics.read(
+      usageLocal,
+      BlossomLab.analytics.KEYS.excluded,
+    ) === "true";
+  $("publicUsageExclude").disabled = preview || privacyPreference;
+  if (preview || privacyPreference)
+    $("publicUsagePreference").textContent = preview
+      ? "Vista previa: esta visita no se cuenta."
+      : "Se respeta la preferencia de no seguimiento de tu navegador.";
+  $("publicUsageExclude").addEventListener("change", () => {
+    tracker.setExcluded($("publicUsageExclude").checked);
+    $("publicUsagePreference").textContent = $("publicUsageExclude").checked
+      ? "Este navegador queda excluido."
+      : "Medición activada para las próximas consultas.";
+  });
   const reference = {
     ...catalogue.publicRecipe(BlossomLab.recipes[0]),
     id: "reference-bourbon-lavado",
@@ -35,6 +72,7 @@
       water: "publicWater",
     };
     if (!names[name]) return;
+    tracker.track("section", name);
     for (const button of document.querySelectorAll(".tabs [data-public-tab]")) {
       const active = button.dataset.publicTab === name;
       button.classList.toggle("active", active);
@@ -112,6 +150,7 @@
     $("publicCopyText").hidden = true;
     renderRecipe();
     renderWater();
+    tracker.track("recipe", recipe.id);
   }
   function renderRecipe() {
     const dose = $("publicDose").valueAsNumber,
@@ -412,6 +451,7 @@
       if (!draft) return;
       try {
         draft = preparation[action](draft);
+        if (action === "start") tracker.track("prepare", selected.id);
         renderBrew();
       } catch (error) {
         notice("guestBrewMessage", error.message, true);
@@ -473,6 +513,7 @@
       `\nAgua: ${$("publicWaterSummary").textContent}`;
     try {
       await navigator.clipboard.writeText(text);
+      tracker.track("copy", selected.id);
       notice("publicRecipeFeedback", "Preparación copiada.");
     } catch {
       $("publicCopyText").value = text;
@@ -485,5 +526,6 @@
       );
     }
   });
+  tracker.track("section", "recipes");
   reload();
 })();

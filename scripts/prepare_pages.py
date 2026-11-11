@@ -56,7 +56,8 @@ def main():
         if (ROOT / "recetario").is_dir():
             shutil.copytree(ROOT / "recetario", staging / "recetario")
         for migration in [Path("supabase/migrations/202611110001_public_catalogue.sql"),
-                          Path("supabase/migrations/202611110002_pour_steps.sql")]:
+                          Path("supabase/migrations/202611110002_pour_steps.sql"),
+                          Path("supabase/migrations/202611110003_usage_statistics.sql")]:
             if (ROOT / migration).is_file():
                 (staging / migration.parent).mkdir(parents=True, exist_ok=True)
                 shutil.copy2(ROOT / migration, staging / migration)

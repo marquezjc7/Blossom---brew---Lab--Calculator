@@ -114,6 +114,10 @@ jobs:
                       instructions = response.read().decode()
                   if 'blossom_project_pour_steps' not in instructions:
                       raise ValueError('La actualización de indicaciones no está disponible')
+                  with urlopen(urljoin(site, 'supabase/migrations/202611110003_usage_statistics.sql') + '?verify=' + stamp, timeout=20) as response:
+                      statistics = response.read().decode()
+                  if 'blossom_usage_summary' not in statistics or 'analyticsTab' not in html or f'src/analytics.js?v={version}' not in catalogue:
+                      raise ValueError('La configuración de estadísticas no está disponible')
                   for asset, signature in [('assets/images/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
                                            ('assets/fonts/manrope.woff2', b'wOF2'),
                                            ('concepto/assets/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),

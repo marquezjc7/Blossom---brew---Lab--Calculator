@@ -12,14 +12,14 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.10.0" />
-    <link rel="stylesheet" href="assets/css/catalogue.css?v=1.10.0" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.11.0" />
+    <link rel="stylesheet" href="assets/css/catalogue.css?v=1.11.0" />
   </head>
   <body>
     <a class="skip-link" href="#laboratorio">Ir al laboratorio</a>
     <div class="announcement" id="inicio">
       <span>CAFÉ · CURIOSIDAD · PRECISIÓN</span>
-      <span class="version">BREW LAB · V1.10.0</span>
+      <span class="version">BREW LAB · V1.11.0</span>
     </div>
     <div class="header-shell">
       <header class="site-header wrap">
@@ -30,7 +30,7 @@
         >
           <img
             class="brand-logo"
-            src="assets/images/blossom-specialty-coffee.jpg?v=1.10.0"
+            src="assets/images/blossom-specialty-coffee.jpg?v=1.11.0"
             alt="Blossom Specialty Coffee"
             width="1920"
             height="1920"
@@ -57,7 +57,7 @@
     <section class="hero" aria-labelledby="heroTitle">
       <img
         class="hero-photo"
-        src="assets/images/coffee-blossoms.png?v=1.10.0"
+        src="assets/images/coffee-blossoms.png?v=1.11.0"
         alt="Flores y cerezas de café bajo una luz cálida; composición generada con IA para Blossom."
         width="1942"
         height="809"
@@ -224,6 +224,15 @@
           aria-pressed="false"
         >
           05 · Agua
+        </button>
+        <button
+          id="analyticsTab"
+          data-tab="statistics"
+          aria-controls="statistics"
+          aria-pressed="false"
+          hidden
+        >
+          06 · Estadísticas
         </button>
       </nav>
       <div class="workspace-heading" id="workspaceHeading">
@@ -1449,31 +1458,186 @@
           </div>
         </div>
       </section>
+      <section id="statistics" class="panel" aria-labelledby="analyticsTitle">
+        <div class="card">
+          <p class="kicker">SOLO PARA ADMINISTRACIÓN</p>
+          <h2 id="analyticsTitle">Estadísticas del recetario</h2>
+          <p>
+            Descubre qué recetas consultan y preparan tus visitantes. Las cifras
+            comienzan al activar la medición.
+          </p>
+          <div class="buttonbar">
+            <div class="field">
+              <label for="analyticsPeriod">Período</label
+              ><select id="analyticsPeriod">
+                <option value="7">Últimos 7 días</option>
+                <option value="30">Últimos 30 días</option>
+              </select>
+            </div>
+            <button class="btn" id="analyticsRefresh" type="button">
+              Actualizar
+            </button>
+            <button
+              class="btn primary"
+              id="analyticsSetup"
+              type="button"
+              hidden
+            >
+              Copiar configuración de estadísticas
+            </button>
+          </div>
+          <p id="analyticsStatus" role="status" aria-live="polite"></p>
+          <label class="usage-preference"
+            ><input id="analyticsExclude" type="checkbox" /> Excluir este
+            navegador de las estadísticas</label
+          >
+          <p id="analyticsPreferenceStatus" class="hint" role="status"></p>
+          <div id="analyticsActivation" hidden>
+            <p>
+              Ejecuta esta configuración una sola vez desde tu cuenta
+              administradora en Supabase. Conserva tus recetas y publicaciones.
+            </p>
+            <textarea
+              id="analyticsSql"
+              rows="8"
+              readonly
+              aria-label="Configuración de estadísticas para Supabase"
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div id="analyticsData" hidden>
+            <div class="usage-metrics">
+              <div>
+                <span>Visitas</span><strong id="analytics-visits">0</strong>
+              </div>
+              <div>
+                <span>Visitantes aproximados</span
+                ><strong id="analytics-visitors">0</strong>
+              </div>
+              <div>
+                <span>Preparaciones iniciadas</span
+                ><strong id="analytics-preparations">0</strong>
+              </div>
+              <div>
+                <span>Copias realizadas</span
+                ><strong id="analytics-copies">0</strong>
+              </div>
+            </div>
+            <p id="analyticsEmpty" class="callout">
+              Todavía no hay visitas registradas en este período. Comparte el
+              enlace del recetario para comenzar.
+            </p>
+            <h3>Visitas por día</h3>
+            <div
+              id="analyticsDaily"
+              class="usage-daily"
+              aria-label="Visitas diarias"
+            ></div>
+            <h3>Recetas más utilizadas</h3>
+            <p class="hint">
+              En pantallas pequeñas, desliza la tabla para ver todas las
+              columnas.
+            </p>
+            <div
+              class="usage-table"
+              tabindex="0"
+              role="region"
+              aria-label="Clasificación de recetas"
+            >
+              <table>
+                <thead>
+                  <tr>
+                    <th>Receta</th>
+                    <th>Consultas</th>
+                    <th>Preparaciones</th>
+                    <th>Copias</th>
+                  </tr>
+                </thead>
+                <tbody id="analyticsRecipes"></tbody>
+              </table>
+            </div>
+            <div class="usage-columns">
+              <div>
+                <h3>Secciones consultadas</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Sección</th>
+                      <th>Visitas</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analyticsSections"></tbody>
+                </table>
+              </div>
+              <div>
+                <h3>Origen de las visitas</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Origen</th>
+                      <th>Visitas</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analyticsChannels"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <details class="usage-definitions">
+            <summary>Cómo interpretar estos datos</summary>
+            <p>
+              Una visita dura hasta 30 minutos. Cada receta, sección,
+              preparación y copia se cuenta una vez por visita. Cambiar la dosis
+              o recargar la página no suma otra consulta durante esa visita.
+              «Copias» registra el portapapeles confirmado, no la copia manual
+              del texto alternativo.
+            </p>
+            <p>
+              Los visitantes se estiman con un identificador aleatorio de este
+              navegador. Otros dispositivos, navegación privada o almacenamiento
+              bloqueado pueden aumentar la estimación. Se respetan las
+              preferencias de no seguimiento del navegador; bloqueadores, fallos
+              de conexión y automatizaciones pueden afectar las cifras. Los
+              datos son orientativos.
+            </p>
+            <p>
+              Se mide solo el recetario público, sin cuentas, correos, notas
+              personales ni direcciones IP en estas tablas. Los registros de más
+              de 60 días se depuran al recibir nuevas visitas o consultar las
+              estadísticas. El enlace «Copiar enlace para Instagram» identifica
+              esas entradas; los enlaces anteriores pueden aparecer como
+              directos.
+            </p>
+          </details>
+        </div>
+      </section>
       <footer class="footer">
         <div>
           <strong>BLOSSOM SPECIALTY COFFEE</strong
-          ><span>BREW LAB · V1.10.0</span>
+          ><span>BREW LAB · V1.11.0</span>
         </div>
         <p>Café, curiosidad y precisión.</p>
         <a href="#inicio">Volver al inicio</a>
       </footer>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="src/calculations.js?v=1.10.0" defer></script>
-    <script src="src/plans.js?v=1.10.0" defer></script>
-    <script src="src/recipes.js?v=1.10.0" defer></script>
-    <script src="src/storage.js?v=1.10.0" defer></script>
-    <script src="src/preparation.js?v=1.10.0" defer></script>
-    <script src="src/water.js?v=1.10.0" defer></script>
-    <script src="src/transfers.js?v=1.10.0" defer></script>
-    <script src="src/pour-editor.js?v=1.10.0" defer></script>
-    <script src="src/preparation-ui.js?v=1.10.0" defer></script>
-    <script src="src/water-ui.js?v=1.10.0" defer></script>
-    <script src="src/cloud-config.js?v=1.10.0" defer></script>
-    <script src="src/sync.js?v=1.10.0" defer></script>
-    <script src="src/cloud-api.js?v=1.10.0" defer></script>
-    <script src="src/catalogue.js?v=1.10.0" defer></script>
-    <script src="src/publishing-ui.js?v=1.10.0" defer></script>
-    <script src="src/app.js?v=1.10.0" defer></script>
+    <script src="src/calculations.js?v=1.11.0" defer></script>
+    <script src="src/plans.js?v=1.11.0" defer></script>
+    <script src="src/recipes.js?v=1.11.0" defer></script>
+    <script src="src/storage.js?v=1.11.0" defer></script>
+    <script src="src/preparation.js?v=1.11.0" defer></script>
+    <script src="src/water.js?v=1.11.0" defer></script>
+    <script src="src/transfers.js?v=1.11.0" defer></script>
+    <script src="src/pour-editor.js?v=1.11.0" defer></script>
+    <script src="src/preparation-ui.js?v=1.11.0" defer></script>
+    <script src="src/water-ui.js?v=1.11.0" defer></script>
+    <script src="src/cloud-config.js?v=1.11.0" defer></script>
+    <script src="src/sync.js?v=1.11.0" defer></script>
+    <script src="src/cloud-api.js?v=1.11.0" defer></script>
+    <script src="src/catalogue.js?v=1.11.0" defer></script>
+    <script src="src/analytics.js?v=1.11.0" defer></script>
+    <script src="src/analytics-ui.js?v=1.11.0" defer></script>
+    <script src="src/publishing-ui.js?v=1.11.0" defer></script>
+    <script src="src/app.js?v=1.11.0" defer></script>
   </body>
 </html>

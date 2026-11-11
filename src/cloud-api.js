@@ -322,6 +322,7 @@
       async catalogueRequest(action, body = {}) {
         const paths = {
           status: "blossom_catalogue_status",
+          statistics: "blossom_usage_summary",
           publish: "blossom_publish_recipe",
           withdraw: "blossom_withdraw_recipe",
         };

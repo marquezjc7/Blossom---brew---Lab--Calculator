@@ -2,6 +2,7 @@
 import copy
 import json
 import uuid
+from datetime import datetime, timezone, timedelta
 from urllib.parse import urlsplit
 
 AUTH_KEY = "blossom-brew-cloud-auth-v1"
@@ -10,6 +11,11 @@ USER_ID = "11111111-1111-4111-8111-111111111111"
 
 class MockCloud:
     def __init__(self):
+        self.statistics_ready = True
+        self.statistics_admin = True
+        self.usage_calls = []
+        self.usage_visits = {}
+        self.usage_events = set()
         self.records = {}
         self.offline = False
         self.calls = []
@@ -44,6 +50,9 @@ class MockCloud:
             route.fulfill(status=503, headers=headers, json={"message": "Offline test"})
             return
         path = urlsplit(request.url).path
+        if path in ["/rest/v1/rpc/blossom_record_usage", "/rest/v1/rpc/blossom_usage_summary"]:
+            self.handle_usage(route, path, headers)
+            return
         if path in ["/rest/v1/rpc/" + action for action in ["blossom_public_catalogue", "blossom_catalogue_status", "blossom_publish_recipe", "blossom_withdraw_recipe"]]:
             self.handle_catalogue(route, path, headers)
             return
@@ -151,3 +160,37 @@ class MockCloud:
             result = {**existing, "published": False, "recipe": None, "revision": existing["revision"] + 1}
         self.publications[identifier] = result
         route.fulfill(headers=headers, json={**{k: result[k] for k in ["source_id", "public_id", "revision", "published"]}, "pour_steps": self.pour_steps_ready})
+
+    def handle_usage(self, route, path, headers):
+        request = route.request
+        body = request.post_data_json
+        self.usage_calls.append({"path":path,"body":body,"authorization":request.headers.get("authorization")})
+        if not self.statistics_ready:
+            route.fulfill(status=404,headers=headers,json={"code":"PGRST202"})
+            return
+        if path.endswith("blossom_record_usage"):
+            visit = body["session_id"]
+            self.usage_visits.setdefault(visit, {"visitor":body["visitor_id"],"channel":body["channel"]})
+            if body["event_kind"] != "visit":
+                self.usage_events.add((visit,body["event_kind"],body["target"]))
+            route.fulfill(headers=headers,json={"recorded":True})
+            return
+        if not request.headers.get("authorization") or not self.statistics_admin or not self.publisher:
+            route.fulfill(status=403,headers=headers,json={"code":"42501"})
+            return
+        def counts(kind):
+            values = {}
+            for _, event, target in self.usage_events:
+                if event == kind: values[target] = values.get(target,0)+1
+            return values
+        views,preparations,copies = counts("recipe"),counts("prepare"),counts("copy")
+        names = {p["public_id"]:p["recipe"]["name"] if p.get("recipe") else "Receta retirada" for p in self.publications.values()}
+        names["reference-bourbon-lavado"] = "Bourbon Lavado · Baseline (referencia)"
+        recipes = [{"id":target,"name":names.get(target,"Receta retirada"),"views":views.get(target,0),"preparations":preparations.get(target,0),"copies":copies.get(target,0)} for target in views.keys() | preparations.keys() | copies.keys()]
+        recipes.sort(key=lambda item:-item["views"])
+        channels={}
+        for visit in self.usage_visits.values(): channels[visit["channel"]]=channels.get(visit["channel"],0)+1
+        days = body["period_days"]
+        now = datetime.now(timezone.utc)
+        result = {"days":days,"until":now.isoformat(),"since":(now-timedelta(days=days)).isoformat(),"visits":len(self.usage_visits),"visitors":len({v["visitor"] for v in self.usage_visits.values()}),"preparations":sum(preparations.values()),"copies":sum(copies.values()),"recipes":recipes,"sections":[{"name":key,"visits":value} for key,value in counts("section").items()],"channels":[{"name":key,"visits":value} for key,value in channels.items()],"daily":[{"date":(now-timedelta(days=days-1-index)).date().isoformat(),"visits":len(self.usage_visits) if index==days-1 else 0} for index in range(days)]}
+        route.fulfill(headers=headers,json=result)

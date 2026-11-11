@@ -1664,3 +1664,129 @@ hr {
     transition: none !important;
   }
 }
+
+/* Private usage summaries and public measurement preferences. */
+.usage-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 28px 0;
+}
+.usage-metrics > div {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.usage-metrics span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.usage-metrics strong {
+  display: block;
+  font-size: 36px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+.usage-preference {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  margin: 16px 0;
+}
+.usage-preference input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.usage-table {
+  max-width: 100%;
+  overflow: auto;
+}
+.usage-table table {
+  min-width: 440px;
+}
+#statistics table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+#statistics th,
+#statistics td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+#statistics th {
+  font-size: 11px;
+}
+.usage-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 30px;
+  margin: 26px 0;
+}
+.usage-daily {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  height: 138px;
+  margin: 20px 0 30px;
+  overflow: hidden;
+}
+.usage-day {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+}
+.usage-day > span {
+  display: block;
+  width: 100%;
+  max-width: 54px;
+  background: var(--strip);
+}
+.usage-day small {
+  font-size: 9px;
+  margin-top: 7px;
+}
+.usage-daily:has(.usage-day:nth-child(8)) .usage-day small {
+  display: none;
+}
+.usage-definitions,
+.usage-privacy {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.usage-privacy {
+  max-width: 420px;
+  flex-basis: 100%;
+}
+.usage-privacy p {
+  font-size: 12px;
+}
+@media (max-width: 680px) {
+  .usage-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .usage-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .usage-day small {
+    font-size: 8px;
+  }
+  #statistics .buttonbar {
+    align-items: end;
+  }
+  .usage-privacy {
+    width: 100%;
+  }
+}
+
+.usage-day:focus-visible {
+  outline: 2px solid var(--strip);
+  outline-offset: 2px;
+}

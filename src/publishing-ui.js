@@ -4,6 +4,7 @@
     getRecipe,
     isDirty,
     sync,
+    onAccess = () => {},
   }) {
     const $ = (id) => document.getElementById(id);
     const core = root.BlossomLab.catalogue;
@@ -17,7 +18,7 @@
     let recipeContext = "";
     let entries = new Map();
     const publicUrl = new URL("recetario/", location.href).href;
-    $("publicCatalogueLink").href = publicUrl;
+    $("publicCatalogueLink").href = publicUrl + "?preview=1";
     function render() {
       $("publicationPanel").hidden = !user;
       if (!user) return;
@@ -80,6 +81,7 @@
         );
         state = result.publisher ? "ready" : "denied";
         supportsPourSteps = result.features?.pour_steps === true;
+        onAccess(user, api, result.publisher);
         if (result.publisher && supportsPourSteps) {
           $("catalogueActivation").hidden = true;
           $("catalogueSql").value = "";
@@ -213,10 +215,11 @@
       }
     });
     $("copyPublicCatalogue").addEventListener("click", async () => {
-      $("publicCatalogueUrl").value = publicUrl;
+      const instagramUrl = root.BlossomLab.analytics.instagramUrl(publicUrl);
+      $("publicCatalogueUrl").value = instagramUrl;
       $("publicCatalogueUrl").hidden = false;
       try {
-        await navigator.clipboard.writeText(publicUrl);
+        await navigator.clipboard.writeText(instagramUrl);
         message =
           "Enlace del recetario copiado. Puedes usarlo en los enlaces de tu perfil de Instagram.";
       } catch {

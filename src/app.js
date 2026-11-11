@@ -28,7 +28,8 @@
   let cloudSync = null;
   let preparationGuide = null;
   let waterLab = null;
-  let publishing = null;
+  let publishing = null,
+    analyticsControls = null;
   const store = {
     read: (key) => localStore.read(key),
     write(key, value) {
@@ -873,6 +874,7 @@
     }
   }
   function setTab(tab) {
+    if (tab === "statistics" && $("analyticsTab").hidden) return;
     const sections = {
       recipe: [
         "01 / EL LABORATORIO",
@@ -897,6 +899,12 @@
         "Cada taza, ",
         "un descubrimiento.",
         "Registra lo que encuentras y vuelve a tus mejores pruebas.",
+      ],
+      statistics: [
+        "06 / ESTADÍSTICAS",
+        "Conoce tu ",
+        "recetario.",
+        "Visitas y uso del recetario público, solo para administración.",
       ],
       waterLab: [
         "05 / FORMULACIÓN DE AGUA",
@@ -1034,7 +1042,10 @@
     };
     const renderAccount = (user) => {
       connectedUser = user;
-      if (!user) publishing?.disconnect();
+      if (!user) {
+        publishing?.disconnect();
+        analyticsControls?.disconnect();
+      }
       $("cloudAccount").classList.toggle("is-connected", !!user);
       $("accountShortcutLabel").textContent = user ? "Tu cuenta" : "Entrar";
       $("headerSync").textContent = user ? "Conectando…" : "Acceso opcional";
@@ -1233,10 +1244,17 @@
     sessions = Array.isArray(storedS)
       ? storedS.filter((s) => s && typeof s.coffee === "string")
       : [];
+    analyticsControls = BlossomLab.createAnalyticsControls({
+      onHide() {
+        if ($("statistics").classList.contains("active")) setTab("recipe");
+      },
+    });
     publishing = BlossomLab.createPublishingControls({
       getRecipe: () => (isCustomRecipe() ? selected : null),
       isDirty: () => recipeDirty || editor.isDirty,
       sync: () => cloudSync?.run(),
+      onAccess: (user, api, publisher) =>
+        analyticsControls.connect(user, api, publisher),
     });
     waterLab = BlossomLab.createWaterLab({
       store: localStore,

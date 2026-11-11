@@ -30,8 +30,8 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="../assets/css/styles.css?v=1.10.0" />
-    <link rel="stylesheet" href="../assets/css/catalogue.css?v=1.10.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=1.11.0" />
+    <link rel="stylesheet" href="../assets/css/catalogue.css?v=1.11.0" />
   </head>
   <body data-public-catalogue="blossom">
     <a class="skip-link" href="#recetario">Ir al recetario</a>
@@ -519,19 +519,36 @@
       <footer class="footer">
         <div>
           <strong>BLOSSOM SPECIALTY COFFEE</strong
-          ><span>RECETARIO · V1.10.0</span>
+          ><span>RECETARIO · V1.11.0</span>
         </div>
         <a href="../#cloudAccount">Acceso del propietario</a>
+        <details class="usage-privacy">
+          <summary>Privacidad y estadísticas</summary>
+          <p>
+            Blossom mide consultas y uso del recetario con identificadores
+            aleatorios de navegador y visita. Estas estadísticas no incluyen tu
+            nombre, correo, recetas privadas ni dirección IP en sus tablas. Los
+            registros de más de 60 días se depuran con nuevas visitas o
+            consultas. Puedes seguir usando todas las herramientas sin
+            participar.
+          </p>
+          <label class="usage-preference"
+            ><input type="checkbox" id="publicUsageExclude" /> No participar en
+            las estadísticas</label
+          >
+          <p id="publicUsagePreference" role="status"></p>
+        </details>
       </footer>
     </main>
-    <script src="../src/calculations.js?v=1.10.0" defer></script>
-    <script src="../src/plans.js?v=1.10.0" defer></script>
-    <script src="../src/recipes.js?v=1.10.0" defer></script>
-    <script src="../src/water.js?v=1.10.0" defer></script>
-    <script src="../src/preparation.js?v=1.10.0" defer></script>
-    <script src="../src/cloud-config.js?v=1.10.0" defer></script>
-    <script src="../src/cloud-api.js?v=1.10.0" defer></script>
-    <script src="../src/catalogue.js?v=1.10.0" defer></script>
-    <script src="../src/catalogue-ui.js?v=1.10.0" defer></script>
+    <script src="../src/calculations.js?v=1.11.0" defer></script>
+    <script src="../src/plans.js?v=1.11.0" defer></script>
+    <script src="../src/recipes.js?v=1.11.0" defer></script>
+    <script src="../src/water.js?v=1.11.0" defer></script>
+    <script src="../src/preparation.js?v=1.11.0" defer></script>
+    <script src="../src/cloud-config.js?v=1.11.0" defer></script>
+    <script src="../src/cloud-api.js?v=1.11.0" defer></script>
+    <script src="../src/catalogue.js?v=1.11.0" defer></script>
+    <script src="../src/analytics.js?v=1.11.0" defer></script>
+    <script src="../src/catalogue-ui.js?v=1.11.0" defer></script>
   </body>
 </html>
