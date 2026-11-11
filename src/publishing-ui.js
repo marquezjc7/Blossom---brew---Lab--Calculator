@@ -66,6 +66,10 @@
           result.entries.map((entry) => [entry.source_id, entry]),
         );
         state = result.publisher ? "ready" : "denied";
+        if (result.publisher) {
+          $("catalogueActivation").hidden = true;
+          $("catalogueSql").value = "";
+        }
       } catch (error) {
         if (started !== generation) return;
         state = error.status === 404 ? "missing" : "error";

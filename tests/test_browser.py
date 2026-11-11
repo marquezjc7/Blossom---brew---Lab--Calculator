@@ -1780,6 +1780,8 @@ class BrowserTests(unittest.TestCase):
         backend.catalogue_ready = True
         self.page.click("#refreshPublication")
         expect(self.page.locator("#prepareCatalogueSql")).not_to_be_visible()
+        expect(self.page.locator("#catalogueActivation")).not_to_be_visible()
+        expect(self.page.locator("#catalogueSql")).to_have_value("")
         self.page.click("#cloudSignOut")
         expect(self.page.locator("#publicationPanel")).not_to_be_visible()
         expect(self.page.locator("#catalogueSql")).to_have_value("")
@@ -1815,10 +1817,20 @@ class BrowserTests(unittest.TestCase):
                 for tab in ["recipes", "preparation", "extraction", "water"]:
                     self.page.locator('.tabs [data-public-tab="' + tab + '"]').click()
                     fits = self.page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-                    overflow = [] if fits else self.page.evaluate("""() => [...document.querySelectorAll('body *')]
-                        .filter(el => el.getBoundingClientRect().width && el.getBoundingClientRect().right > innerWidth + 0.5)
-                        .map(el => ({tag:el.tagName,id:el.id,class:el.className,width:el.clientWidth,
-                            right:el.getBoundingClientRect().right,text:el.textContent.trim().slice(0,80)})).slice(0,20)""")
+                    overflow = [] if fits else self.page.evaluate("""() => {
+                        const bounds = el => ({tag:el.tagName,id:el.id,class:String(el.className),width:el.clientWidth,
+                            scroll:el.scrollWidth,right:el.getBoundingClientRect().right,left:el.getBoundingClientRect().left,
+                            text:el.textContent.trim().slice(0,60)});
+                        const elements=[...document.querySelectorAll('body *')].filter(el => el.getBoundingClientRect().width);
+                        const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),texts=[];
+                        let node;while(node=walker.nextNode()){
+                            const range=document.createRange();range.selectNodeContents(node);
+                            const box=range.getBoundingClientRect();
+                            if(box.width && box.right>innerWidth-2)texts.push({text:node.textContent.trim().slice(0,100),right:box.right,parent:bounds(node.parentElement)});
+                        }
+                        return {viewport:innerWidth,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,
+                            body:bounds(document.body),elements:elements.filter(el=>el.scrollWidth>el.clientWidth+0.1 || el.getBoundingClientRect().right>innerWidth-1).map(bounds).slice(0,30),texts};
+                    }""")
                     self.assertTrue(fits, (width, tab, overflow))
 
     def enable_cloud(self, backend=None):
