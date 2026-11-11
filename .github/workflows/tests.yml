@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - main
+      - codex/public-layout-diagnostic
   pull_request:
   workflow_call:
     inputs:
