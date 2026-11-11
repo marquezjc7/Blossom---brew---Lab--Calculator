@@ -1,5 +1,49 @@
 (function (root) {
   "use strict";
+  const valveLabels = Object.freeze({
+    unknown: "Sin especificar",
+    open: "Abierta",
+    closed: "Cerrada",
+    none: "No aplica",
+  });
+  const STEP_NOTE_LIMIT = 500;
+
+  function getPourStep(recipe, index) {
+    const step = recipe?.pourSteps?.[index];
+    return {
+      valve: Object.hasOwn(valveLabels, step?.valve) ? step.valve : "unknown",
+      note: typeof step?.note === "string" ? step.note : "",
+    };
+  }
+  function validatePourSteps(recipe) {
+    if (recipe?.pourSteps == null) return null;
+    if (
+      !Array.isArray(recipe.pours) ||
+      !recipe.pours.length ||
+      !Array.isArray(recipe.pourSteps) ||
+      recipe.pourSteps.length !== recipe.pours.length
+    )
+      return "Las indicaciones deben corresponder a cada paso de un plan completo de vertidos.";
+    for (const step of recipe.pourSteps) {
+      if (
+        !step ||
+        typeof step !== "object" ||
+        Array.isArray(step) ||
+        (step.valve != null && !Object.hasOwn(valveLabels, step.valve)) ||
+        (step.note != null &&
+          (typeof step.note !== "string" || step.note.length > STEP_NOTE_LIMIT))
+      )
+        return `Revisa la válvula de cada paso y utiliza indicaciones de hasta ${STEP_NOTE_LIMIT} caracteres.`;
+    }
+    return null;
+  }
+  function pourStepText(recipe, index) {
+    const step = getPourStep(recipe, index);
+    return (
+      `Válvula al comenzar: ${valveLabels[step.valve]}` +
+      (step.note ? `\n${step.note}` : "")
+    );
+  }
 
   function parseTime(value) {
     if (value == null || value === "") return null;
@@ -59,21 +103,27 @@
 
   // Quantities scale with water; recorded start times never scale automatically.
   function snapshotPlan(reference, water) {
+    const withSteps = (result) => {
+      if (reference.pourSteps != null)
+        result.pourSteps = JSON.parse(JSON.stringify(reference.pourSteps));
+      return result;
+    };
     const factor = water / reference.water;
-    if (!Number.isFinite(factor) || factor <= 0) return { pours: null };
+    if (!Number.isFinite(factor) || factor <= 0)
+      return withSteps({ pours: null });
     if (Array.isArray(reference.pours) && reference.pours.length) {
       const result = {
         pours: reference.pours.map((weight) => weight * factor),
       };
       if (Array.isArray(reference.pourTimes))
         result.pourTimes = [...reference.pourTimes];
-      return result;
+      return withSteps(result);
     }
     const result = { pours: null };
     if (Number.isFinite(reference.bloomWater) && reference.bloomWater > 0) {
       result.bloomWater = reference.bloomWater * factor;
     }
-    return result;
+    return withSteps(result);
   }
 
   function getPourCount(recipe) {
@@ -112,6 +162,11 @@
   }
 
   const plans = Object.freeze({
+    valveLabels,
+    STEP_NOTE_LIMIT,
+    getPourStep,
+    validatePourSteps,
+    pourStepText,
     parseTime,
     formatTime,
     validatePlan,

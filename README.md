@@ -1,4 +1,4 @@
-# Blossom Brew Lab — Calculadora de recetas y extracción (V1.9.1)
+# Blossom Brew Lab — Calculadora de recetas y extracción (V1.10.0)
 
 **Archivo principal:** `index.html`. La calculadora funciona en el navegador sin instalar dependencias. El uso local no exige cuenta. La sincronización opcional utiliza Supabase y se habilita únicamente al conectar el proyecto de datos.
 
@@ -15,6 +15,8 @@ El logo oficial de la cabecera es el JPG en color proporcionado por el propietar
 La fotografía de la portada es una composición generada con IA para Blossom; su procedencia se documenta en este repositorio. Manrope y Cormorant Garamond se sirven desde `assets/fonts/`, junto con sus licencias SIL Open Font License.
 
 La V1.9.1 añade al Agua del recetario público las instrucciones para preparar los dos concentrados y actualiza la referencia Bourbon Lavado · Baseline a Mazzer Philos I200D, ajuste de dial 116 y molienda media gruesa. Las recetas personales y sus copias públicas conservan sus parámetros guardados.
+
+La V1.10.0 incorpora «Válvula al comenzar» e indicaciones opcionales por paso, incluido el bloom. Se conservan al escalar, guardar, sincronizar y preparar; aparecen también en la ficha y en las publicaciones elegidas. Las recetas anteriores quedan sin una válvula atribuida. Compartir las nuevas indicaciones exige actualizar una sola vez la configuración de Supabase desde «Comparte tu receta»; [pasos para actualizar](docs/PUBLIC_RECIPES.md#actualización-de-válvulas-e-indicaciones-v1100).
 
 ## Desarrollo local
 
@@ -38,7 +40,7 @@ El servidor solo entrega archivos locales. Sin configuración de nube, usa el mi
 | `src/water-ui.js`       | Controles de agua, copia, descarga y aplicación a una receta        |
 | `src/preparation.js`    | Estado del cronómetro, copia del plan y validación del resultado    |
 | `src/preparation-ui.js` | Guía de vertidos, recuperación del progreso y evaluación            |
-| `src/pour-editor.js`    | Editor de cantidades acumuladas y tiempos de inicio                 |
+| `src/pour-editor.js`    | Editor de cantidades, tiempos, válvula e indicaciones por paso      |
 | `src/recipes.js`        | Catálogo de recetas de referencia                                   |
 | `src/storage.js`        | Acceso a almacenamiento local y claves compatibles con V1           |
 | `src/sync.js`           | Lotes persistentes, conciliación de cambios y sincronización        |
@@ -108,12 +110,13 @@ La activación inicial y la comprobación de la dirección HTTPS están explicad
 2. Al seleccionar una receta personalizada, puedes editar su nombre y parámetros. **Actualizar receta guardada** reemplaza esa receta sin crear un duplicado. **Guardar como nueva receta** crea una copia independiente.
 3. Abre **Editar vertidos** para agregar, quitar o cambiar cantidades acumuladas. Deben aumentar y el último peso debe coincidir con el agua total. Puedes quitar todas las filas para dejar la receta sin plan documentado.
 4. Cada inicio es opcional y se registra en `mm:ss` desde que comienza la preparación: por ejemplo, `0:00`, `0:45`, `1:30`. Deja vacíos los tiempos desconocidos. Los conocidos deben aumentar y quedar antes del tiempo final, si este está registrado.
-5. Pulsa **Aplicar plan**, revisa el resultado y guarda o actualiza la receta. **Cancelar** descarta solo la edición del plan que está abierta. Si cambias el agua con el editor abierto, ajusta también el último peso antes de aplicar.
-6. Para borrar una receta personalizada, selecciónala y pulsa **Eliminar receta**. La confirmación muestra su nombre: **Eliminar esta receta** completa el borrado y **Cancelar** conserva la receta y los cambios pendientes. La bitácora y las demás recetas se mantienen. Bourbon Lavado sigue siendo una referencia protegida.
+5. En cada paso, incluido el bloom, selecciona **Válvula al comenzar**: Sin especificar, Abierta, Cerrada o No aplica. Añade **Indicaciones del paso (opcional)** de hasta 500 caracteres, por ejemplo «Abrir la válvula a los 0:45 desde el inicio de la preparación». Las indicaciones no controlan automáticamente el cronómetro ni cambian el estado de una válvula física.
+6. Pulsa **Aplicar plan**, revisa el resultado y guarda o actualiza la receta. **Cancelar** descarta solo la edición del plan que está abierta. Si cambias el agua con el editor abierto, ajusta también el último peso antes de aplicar.
+7. Para borrar una receta personalizada, selecciónala y pulsa **Eliminar receta**. La confirmación muestra su nombre: **Eliminar esta receta** completa el borrado y **Cancelar** conserva la receta y los cambios pendientes. La bitácora y las demás recetas se mantienen. Bourbon Lavado sigue siendo una referencia protegida.
 
 La eliminación solo se refleja si el navegador confirma la escritura. Si falla el almacenamiento, la receta permanece en la lista y puedes reintentar o cancelar. Al borrar una receta, se selecciona otra disponible o la primera referencia y se recuerda esa selección al recargar. Sin cuenta, cada navegador conserva su propia lista. Con la misma cuenta conectada, el borrado se sincroniza también con los otros dispositivos.
 
-Al cambiar el agua se escalan las cantidades del plan; los tiempos se conservan. Si una receta solo documenta el bloom, el editor no inventa los vertidos restantes. Una sesión captura su propio plan, de modo que editar la receta después no cambia el historial anterior. Los avisos de cambios sin guardar permiten cancelar al cambiar de receta o salir de la página.
+Al cambiar el agua se escalan las cantidades del plan; los tiempos, la válvula y las indicaciones se conservan en su paso. El método no determina automáticamente el estado de la válvula. Si una receta solo documenta el bloom, el editor no inventa los vertidos restantes. Una sesión captura su propio plan, de modo que editar la receta después no cambia el historial anterior. Los avisos de cambios sin guardar permiten cancelar al cambiar de receta o salir de la página.
 
 Bourbon Natural y Pacas Natural ya no se incluyen en el catálogo. Si una de ellas era la última referencia seleccionada, al recargar se abre Bourbon Lavado. Retirar estas referencias no modifica las recetas personales ni las sesiones históricas del navegador.
 
@@ -121,7 +124,9 @@ El guardado verifica que el navegador haya almacenado la receta y muestra una co
 
 Abrir **Editar vertidos** sin cambiar nada no impide guardar. Si editas los pesos o tiempos, **Revisar vertidos pendientes** te lleva a **Aplicar plan** y **Cancelar**. Un intento de guardado también muestra esas acciones: aplica para conservar los cambios o cancela para descartar solo esa edición; después guarda la receta. El nombre, las temperaturas y los demás parámetros se conservan al cancelar el editor.
 
-Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 24 columnas, incluidas las tres de preparación guiada, y añade cinco columnas del perfil de agua; usa JSON para transferir planes y tiempos completos.
+Los respaldos JSON conservan el plan completo: `pours` sigue siendo una lista de gramos acumulados y el campo opcional `pourTimes` contiene segundos desde el inicio, con `null` para tiempos desconocidos. No se cambian las claves de recetas/sesiones ni el formato `blossom-brew-lab-v1`. Los archivos anteriores sin tiempos siguen siendo válidos. Un respaldo con tiempos incompatibles se rechaza antes de reemplazar los datos. El CSV conserva sus primeras 29 columnas, incluidas las tres de preparación guiada y las cinco del perfil de agua, y añade `indicaciones_vertidos` con el JSON de los pasos; usa el respaldo JSON para transferir recetas y sesiones completas.
+
+El campo opcional `pourSteps` acompaña a `pours`: cada posición contiene `valve` (`unknown`, `open`, `closed` o `none`) y `note` (hasta 500 caracteres). No se añade a los archivos antiguos ni se deduce del método. Se guarda con la receta, la copia de preparación y la sesión; los respaldos V1 lo conservan y rechazan indicaciones incompatibles antes de importar. La sincronización privada no requiere migración. Las publicaciones permiten únicamente `valve` y `note` de cada paso; las notas personales de la bitácora siguen excluidas.
 
 ## Preparación guiada (V1.6.0)
 
@@ -160,7 +165,7 @@ El campo opcional `waterProfile` conserva versión, sistema, agua base, nombre, 
 
 **Temperatura 1 (°C)** conserva la temperatura de las recetas anteriores. **Temperatura 2 (°C, opcional)** permite registrar otra temperatura para recetas de varias etapas. Déjala vacía si solo utilizas una. Ambas aceptan valores entre 0 y 100 °C y aparecen por separado en los cálculos en vivo y en la bitácora; no se promedian ni cambian los cálculos de extracción.
 
-La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.9.1` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
+La temperatura principal sigue en `temp` dentro de los respaldos y en la columna CSV `temperatura_C`. La segunda se guarda como `temp2` (número o `null`) y en la nueva columna `temperatura_2_C`. Un archivo anterior sin ese campo no recibe una segunda temperatura inventada. Los recursos de esta versión llevan `?v=1.10.0` para actualizar estilos y scripts al recargar sin borrar los datos del navegador.
 
 ## Métodos y número de vertidos
 

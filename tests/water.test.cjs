@@ -130,19 +130,19 @@ test("el CSV añade el perfil después de las 24 columnas existentes", () => {
   const rows = sessionsToCsv([{ waterProfile: profile() }, {}])
     .split("\r\n")
     .map((r) => r.split(","));
-  assert.deepEqual(rows[0].slice(24), [
+  assert.deepEqual(rows[0].slice(24, 29), [
     '"agua_perfil"',
     '"agua_GH_ppm_CaCO3"',
     '"agua_alcalinidad_ppm_CaCO3"',
     '"agua_lote_L"',
     '"agua_sistema"',
   ]);
-  assert.deepEqual(rows[1].slice(24), [
+  assert.deepEqual(rows[1].slice(24, 29), [
     '"Mi agua"',
     '"70"',
     '"40"',
     '"1"',
     '"bh-1.68-2.45-v1"',
   ]);
-  assert.deepEqual(rows[2].slice(24), Array(5).fill('""'));
+  assert.deepEqual(rows[2].slice(24, 29), Array(5).fill('""'));
 });

@@ -154,6 +154,15 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Mostrar en Agua del recetario los cuatro pasos del administrador para preparar los concentrados, con sus concentraciones, hidratación e indicación de pesar soluciones ya preparadas.
 - [x] Actualizar Bourbon Lavado · Baseline a Mazzer Philos I200D, ajuste 116 y molienda media gruesa, conservando las recetas personales y sus publicaciones.
 
+## V1.10.0 — válvulas e indicaciones por paso
+
+- [x] Añadir estado de válvula e indicaciones opcionales al bloom y cada vertido, sin inferir datos para recetas antiguas.
+- [x] Conservarlas al agregar o quitar pasos, escalar, guardar, sincronizar y respaldar en JSON V1; añadir una columna CSV sin desplazar las anteriores.
+- [x] Mostrar las indicaciones en la ficha compacta, la preparación guiada y la sesión histórica, conservando sus copias al editar la receta.
+- [x] Preparar la proyección pública por campos permitidos y una migración adicional que conserva datos y permisos.
+- [x] Detectar el esquema anterior y ofrecer la actualización desde la aplicación antes de publicar indicaciones.
+- [ ] Ejecutar la ampliación de Supabase en el proyecto real y confirmar una receta con válvula e indicaciones en el teléfono del propietario.
+
 ## Etapa 3: acceso desde el teléfono
 
 - [ ] Revisar los flujos completos en dispositivos móviles reales.

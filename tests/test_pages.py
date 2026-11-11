@@ -57,6 +57,8 @@ class PagesTests(unittest.TestCase):
             migration = root / "supabase/migrations/202611110001_public_catalogue.sql"
             migration.parent.mkdir(parents=True)
             migration.write_text("-- Activación sin credenciales")
+            step_migration = migration.parent / "202611110002_pour_steps.sql"
+            step_migration.write_text("-- Indicaciones de vertidos")
             original = "// Local mode\n"
             (root / "src/cloud-config.js").write_text(original)
             with patch.object(pages, "ROOT", root), patch.object(pages, "OUTPUT", root / "_site"), patch.dict(os.environ, {
@@ -68,6 +70,7 @@ class PagesTests(unittest.TestCase):
                 self.assertIn("Propuesta visual", (root / "_site/concepto/index.html").read_text())
                 self.assertIn('data-public-catalogue="blossom"', (root / "_site/recetario/index.html").read_text())
                 self.assertEqual((root / "_site" / migration.relative_to(root)).read_text(), migration.read_text())
+                self.assertEqual((root / "_site" / step_migration.relative_to(root)).read_text(), step_migration.read_text())
                 self.assertIn('"publishableKey": "sb_publishable_test"', (root / "_site/src/cloud-config.js").read_text())
                 self.assertEqual((root / "src/cloud-config.js").read_text(), original)
                 pages.main()

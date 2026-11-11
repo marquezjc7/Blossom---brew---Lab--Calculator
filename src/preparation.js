@@ -1,6 +1,6 @@
 (function (root) {
   "use strict";
-  const { validatePlan } =
+  const { validatePlan, validatePourSteps } =
     typeof module !== "undefined" && module.exports
       ? require("./plans.js")
       : root.BlossomLab.plans;
@@ -21,11 +21,9 @@
       return "Revisa el café, la dosis y las temperaturas de la receta.";
     if (!Array.isArray(recipe.pours) || !recipe.pours.length)
       return "Esta receta necesita un plan completo. Define los pesos en «Editar vertidos» antes de iniciar la guía.";
-    return validatePlan(
-      recipe.pours,
-      recipe.pourTimes,
-      recipe.water,
-      recipe.time,
+    return (
+      validatePlan(recipe.pours, recipe.pourTimes, recipe.water, recipe.time) ||
+      validatePourSteps(recipe)
     );
   }
 

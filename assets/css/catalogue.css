@@ -14,7 +14,8 @@
   grid-template-columns: minmax(0, 1fr) 330px;
   align-items: start;
 }
-body[data-public-catalogue] .field select {
+body[data-public-catalogue] .field select,
+.field select.pour-valve {
   -webkit-appearance: none;
   appearance: none;
   max-width: 100%;
@@ -26,6 +27,14 @@ body[data-public-catalogue] .field select {
   background-repeat: no-repeat;
   background-size: 12px 8px;
   background-position: right 12px center;
+}
+.public-brew-step {
+  display: block;
+}
+.public-brew-step .pour-instructions {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
 }
 .public-facts {
   margin: 26px 0;

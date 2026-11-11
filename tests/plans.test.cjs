@@ -1,6 +1,11 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const {
+  getPourStep,
+  validatePourSteps,
+  pourStepText,
+} = require("../src/plans.js");
+const {
   parseTime,
   formatTime,
   validatePlan,
@@ -149,4 +154,47 @@ test("rechaza números fraccionarios, negativos, fuera de rango o que contradiga
     validatePourCount({ pourCount: 0, pours: [240], water: 240 }),
     null,
   );
+});
+
+test("las indicaciones y estados de válvula se conservan al escalar sin completar datos anteriores", () => {
+  const source = {
+    water: 240,
+    pours: [45, 145, 240],
+    pourTimes: [0, null, 90],
+    pourSteps: [
+      { valve: "closed", note: "Abrir a los 0:45" },
+      { valve: "open", note: "Verter suavemente" },
+      { valve: "none", note: "" },
+    ],
+  };
+  const scaled = snapshotPlan(source, 480);
+  assert.deepEqual(scaled.pours, [90, 290, 480]);
+  assert.deepEqual(scaled.pourTimes, source.pourTimes);
+  assert.deepEqual(scaled.pourSteps, source.pourSteps);
+  scaled.pourSteps[0].note = "Otra indicación";
+  assert.equal(source.pourSteps[0].note, "Abrir a los 0:45");
+  const legacy = { water: 240, pours: [45, 145, 240] };
+  assert.equal("pourSteps" in snapshotPlan(legacy, 480), false);
+  assert.deepEqual(getPourStep(legacy, 0), { valve: "unknown", note: "" });
+  assert.match(pourStepText(legacy, 0), /Sin especificar/);
+  assert.match(pourStepText(source, 0), /Cerrada\nAbrir/);
+});
+
+test("rechaza indicaciones desalineadas, válvulas desconocidas y notas incompatibles", () => {
+  assert.equal(
+    validatePourSteps({
+      pours: [240],
+      pourSteps: [{ valve: "open", note: "" }],
+    }),
+    null,
+  );
+  for (const invalid of [
+    { pours: null, pourSteps: [{ valve: "open" }] },
+    { pours: [50, 240], pourSteps: [{ valve: "open" }] },
+    { pours: [240], pourSteps: [null] },
+    { pours: [240], pourSteps: [{ valve: "abierta" }] },
+    { pours: [240], pourSteps: [{ note: 12 }] },
+    { pours: [240], pourSteps: [{ note: "x".repeat(501) }] },
+  ])
+    assert.ok(validatePourSteps(invalid));
 });

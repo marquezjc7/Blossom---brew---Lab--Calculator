@@ -9,7 +9,19 @@
     onChange,
   }) {
     const core = root.BlossomLab.preparation;
-    const { formatTime } = root.BlossomLab.plans;
+    const { formatTime, pourStepText } = root.BlossomLab.plans;
+    const escapeHtml = (text) =>
+      String(text).replace(
+        /[&<>"']/g,
+        (ch) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[ch],
+      );
     const $ = (id) => document.getElementById(id);
     const number = (n) =>
       n.toLocaleString("es-ES", { maximumFractionDigits: 2 });
@@ -143,6 +155,7 @@
         draft.temperatures[draft.index] == null
           ? "Temperatura sin asignar"
           : `Usa agua a ${number(draft.temperatures[draft.index])} °C`;
+      $("brewStepInstruction").textContent = pourStepText(recipe, draft.index);
       $("brewPlan").innerHTML = recipe.pours
         .map((weight, i) => {
           const amount = weight - (recipe.pours[i - 1] ?? 0);
@@ -152,7 +165,7 @@
             recipe.temp2 == null
               ? `<span>${number(recipe.temp)} °C</span>`
               : `<label for="brewTemp${i}">Temperatura de ${label(i).toLowerCase()}</label><select id="brewTemp${i}" data-brew-temperature="${i}" ${ready ? "" : "disabled"}><option value="">Seleccionar</option><option value="1" ${draft.temperatures[i] === recipe.temp ? "selected" : ""}>T1 · ${number(recipe.temp)} °C</option><option value="2" ${draft.temperatures[i] !== recipe.temp && draft.temperatures[i] === recipe.temp2 ? "selected" : ""}>T2 · ${number(recipe.temp2)} °C</option></select>`;
-          return `<li class="brew-plan-step ${!ready && i === draft.index ? "current" : ""}" ${!ready && i === draft.index ? 'aria-current="step"' : ""}><div><strong>${label(i)} · +${number(amount)} g</strong><span>Hasta ${number(weight)} g acumulados</span><span>Inicio previsto: ${planned == null ? "sin registrar" : formatTime(planned)}</span>${actual == null ? "" : `<span>Inicio real: ${formatTime(actual)}</span>`}</div><div class="brew-step-temperature">${temperatures}</div></li>`;
+          return `<li class="brew-plan-step ${!ready && i === draft.index ? "current" : ""}" ${!ready && i === draft.index ? 'aria-current="step"' : ""}><div><strong>${label(i)} · +${number(amount)} g</strong><span>Hasta ${number(weight)} g acumulados</span><span>Inicio previsto: ${planned == null ? "sin registrar" : formatTime(planned)}</span>${actual == null ? "" : `<span>Inicio real: ${formatTime(actual)}</span>`}<span class="pour-instructions">${escapeHtml(pourStepText(recipe, i))}</span></div><div class="brew-step-temperature">${temperatures}</div></li>`;
         })
         .join("");
       for (const key of Object.keys(draft.result))

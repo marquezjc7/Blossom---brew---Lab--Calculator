@@ -687,6 +687,30 @@ label {
   flex-wrap: wrap;
   gap: 12px;
 }
+.pour-instructions {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.pour-plan-instruction {
+  margin: -3px 0 10px;
+  color: var(--muted);
+}
+.session-plan .pour-instructions {
+  display: block;
+}
+.recipe-card-pours tr.pour-instruction-row td {
+  white-space: pre-line;
+  text-align: left;
+  font-weight: 400;
+  font-size: 10px;
+  color: #c5b8a2;
+  padding: 0 0 9px;
+}
+.pour-row .pour-step-note {
+  min-height: 70px;
+}
 .recipe-metrics .temperature-values {
   gap: 8px;
 }

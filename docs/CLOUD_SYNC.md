@@ -4,6 +4,8 @@ El código está preparado para Supabase Auth y PostgreSQL. **No se activa hasta
 
 La V1.9.0 añade una publicación opcional y separada de recetas. El [recetario público](PUBLIC_RECIPES.md) utiliza copias elegidas por una cuenta autorizada; no cambia los permisos de los registros privados ni expone la bitácora.
 
+En V1.10.0, `pourSteps` se sincroniza dentro de las recetas y sesiones existentes, sin cambiar el esquema privado. La publicación pública requiere una ampliación independiente de las funciones de proyección, con [instrucciones de actualización](PUBLIC_RECIPES.md#actualización-de-válvulas-e-indicaciones-v1100).
+
 ## Activación inicial del propietario
 
 1. Crear o elegir un proyecto de Supabase de la cuenta del propietario. No hace falta cambiar el alojamiento de GitHub Pages.

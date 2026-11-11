@@ -13,6 +13,8 @@
       busy = false,
       state = "loading",
       message = "";
+    let supportsPourSteps = false;
+    let recipeContext = "";
     let entries = new Map();
     const publicUrl = new URL("recetario/", location.href).href;
     $("publicCatalogueLink").href = publicUrl;
@@ -20,14 +22,23 @@
       $("publicationPanel").hidden = !user;
       if (!user) return;
       const recipe = getRecipe();
+      const context = JSON.stringify([recipe, isDirty()]);
+      if (context !== recipeContext) {
+        recipeContext = context;
+        message = "";
+      }
       const entry = entries.get(recipe?.id);
       const ready = state === "ready";
+      const needsUpdate =
+        ready && !supportsPourSteps && recipe?.pourSteps != null;
       $("publishRecipe").hidden = !ready;
       $("withdrawRecipe").hidden = !ready || !entry?.published;
-      $("publishRecipe").disabled = busy || !recipe || isDirty();
+      $("publishRecipe").disabled = busy || !recipe || isDirty() || needsUpdate;
       $("withdrawRecipe").disabled = busy || !recipe;
       $("refreshPublication").disabled = busy;
-      $("prepareCatalogueSql").hidden = !["missing", "denied"].includes(state);
+      $("prepareCatalogueSql").hidden =
+        !["missing", "denied"].includes(state) &&
+        !(ready && !supportsPourSteps);
       $("prepareCatalogueSql").disabled = busy;
       $("publishRecipe").textContent = entry?.published
         ? "Actualizar publicación"
@@ -44,9 +55,11 @@
                 ? "Guarda una copia personal de la receta antes de publicarla."
                 : isDirty()
                   ? "Guarda los cambios de esta receta antes de publicar. La versión pública se conserva hasta que la actualices."
-                  : entry?.published
-                    ? "Esta receta está publicada. Sus cambios se comparten al pulsar «Actualizar publicación»."
-                    : "Esta receta es privada. Puedes publicar sus parámetros, vertidos y agua para que otras personas la utilicen.");
+                  : needsUpdate
+                    ? "Para compartir válvulas e indicaciones, copia la configuración de Supabase y ejecútala en SQL Editor. Después pulsa «Actualizar estado». La receta guardada conserva sus indicaciones."
+                    : entry?.published
+                      ? "Esta receta está publicada. Sus cambios se comparten al pulsar «Actualizar publicación»."
+                      : "Esta receta es privada. Puedes publicar sus parámetros, vertidos y agua para que otras personas la utilicen.");
     }
     async function refresh() {
       if (!user || busy) return;
@@ -66,7 +79,8 @@
           result.entries.map((entry) => [entry.source_id, entry]),
         );
         state = result.publisher ? "ready" : "denied";
-        if (result.publisher) {
+        supportsPourSteps = result.features?.pour_steps === true;
+        if (result.publisher && supportsPourSteps) {
           $("catalogueActivation").hidden = true;
           $("catalogueSql").value = "";
         }
@@ -87,6 +101,12 @@
       if (!recipe || (action === "publish" && isDirty())) return;
       const source = JSON.parse(JSON.stringify(recipe));
       if (action === "publish") {
+        if (source.pourSteps != null && !supportsPourSteps) {
+          message =
+            "Actualiza la configuración de Supabase para compartir las indicaciones de cada vertido.";
+          render();
+          return;
+        }
         try {
           core.publicRecipe(source);
         } catch (error) {
@@ -126,6 +146,16 @@
             "No se pudo confirmar el cambio. Actualiza el estado del recetario antes de volver a intentarlo.",
           );
         entries.set(source.id, result);
+        if (
+          action === "publish" &&
+          source.pourSteps != null &&
+          result.pour_steps !== true
+        ) {
+          supportsPourSteps = false;
+          message =
+            "El servidor no confirmó las indicaciones. Actualiza la configuración de Supabase y vuelve a actualizar la publicación.";
+          return;
+        }
         message =
           action === "publish"
             ? `Receta publicada: «${source.name}». Ya puede consultarse sin iniciar sesión desde el enlace del recetario.`
@@ -149,12 +179,17 @@
       busy = true;
       render();
       try {
-        const response = await fetch(core.MIGRATION, { cache: "no-store" });
-        if (!response.ok)
-          throw new Error(
-            "No se pudo abrir la configuración. Vuelve a intentarlo.",
-          );
-        const sql = core.activationSql(await response.text(), account);
+        const migrations = await Promise.all(
+          core.MIGRATIONS.map(async (path) => {
+            const response = await fetch(path, { cache: "no-store" });
+            if (!response.ok)
+              throw new Error(
+                "No se pudo abrir la configuración. Vuelve a intentarlo.",
+              );
+            return response.text();
+          }),
+        );
+        const sql = core.activationSql(migrations.join("\n"), account);
         if (started !== generation) return;
         $("catalogueSql").value = sql;
         $("catalogueActivation").hidden = false;
@@ -200,6 +235,7 @@
         user = account;
         api = cloudApi;
         state = "loading";
+        supportsPourSteps = false;
         entries = new Map();
         busy = false;
         $("catalogueActivation").hidden = true;

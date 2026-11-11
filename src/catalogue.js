@@ -21,10 +21,15 @@
     "grindMicrons",
     "pours",
     "pourTimes",
+    "pourSteps",
     "pourCount",
     "bloomWater",
   ];
   const MIGRATION = "supabase/migrations/202611110001_public_catalogue.sql";
+  const MIGRATIONS = Object.freeze([
+    MIGRATION,
+    "supabase/migrations/202611110002_pour_steps.sql",
+  ]);
   function publicRecipe(source) {
     if (!source || typeof source !== "object")
       throw new Error("Receta incompatible.");
@@ -96,8 +101,14 @@
         recipe.pourTimes,
         recipe.water,
         recipe.time,
-      ) || plans.validatePourCount(recipe);
+      ) ||
+      plans.validatePourCount(recipe) ||
+      plans.validatePourSteps(recipe);
     if (error) throw new Error(error);
+    if (recipe.pourSteps != null)
+      recipe.pourSteps = recipe.pourSteps.map((_, index) =>
+        plans.getPourStep(recipe, index),
+      );
     if (source.waterProfile != null)
       recipe.waterProfile = water.makeProfile(source.waterProfile);
     return recipe;
@@ -179,6 +190,7 @@
     createReader,
     activationSql,
     MIGRATION,
+    MIGRATIONS,
   });
   if (common) module.exports = catalogue;
   else (root.BlossomLab ??= {}).catalogue = catalogue;

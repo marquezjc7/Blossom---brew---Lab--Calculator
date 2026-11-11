@@ -1,6 +1,14 @@
 (function (root) {
   "use strict";
-  const { parseTime, formatTime, validatePlan } = root.BlossomLab.plans;
+  const {
+    parseTime,
+    formatTime,
+    validatePlan,
+    validatePourSteps,
+    getPourStep,
+    valveLabels,
+    STEP_NOTE_LIMIT,
+  } = root.BlossomLab.plans;
 
   function createPourEditor({ getRecipe, onApply, onDraftChange }) {
     const form = document.getElementById("pourEditor");
@@ -14,6 +22,8 @@
       return [...container.querySelectorAll(".pour-row")].map((row) => ({
         weight: row.querySelector(".pour-weight").value,
         time: row.querySelector(".pour-start").value,
+        valve: row.querySelector(".pour-valve").value,
+        note: row.querySelector(".pour-step-note").value,
       }));
     }
 
@@ -33,10 +43,27 @@
               <label for="pourStart${index}">Inicio (mm:ss, opcional)</label>
               <input id="pourStart${index}" class="pour-start" type="text" placeholder="Sin registrar" maxlength="6" aria-describedby="pourEditorHelp" />
             </div>
+            <div class="field wide">
+              <label for="pourValve${index}">Válvula al comenzar</label>
+              <select id="pourValve${index}" class="pour-valve">${Object.entries(
+                valveLabels,
+              )
+                .map(
+                  ([value, label]) =>
+                    `<option value="${value}">${label}</option>`,
+                )
+                .join("")}</select>
+            </div>
+            <div class="field wide">
+              <label for="pourNote${index}">Indicaciones del paso (opcional)</label>
+              <textarea id="pourNote${index}" class="pour-step-note" maxlength="${STEP_NOTE_LIMIT}" rows="2" placeholder="Ej.: abrir la válvula a los 0:45 desde el inicio de la preparación." aria-describedby="pourInstructionsHelp"></textarea>
+            </div>
           </div>
           <button type="button" class="btn remove-pour" aria-label="Eliminar ${index === 0 ? "bloom" : `vertido ${index}`}">Eliminar</button>`;
         fieldset.querySelector(".pour-weight").value = row.weight;
         fieldset.querySelector(".pour-start").value = row.time;
+        fieldset.querySelector(".pour-valve").value = row.valve ?? "unknown";
+        fieldset.querySelector(".pour-step-note").value = row.note ?? "";
         fieldset.querySelector(".remove-pour").addEventListener("click", () => {
           const remaining = values();
           remaining.splice(index, 1);
@@ -78,6 +105,7 @@
         weights.map((weight, index) => ({
           weight: Number(weight.toFixed(2)),
           time: formatTime(plan.pourTimes?.[index]),
+          ...getPourStep(plan, index),
         })),
       );
       form.hidden = false;
@@ -92,12 +120,15 @@
     addButton.addEventListener("click", () => {
       const rows = values();
       if (rows.length >= 50) return;
-      rows.push({ weight: "", time: "" });
+      rows.push({ weight: "", time: "", valve: "unknown", note: "" });
       draw(rows);
       markChanged();
       container.querySelector(".pour-row:last-child .pour-weight").focus();
     });
     form.addEventListener("input", markChanged);
+    form.addEventListener("change", (event) => {
+      if (event.target.matches(".pour-valve")) markChanged();
+    });
     document
       .getElementById("cancelPours")
       .addEventListener("click", () => close());
@@ -109,13 +140,16 @@
       };
       const times = rows.map((row) => parseTime(row.time.trim()));
       if (times.some((time) => time !== null)) plan.pourTimes = times;
+      const steps = rows.map((row) => ({
+        valve: row.valve,
+        note: row.note.trim(),
+      }));
+      if (steps.some((step) => step.valve !== "unknown" || step.note))
+        plan.pourSteps = steps;
       const recipe = getRecipe();
-      const message = validatePlan(
-        plan.pours,
-        plan.pourTimes,
-        recipe.water,
-        recipe.time,
-      );
+      const message =
+        validatePlan(plan.pours, plan.pourTimes, recipe.water, recipe.time) ||
+        validatePourSteps(plan);
       if (message) {
         error.textContent = message;
         error.hidden = false;

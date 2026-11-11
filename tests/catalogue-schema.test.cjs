@@ -13,6 +13,10 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const stepMigration = readFileSync(
+  resolve(__dirname, "../supabase/migrations/202611110002_pour_steps.sql"),
+  "utf8",
+);
 let db;
 const recipe = () => ({
   id: "personal-1",
@@ -53,8 +57,11 @@ before(async () => {
     ),
   );
   await db.exec(migration);
+  await db.exec(stepMigration);
 });
 beforeEach(async () => {
+  await db.exec("reset role");
+  await db.exec(stepMigration);
   await db.exec(
     "reset role; truncate public.blossom_publications, public.blossom_publishers, public.blossom_records;",
   );
@@ -121,7 +128,7 @@ test("publicar exige autorización expresa y no puede obtenerse desde otra cuent
   await save(body);
   assert.deepEqual(
     await scalar("select public.blossom_catalogue_status() as result"),
-    { publisher: false, entries: [] },
+    { publisher: false, entries: [], features: { pour_steps: true } },
   );
   await assert.rejects(publish(body), /Publisher access required/);
   await assert.rejects(
@@ -243,6 +250,7 @@ test("revocar autorización retira visibilidad y repetir la migración conserva 
   await publish();
   await db.exec("reset role");
   await db.exec(migration);
+  await db.exec(stepMigration);
   await account(null, "anon");
   assert.equal((await visible()).length, 1);
   await db.exec("reset role");
@@ -251,4 +259,80 @@ test("revocar autorización retira visibilidad y repetir la migración conserva 
   ]);
   await account(null, "anon");
   assert.deepEqual(await visible(), []);
+});
+
+test("publica solo válvula e indicación de cada paso y mantiene privadas las notas personales", async () => {
+  await account(alice);
+  const body = {
+    ...recipe(),
+    pourSteps: [
+      { valve: "closed", note: "Abrir a los 0:45", privateNote: "secreto" },
+      { valve: "open", note: '<script>alert("x")</script>' },
+      { valve: "none", note: "" },
+    ],
+  };
+  await save(body);
+  const result = await publish(body);
+  assert.equal(result.pour_steps, true);
+  await account(null, "anon");
+  const [copy] = await visible();
+  assert.deepEqual(
+    copy.pourSteps,
+    body.pourSteps.map(({ valve, note }) => ({ valve, note })),
+  );
+  assert.equal("notes" in copy, false);
+  await assert.rejects(
+    db.query("select public.blossom_project_pour_steps('{}')"),
+    /permission denied/,
+  );
+  await account(alice);
+  for (const pourSteps of [
+    [{ valve: "open" }],
+    [{ valve: "invalid" }, {}, {}],
+    [{ note: "x".repeat(501) }, {}, {}],
+  ]) {
+    const invalid = { ...body, pourSteps };
+    const current = (await scalar("select public.blossom_sync('[]') as result"))
+      .records[0];
+    await save(invalid, current.version);
+    await assert.rejects(
+      publish(invalid, result.revision),
+      /instruction|valve|match/,
+    );
+  }
+  await account(null, "anon");
+  assert.deepEqual((await visible())[0], copy);
+});
+
+test("actualizar el esquema conserva las publicaciones anteriores y habilita las indicaciones", async () => {
+  await db.exec("reset role");
+  await db.exec(migration);
+  await account(alice);
+  const body = {
+    ...recipe(),
+    pourSteps: [
+      { valve: "closed", note: "Esperar" },
+      { valve: "open", note: "Abrir" },
+      { valve: "none", note: "" },
+    ],
+  };
+  await save(body);
+  const first = await publish(body);
+  assert.equal("pourSteps" in (await visible())[0], false);
+  assert.equal(
+    (await scalar("select public.blossom_catalogue_status() as result"))
+      .features,
+    undefined,
+  );
+  await db.exec("reset role");
+  await db.exec(stepMigration);
+  await account(alice);
+  assert.equal(
+    (await scalar("select public.blossom_catalogue_status() as result"))
+      .features.pour_steps,
+    true,
+  );
+  assert.equal("pourSteps" in (await visible())[0], false);
+  await publish(body, first.revision);
+  assert.deepEqual((await visible())[0].pourSteps, body.pourSteps);
 });

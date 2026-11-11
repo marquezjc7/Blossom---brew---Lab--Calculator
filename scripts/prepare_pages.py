@@ -55,10 +55,11 @@ def main():
             shutil.copytree(ROOT / "concepto", staging / "concepto")
         if (ROOT / "recetario").is_dir():
             shutil.copytree(ROOT / "recetario", staging / "recetario")
-        migration = Path("supabase/migrations/202611110001_public_catalogue.sql")
-        if (ROOT / migration).is_file():
-            (staging / migration.parent).mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ROOT / migration, staging / migration)
+        for migration in [Path("supabase/migrations/202611110001_public_catalogue.sql"),
+                          Path("supabase/migrations/202611110002_pour_steps.sql")]:
+            if (ROOT / migration).is_file():
+                (staging / migration.parent).mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / migration, staging / migration)
         if config:
             (staging / "src" / "cloud-config.js").write_text(
                 'globalThis.BlossomLab ??= {};\n'

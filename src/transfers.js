@@ -2,7 +2,7 @@
   "use strict";
 
   const BACKUP_FORMAT = "blossom-brew-lab-v1";
-  const { validatePlan, getPourCount, validatePourCount } =
+  const { validatePlan, getPourCount, validatePourCount, validatePourSteps } =
     typeof module !== "undefined" && module.exports
       ? require("./plans.js")
       : root.BlossomLab.plans;
@@ -35,6 +35,8 @@
     }
     // V1 files without optional timing fields remain valid and unchanged.
     for (const item of [...data.recipes, ...data.sessions]) {
+      const instructionsError = validatePourSteps(item);
+      if (instructionsError) throw new Error(instructionsError);
       if (item?.waterProfile != null) {
         const error = validateProfile(item.waterProfile);
         if (error) throw new Error(error);
@@ -115,6 +117,7 @@
       "agua_alcalinidad_ppm_CaCO3",
       "agua_lote_L",
       "agua_sistema",
+      "indicaciones_vertidos",
     ];
     const rows = sessions.map((session) => [
       session.date,
@@ -146,6 +149,7 @@
       session.waterProfile?.alkalinity ?? "",
       session.waterProfile?.liters ?? "",
       session.waterProfile?.system ?? "",
+      session.pourSteps == null ? "" : JSON.stringify(session.pourSteps),
     ]);
     return (
       "\uFEFF" +

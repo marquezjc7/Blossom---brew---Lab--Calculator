@@ -172,9 +172,20 @@
           row.append(cell);
         }
         $("publicPours").append(row);
+        if (current.pourSteps?.[index]) {
+          const instructionRow = document.createElement("tr"),
+            cell = document.createElement("td");
+          instructionRow.className = "pour-instruction-row";
+          cell.colSpan = 3;
+          cell.className = "pour-instructions";
+          cell.textContent = plans.pourStepText(current, index);
+          instructionRow.append(cell);
+          $("publicPours").append(instructionRow);
+        }
       }
       $("publicPourNote").textContent =
-        "Los pesos se adaptan a tu dosis; los tiempos de inicio registrados se conservan.";
+        "Los pesos se adaptan a tu dosis; los tiempos e indicaciones se conservan." +
+        (current.pourSteps ? "" : " Válvula: Sin especificar.");
     } else
       $("publicPourNote").textContent = current.bloomWater
         ? `Bloom: ${nf(current.bloomWater)} g. Los vertidos posteriores no están documentados.`
@@ -204,6 +215,11 @@
         const row = document.createElement("p");
         row.className = "step";
         row.textContent = `${label} · +${nf(current.pours[i] - (current.pours[i - 1] || 0))} g · Hasta ${nf(current.pours[i])} g`;
+        const instruction = document.createElement("span");
+        instruction.className = "pour-instructions";
+        instruction.textContent = plans.pourStepText(current, i);
+        row.append(instruction);
+        row.classList.add("public-brew-step");
         $("guestBrewPlan").append(row);
         if (current.temp2 != null) {
           const field = document.createElement("div"),
@@ -287,6 +303,9 @@
       draft?.temperatures[index] != null
         ? `Agua a ${nf(draft.temperatures[index])} °C`
         : "";
+    $("guestBrewInstruction").textContent = draft
+      ? plans.pourStepText(draft.recipe, index)
+      : "";
   }
   function renderEy() {
     const result = calculations.calculateExtraction(
@@ -447,7 +466,7 @@
         ? current.pours
             .map(
               (value, index) =>
-                `${index === 0 ? "Bloom" : `Vertido ${index}`}: añade ${nf(value - (current.pours[index - 1] || 0))} g, hasta ${nf(value)} g acumulados${plans.formatTime(current.pourTimes?.[index]) ? ` · Inicio ${plans.formatTime(current.pourTimes[index])}` : ""}`,
+                `${index === 0 ? "Bloom" : `Vertido ${index}`}: añade ${nf(value - (current.pours[index - 1] || 0))} g, hasta ${nf(value)} g acumulados${plans.formatTime(current.pourTimes?.[index]) ? ` · Inicio ${plans.formatTime(current.pourTimes[index])}` : ""}\n${plans.pourStepText(current, index)}`,
             )
             .join("\n")
         : $("publicPourNote").textContent) +

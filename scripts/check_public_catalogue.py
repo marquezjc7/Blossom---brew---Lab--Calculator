@@ -6,7 +6,7 @@ from urllib.request import Request, urlopen
 from prepare_pages import cloud_config
 
 
-def check_public_catalogue(opener=urlopen, require_ready=False):
+def check_public_catalogue(opener=urlopen, require_ready=False, require_steps=False):
     config = cloud_config()
     if config is None:
         raise RuntimeError("Falta la configuración pública de Supabase.")
@@ -48,12 +48,19 @@ def check_public_catalogue(opener=urlopen, require_ready=False):
         if not (status in [401, 403] and isinstance(error, dict) and error.get("code") == "42501" and resource in error.get("message", "")):
             raise RuntimeError(f"No se pudo verificar la protección de {resource} (HTTP {status}).")
     print("Recetario: lectura anónima disponible y escritura y administración protegidas.")
+    status, error = request("/rest/v1/rpc/blossom_project_pour_steps", {"source": {}})
+    if status == 404 and isinstance(error, dict) and error.get("code") == "PGRST202":
+        if require_steps:
+            raise RuntimeError("Falta actualizar las indicaciones de vertidos en Supabase.")
+        print("::notice title=Indicaciones de vertidos pendientes::La receta privada admite válvulas e indicaciones. Actualiza la configuración desde Blossom para compartirlas en el recetario.")
+    elif not (status in [401, 403] and isinstance(error, dict) and error.get("code") == "42501" and "blossom_project_pour_steps" in error.get("message", "")):
+        raise RuntimeError("No se pudo verificar la protección de las indicaciones de vertidos.")
     return True
 
 
 if __name__ == "__main__":
     try:
-        check_public_catalogue(require_ready=os.environ.get("BLOSSOM_REQUIRE_PUBLIC_CATALOGUE") == "1")
+        check_public_catalogue(require_ready=os.environ.get("BLOSSOM_REQUIRE_PUBLIC_CATALOGUE") == "1", require_steps=os.environ.get("BLOSSOM_REQUIRE_POUR_STEPS") == "1")
     except (RuntimeError, SystemExit) as error:
         message = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
         print(f"::error::{message}")

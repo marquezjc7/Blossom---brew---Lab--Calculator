@@ -17,6 +17,7 @@ class MockCloud:
         self.password = None
         self.publisher = True
         self.catalogue_ready = True
+        self.pour_steps_ready = True
         self.publications = {}
         self.catalogue_calls = []
 
@@ -117,7 +118,7 @@ class MockCloud:
             return
         if path.endswith("blossom_catalogue_status"):
             entries = [{k: p[k] for k in ["source_id", "public_id", "revision", "published"]} for p in self.publications.values()]
-            route.fulfill(headers=headers, json={"publisher": self.publisher, "entries": entries if self.publisher else []})
+            route.fulfill(headers=headers, json={"publisher": self.publisher, "entries": entries if self.publisher else [], "features": {"pour_steps": self.pour_steps_ready}})
             return
         if not self.publisher:
             route.fulfill(status=403, headers=headers, json={"code": "42501"})
@@ -138,6 +139,8 @@ class MockCloud:
             profile = source["payload"].get("waterProfile")
             if profile:
                 projected["waterProfile"] = {key: profile[key] for key in ["version", "system", "base", "name", "liters", "gh", "alkalinity"]}
+            if self.pour_steps_ready and source["payload"].get("pourSteps") is not None:
+                projected["pourSteps"] = [{"valve": step.get("valve") or "unknown", "note": step.get("note") or ""} for step in source["payload"]["pourSteps"]]
             public_id = existing["public_id"] if existing else str(uuid.uuid4())
             projected["id"] = public_id
             result = {"source_id": identifier, "public_id": public_id, "revision": (existing["revision"] if existing else 0) + 1, "published": True, "recipe": projected}
@@ -147,4 +150,4 @@ class MockCloud:
                 return
             result = {**existing, "published": False, "recipe": None, "revision": existing["revision"] + 1}
         self.publications[identifier] = result
-        route.fulfill(headers=headers, json={k: result[k] for k in ["source_id", "public_id", "revision", "published"]})
+        route.fulfill(headers=headers, json={**{k: result[k] for k in ["source_id", "public_id", "revision", "published"]}, "pour_steps": self.pour_steps_ready})

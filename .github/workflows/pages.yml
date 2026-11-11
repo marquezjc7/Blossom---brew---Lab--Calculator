@@ -110,6 +110,10 @@ jobs:
                       activation = response.read().decode()
                   if 'create table if not exists public.blossom_publishers' not in activation:
                       raise ValueError('La configuración de activación no está disponible')
+                  with urlopen(urljoin(site, 'supabase/migrations/202611110002_pour_steps.sql') + '?verify=' + stamp, timeout=20) as response:
+                      instructions = response.read().decode()
+                  if 'blossom_project_pour_steps' not in instructions:
+                      raise ValueError('La actualización de indicaciones no está disponible')
                   for asset, signature in [('assets/images/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),
                                            ('assets/fonts/manrope.woff2', b'wOF2'),
                                            ('concepto/assets/coffee-blossoms.png', b'\x89PNG\r\n\x1a\n'),

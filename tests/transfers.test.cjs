@@ -43,7 +43,7 @@ test("rechaza JSON ilegible, formatos ajenos y colecciones ausentes", () => {
 test("el CSV conserva las columnas anteriores y agrega el resultado guiado al final", () => {
   const csv = sessionsToCsv([]);
   assert.ok(csv.startsWith('\uFEFF"fecha","cafe"'));
-  assert.equal(csv.slice(1).split(",").length, 29);
+  assert.equal(csv.slice(1).split(",").length, 30);
   assert.ok(
     csv.split(",").slice(15, 24).join(",") ===
       '"notas","molino","grosor_molienda","vertidos_despues_bloom","temperatura_2_C","grosor_molienda_um","tiempo_real_s","inicios_reales_s","temperaturas_vertidos_C"',
@@ -233,4 +233,33 @@ test("rechaza micrones no numéricos o no positivos en recetas y sesiones import
       ),
     /grosor en µm/,
   );
+});
+
+test("JSON V1 y CSV conservan indicaciones por paso y rechazan metadatos inválidos", () => {
+  const pourSteps = [
+    { valve: "closed", note: 'Abrir a los 0:45, después "verter"\nsuavemente' },
+    { valve: "open", note: "" },
+  ];
+  const item = { pours: [50, 240], pourSteps, water: 240 };
+  const backup = createBackup([item], [item]);
+  assert.deepEqual(parseBackup(JSON.stringify(backup)), backup);
+  const csv = sessionsToCsv([item]);
+  assert.equal(csv.split("\r\n")[0].split(",")[29], '"indicaciones_vertidos"');
+  assert.ok(csv.includes(JSON.stringify(pourSteps).replaceAll('"', '""')));
+  assert.equal(
+    "pourSteps" in
+      parseBackup(JSON.stringify(createBackup([{ pours: [240] }], [])))
+        .recipes[0],
+    false,
+  );
+  for (const invalid of [
+    [{ valve: "bad" }],
+    [{ valve: "open" }],
+    [{ valve: "open", note: "x".repeat(501) }, { valve: "closed" }],
+  ])
+    assert.throws(() =>
+      parseBackup(
+        JSON.stringify(createBackup([{ ...item, pourSteps: invalid }], [])),
+      ),
+    );
 });

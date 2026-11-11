@@ -41,6 +41,30 @@ test("la proyección de receta omite datos privados y conserva parámetros, tiem
   ])
     assert.throws(() => publicRecipe({ ...source, ...invalid }));
 });
+test("las indicaciones públicas conservan solo válvula y texto de cada paso", () => {
+  const recipe = {
+    ...source,
+    pourSteps: [
+      { valve: "closed", note: "Abrir a los 0:45", private: "no compartir" },
+      { note: "Verter en círculos" },
+      { valve: "none" },
+    ],
+  };
+  const before = structuredClone(recipe);
+  assert.deepEqual(publicRecipe(recipe).pourSteps, [
+    { valve: "closed", note: "Abrir a los 0:45" },
+    { valve: "unknown", note: "Verter en círculos" },
+    { valve: "none", note: "" },
+  ]);
+  assert.deepEqual(recipe, before);
+  assert.equal(Object.hasOwn(publicRecipe(source), "pourSteps"), false);
+  for (const pourSteps of [
+    [],
+    [{ valve: "closed" }],
+    [{}, {}, { note: "x".repeat(501) }],
+  ])
+    assert.throws(() => publicRecipe({ ...source, pourSteps }));
+});
 test("el lector público no envía sesión, cookies ni parámetros de escritura", async () => {
   let sent;
   const reader = createReader({

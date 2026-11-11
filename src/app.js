@@ -15,6 +15,8 @@
     snapshotPlan,
     getPourCount,
     validatePourCount,
+    validatePourSteps,
+    pourStepText,
   } = BlossomLab.plans;
   const {
     RECIPE_KEY: STORAGE_R,
@@ -405,7 +407,7 @@
       $("recipeCardPourNote").textContent = text;
       $("recipeCardPourNote").hidden = false;
     };
-    const step = (label, incremental, cumulative, start = "") => {
+    const step = (label, incremental, cumulative, start = "", index = 0) => {
       const row = document.createElement("tr");
       const heading = document.createElement("th");
       heading.scope = "row";
@@ -421,6 +423,16 @@
       total.textContent = `${nf(cumulative, 2)} g`;
       row.append(heading, add, total);
       card.append(row);
+      if (base.pourSteps?.[index]) {
+        const instructionRow = document.createElement("tr"),
+          cell = document.createElement("td");
+        instructionRow.className = "pour-instruction-row";
+        cell.colSpan = 3;
+        cell.className = "pour-instructions";
+        cell.textContent = pourStepText(base, index);
+        instructionRow.append(cell);
+        card.append(instructionRow);
+      }
       $("recipeCardPourScroll").hidden = false;
     };
     if (!valid(r.water) || !valid(base?.water)) {
@@ -434,13 +446,14 @@
       const arr = scalePours(pours, base.water, r.water).map(
         ({ cumulative: cum, incremental: inc }, i) => {
           const start = formatTime(base.pourTimes?.[i]);
-          step(i === 0 ? "Bloom" : `Vertido ${i}`, inc, cum, start);
-          return `<div class="step"><span>${i === 0 ? "Bloom" : `Vertido ${i}`} · <span class="mini">+${nf(inc, 2)} g</span>${start ? `<span class="pour-time">Inicio ${start}</span>` : ""}</span><strong>${nf(cum, 2)} g acumulados</strong></div>`;
+          step(i === 0 ? "Bloom" : `Vertido ${i}`, inc, cum, start, i);
+          return `<div class="step"><span>${i === 0 ? "Bloom" : `Vertido ${i}`} · <span class="mini">+${nf(inc, 2)} g</span>${start ? `<span class="pour-time">Inicio ${start}</span>` : ""}</span><strong>${nf(cum, 2)} g acumulados</strong></div>${base.pourSteps?.[i] ? `<p class="pour-instructions pour-plan-instruction">${escapeHtml(pourStepText(base, i))}</p>` : ""}`;
         },
       );
       holder.innerHTML = arr.join("");
       $("pourNote").textContent =
         `Bloom: ${nf(r.bloom, 0)} s. Los pesos se escalan proporcionalmente con el agua. Los tiempos de inicio registrados se conservan; los campos vacíos siguen sin registrar.`;
+      if (!base.pourSteps) note("Válvula: Sin especificar.");
     } else if (valid(base?.bloomWater)) {
       let first = base.bloomWater * k;
       step("Bloom", first, first);
@@ -569,7 +582,8 @@
         planError,
         planError.includes("tiempo final") ? "time" : null,
       );
-    const countError = validatePourCount(candidate);
+    const countError =
+      validatePourCount(candidate) || validatePourSteps(candidate);
     if (countError) return recipeError(countError, "pourCount");
     return candidate;
   }
@@ -611,6 +625,7 @@
     if (!activeWaterProfile) delete updated.waterProfile;
     delete updated.bloomWater;
     delete updated.pourTimes;
+    delete updated.pourSteps;
     Object.assign(updated, currentPlan());
     const next = customRecipes.map((recipe) =>
       recipe === selected ? updated : recipe,
@@ -778,7 +793,7 @@
         const date = new Date(s.date);
         const plan =
           Array.isArray(s.pours) && s.pours.length
-            ? `<details class="session-plan"><summary>Ver vertidos registrados</summary><ol>${s.pours.map((weight, index) => `<li>${nf(Number(weight), 2)} g acumulados · ${formatTime(s.pourTimes?.[index]) ? `inicio ${formatTime(s.pourTimes[index])}` : "inicio sin registrar"}${s.preparation ? ` · inicio real ${formatTime(s.preparation.actualStarts?.[index]) || "sin registrar"} · ${nf(s.preparation.temperatures?.[index])} °C` : ""}</li>`).join("")}</ol></details>`
+            ? `<details class="session-plan"><summary>Ver vertidos registrados</summary><ol>${s.pours.map((weight, index) => `<li>${nf(Number(weight), 2)} g acumulados · ${formatTime(s.pourTimes?.[index]) ? `inicio ${formatTime(s.pourTimes[index])}` : "inicio sin registrar"}${s.preparation ? ` · inicio real ${formatTime(s.preparation.actualStarts?.[index]) || "sin registrar"} · ${nf(s.preparation.temperatures?.[index])} °C` : ""}<span class="pour-instructions">${escapeHtml(pourStepText(s, index))}</span></li>`).join("")}</ol></details>`
             : "";
         const guided = s.preparation
           ? `<div class="logmeta guided-summary">Preparación guiada · Tiempo real ${formatTime(s.preparation.durationSeconds) || "sin registrar"} (pausas excluidas) · Objetivo ${escapeHtml(s.time || "sin registrar")}</div>`
