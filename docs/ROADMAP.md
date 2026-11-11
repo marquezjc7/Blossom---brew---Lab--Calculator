@@ -145,8 +145,14 @@ La causa exacta del fallo reportado en los dispositivos del propietario no se ha
 - [x] Añadir controles para publicar, actualizar y retirar copias desde una cuenta autorizada, más copia del enlace para Instagram.
 - [x] Incluir migración independiente, permisos de lectura y publicación, exclusión de datos privados y controles de concurrencia.
 - [x] Preparar la configuración de activación para la cuenta verificada, sin pedir ni publicar credenciales de administración.
-- [ ] Ejecutar la activación una sola vez desde el SQL Editor del proyecto de Supabase del propietario.
-- [ ] Confirmar una receta elegida por el propietario en la dirección pública sin login.
+- [x] Ejecutar la activación una sola vez desde el SQL Editor del proyecto de Supabase del propietario; confirmó el resultado correcto y la aparición del botón de publicación mediante capturas.
+- [x] Confirmar una receta elegida por el propietario en la dirección pública sin login; el propietario confirmó el funcionamiento.
+
+## V1.9.1 — instrucciones de agua y referencia de molienda
+
+- [x] Retirar el crédito visible de imagen generada con IA de los pies de la aplicación y el recetario público.
+- [x] Mostrar en Agua del recetario los cuatro pasos del administrador para preparar los concentrados, con sus concentraciones, hidratación e indicación de pesar soluciones ya preparadas.
+- [x] Actualizar Bourbon Lavado · Baseline a Mazzer Philos I200D, ajuste 116 y molienda media gruesa, conservando las recetas personales y sus publicaciones.
 
 ## Etapa 3: acceso desde el teléfono
 

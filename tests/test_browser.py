@@ -739,6 +739,9 @@ class BrowserTests(unittest.TestCase):
 
     def test_microns_can_be_used_without_a_grind_category_and_keep_history(self):
         self.page.set_viewport_size({"width": 375, "height": 812})
+        self.page.select_option("#grinder", "")
+        self.page.select_option("#grindSize", "")
+        self.page.fill("#grind", "116")
         expect(self.page.locator("#grindingAdvanced summary")).to_have_text("Avanzado (opcional)")
         expect(self.page.locator("#grindMicrons")).to_be_hidden()
         self.page.click("#grindingAdvanced summary")

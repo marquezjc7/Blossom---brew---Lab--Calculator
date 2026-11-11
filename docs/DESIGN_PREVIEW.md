@@ -8,7 +8,7 @@ Se tomaron como referencias las dos capturas aportadas por el propietario: La Ca
 
 El logo sigue siendo el JPG oficial en color, sin modificar. La cabecera blanca permite integrarlo sin recortarlo ni redibujarlo.
 
-La fotografía de flores y cerezas de café fue generada con IA para esta propuesta mediante `image_gen`. Es una composición creativa; no documenta una finca, cosecha o café del propietario. Ambas páginas lo identifican en el pie. El original se conserva en el entorno de generación; sus copias publicadas están en `concepto/assets/coffee-blossoms.png` y `assets/images/coffee-blossoms.png`.
+La fotografía de flores y cerezas de café fue generada con IA para esta propuesta mediante `image_gen`. Es una composición creativa; no documenta una finca, cosecha o café del propietario. La maqueta conserva su crédito original; desde V1.9.1, la aplicación y el recetario público documentan la procedencia aquí y no muestran ese texto en el pie, a petición del propietario. El original se conserva en el entorno de generación; sus copias publicadas están en `concepto/assets/coffee-blossoms.png` y `assets/images/coffee-blossoms.png`.
 
 Se utilizan Manrope para controles y titulares, y Cormorant Garamond para los títulos editoriales y sus acentos en cursiva. Se descargaron desde los directorios oficiales de Google Fonts y se convirtieron de TTF a WOFF2 conservando su diseño. Las licencias SIL Open Font License se incluyen con los archivos en `concepto/assets/fonts/` y `assets/fonts/`.
 

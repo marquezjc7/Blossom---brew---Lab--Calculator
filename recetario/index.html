@@ -30,8 +30,8 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="../assets/css/styles.css?v=1.9.0" />
-    <link rel="stylesheet" href="../assets/css/catalogue.css?v=1.9.0" />
+    <link rel="stylesheet" href="../assets/css/styles.css?v=1.9.1" />
+    <link rel="stylesheet" href="../assets/css/catalogue.css?v=1.9.1" />
   </head>
   <body data-public-catalogue="blossom">
     <a class="skip-link" href="#recetario">Ir al recetario</a>
@@ -423,58 +423,89 @@
           </p>
         </div>
         <div class="layout">
-          <div class="card">
-            <h2>Dos concentrados, tu mezcla.</h2>
-            <p class="sub">
-              Para agua destilada y soluciones preparadas de NaHCO₃ a 1.68 g/L y
-              MgSO₄·7H₂O a 2.45 g/L.
-            </p>
-            <div class="fields">
-              <div class="field wide">
-                <label for="guestWaterPreset"
-                  >Receta de agua de referencia</label
-                ><select id="guestWaterPreset"></select>
+          <div class="stack">
+            <div class="card">
+              <h2>Dos concentrados, tu mezcla.</h2>
+              <p class="sub">
+                Para agua destilada y soluciones preparadas de NaHCO₃ a 1.68 g/L
+                y MgSO₄·7H₂O a 2.45 g/L.
+              </p>
+              <div class="fields">
+                <div class="field wide">
+                  <label for="guestWaterPreset"
+                    >Receta de agua de referencia</label
+                  ><select id="guestWaterPreset"></select>
+                </div>
+                <div class="field wide">
+                  <label for="guestWaterLiters"
+                    >Volumen final aproximado (L)</label
+                  ><input
+                    id="guestWaterLiters"
+                    type="number"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value="1"
+                  />
+                </div>
+                <div class="field">
+                  <label for="guestWaterGh">GH objetivo (ppm como CaCO₃)</label
+                  ><input
+                    id="guestWaterGh"
+                    type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                  />
+                </div>
+                <div class="field">
+                  <label for="guestWaterAlkalinity"
+                    >Alcalinidad objetivo (ppm como CaCO₃)</label
+                  ><input
+                    id="guestWaterAlkalinity"
+                    type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                  />
+                </div>
               </div>
-              <div class="field wide">
-                <label for="guestWaterLiters"
-                  >Volumen final aproximado (L)</label
-                ><input
-                  id="guestWaterLiters"
-                  type="number"
-                  min="0.1"
-                  max="100"
-                  step="0.1"
-                  value="1"
-                />
-              </div>
-              <div class="field">
-                <label for="guestWaterGh">GH objetivo (ppm como CaCO₃)</label
-                ><input
-                  id="guestWaterGh"
-                  type="number"
-                  min="0"
-                  max="1000"
-                  step="0.1"
-                />
-              </div>
-              <div class="field">
-                <label for="guestWaterAlkalinity"
-                  >Alcalinidad objetivo (ppm como CaCO₃)</label
-                ><input
-                  id="guestWaterAlkalinity"
-                  type="number"
-                  min="0"
-                  max="1000"
-                  step="0.1"
-                />
-              </div>
+              <p class="note">
+                Aproximación Barista Hustle: 1 g de solución ≈ 1 mL, con agua
+                base de minerales prácticamente cero. Comprueba el agua final
+                con un kit. No verifica todos los parámetros SCA ni la
+                compatibilidad con una máquina de espresso.
+              </p>
             </div>
-            <p class="note">
-              Aproximación Barista Hustle: 1 g de solución ≈ 1 mL, con agua base
-              de minerales prácticamente cero. Comprueba el agua final con un
-              kit. No verifica todos los parámetros SCA ni la compatibilidad con
-              una máquina de espresso.
-            </p>
+            <details class="card water-instructions" open>
+              <summary>Cómo preparar los dos concentrados</summary>
+              <ol>
+                <li>
+                  <strong>Buffer:</strong> disuelve 1.68 g de bicarbonato de
+                  sodio (NaHCO₃) y completa por separado hasta 1 L de solución
+                  con agua destilada.
+                </li>
+                <li>
+                  <strong>Dureza:</strong> disuelve 2.45 g de sulfato de
+                  magnesio heptahidratado (MgSO₄·7H₂O) y completa hasta 1 L de
+                  solución con agua destilada.
+                </li>
+                <li>
+                  Identifica cada recipiente con el compuesto, concentración y
+                  fecha. Usa sales aptas para consumo y recipientes limpios.
+                </li>
+                <li>
+                  Para tu mezcla final, pesa las cantidades de
+                  <strong>solución ya preparada</strong> que indica la
+                  calculadora y añade el agua destilada restante.
+                </li>
+              </ol>
+              <p class="note">
+                La calculadora usa exclusivamente esas dos concentraciones. No
+                intercambies 2.45 por 2.55 g/L, ni MgSO₄·7H₂O por otra forma de
+                hidratación.
+              </p>
+            </details>
           </div>
           <div class="card">
             <p class="kicker">CANTIDADES PARA PESAR</p>
@@ -487,20 +518,19 @@
       <footer class="footer">
         <div>
           <strong>BLOSSOM SPECIALTY COFFEE</strong
-          ><span>RECETARIO · V1.9.0</span>
+          ><span>RECETARIO · V1.9.1</span>
         </div>
-        <p>Imagen de portada generada con IA para Blossom.</p>
         <a href="../#cloudAccount">Acceso del propietario</a>
       </footer>
     </main>
-    <script src="../src/calculations.js?v=1.9.0" defer></script>
-    <script src="../src/plans.js?v=1.9.0" defer></script>
-    <script src="../src/recipes.js?v=1.9.0" defer></script>
-    <script src="../src/water.js?v=1.9.0" defer></script>
-    <script src="../src/preparation.js?v=1.9.0" defer></script>
-    <script src="../src/cloud-config.js?v=1.9.0" defer></script>
-    <script src="../src/cloud-api.js?v=1.9.0" defer></script>
-    <script src="../src/catalogue.js?v=1.9.0" defer></script>
-    <script src="../src/catalogue-ui.js?v=1.9.0" defer></script>
+    <script src="../src/calculations.js?v=1.9.1" defer></script>
+    <script src="../src/plans.js?v=1.9.1" defer></script>
+    <script src="../src/recipes.js?v=1.9.1" defer></script>
+    <script src="../src/water.js?v=1.9.1" defer></script>
+    <script src="../src/preparation.js?v=1.9.1" defer></script>
+    <script src="../src/cloud-config.js?v=1.9.1" defer></script>
+    <script src="../src/cloud-api.js?v=1.9.1" defer></script>
+    <script src="../src/catalogue.js?v=1.9.1" defer></script>
+    <script src="../src/catalogue-ui.js?v=1.9.1" defer></script>
   </body>
 </html>

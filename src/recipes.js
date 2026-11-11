@@ -12,6 +12,8 @@
       temp: 93,
       bloom: 45,
       time: "2:47",
+      grinder: "Mazzer Philos I200D",
+      grindSize: "Media gruesa",
       grind: "116",
       pours: [45, 145, 240],
       notes:
